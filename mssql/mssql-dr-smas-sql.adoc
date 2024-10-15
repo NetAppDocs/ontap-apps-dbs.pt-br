@@ -1,0 +1,37 @@
+---
+sidebar: sidebar 
+permalink: mssql/mssql-dr-smas-sql.html 
+keywords: MSSQL,SQL Server, SnapMirror active sync, ONTAP, SMBC, SMas, SnapMirror Business Continuity 
+summary: Sincronização ativa do Microsoft SQL Server e do SnapMirror 
+---
+= Microsoft SQL Server com sincronização ativa do SnapMirror
+:allow-uri-read: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O SQL Server pode ser configurado para trabalhar com a sincronização ativa do SnapMirror de várias maneiras. A resposta certa depende da conectividade de rede disponível, dos requisitos de RPO e dos requisitos de disponibilidade.
+
+
+
+== Instância autônoma do SQL Server
+
+As práticas recomendadas para layout de arquivo e configuração de servidor são as mesmas recomendadas link:mssql-storage-considerations.html["SQL Server no ONTAP"]na documentação.
+
+Com uma configuração autônoma, o SQL Server poderia estar sendo executado apenas em um site. Presumivelmente link:mssql-dr-smas-uniform.html["uniforme"] o acesso seria usado.
+
+image:smas-onehost.png["Único host com acesso uniforme"]
+
+Com acesso uniforme, uma falha de armazenamento em qualquer um dos locais não interromperia as operações do banco de dados. Uma falha completa do local no site que incluía o servidor do banco de dados resultaria, naturalmente, em uma falha.
+
+Alguns clientes podem configurar um sistema operacional em execução no site remoto com uma configuração pré-configurada do SQL Server, atualizada com uma versão de compilação equivalente como a da instância de produção. O failover exigiria a ativação dessa instância autônoma do SQL Server no local alternativo, a descoberta dos LUNS e a inicialização do banco de dados. O processo completo pode ser automatizado com o cmdlet do Windows PowerShell, pois não são necessárias operações do lado do storage.
+
+link:mssql-dr-smas-nonuniform.html["Não uniforme"] o acesso também poderia ser usado, mas o resultado seria uma interrupção do banco de dados se o sistema de storage em que o servidor de banco de dados estava localizado tivesse falhado porque o banco de dados não teria caminhos disponíveis para o storage. Isso ainda pode ser aceitável em alguns casos. O SnapMirror ative Sync ainda estaria fornecendo proteção de dados RPO igual a 0 e, em caso de falha do local, a cópia sobrevivente estaria ativa e pronta para retomar as operações usando o mesmo procedimento usado com acesso uniforme, conforme descrito acima.
+
+Um processo de failover simples e automatizado pode ser mais facilmente configurado com o uso de um host Virtualize. Por exemplo, se os arquivos de dados do SQL Server forem replicados sincronamente para o armazenamento secundário, juntamente com um VMDK de inicialização, em caso de desastre, o ambiente completo poderá ser ativado no local alternativo. Um administrador pode ativar manualmente o host no local sobrevivente ou automatizar o processo por meio de um serviço como o VMware HA.
+
+
+
+== Instância de cluster de failover do SQL Server
+
+As instâncias de failover do SQL Server também podem ser hospedadas em um cluster de failover do Windows executado em um servidor físico ou servidor virtual como sistema operacional convidado. Essa arquitetura de vários hosts oferece resiliência de armazenamento e instância do SQL Server. Essa implantação é útil em ambientes de alta demanda que buscam processos de failover robustos, mantendo o desempenho aprimorado. Em uma configuração de cluster de failover, quando um host ou storage primário é afetado, o SQL Services será failover para o host secundário e, ao mesmo tempo, o storage secundário estará disponível para servir e/S. Nenhum script de automação ou intervenção do administrador é necessário.

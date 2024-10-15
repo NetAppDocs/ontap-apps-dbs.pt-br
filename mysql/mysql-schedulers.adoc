@@ -1,0 +1,20 @@
+---
+sidebar: sidebar 
+permalink: mysql/mysql-schedulers.html 
+keywords: MySQL,MariaDB,schedulers 
+summary: Agendadores MySQL e IO 
+---
+= Agendadores de e/S e MySQL
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+O kernel Linux permite um controle de baixo nível sobre a maneira como e/S para bloquear dispositivos é agendada.
+
+Os padrões em várias distribuições do Linux variam consideravelmente. O MySQL recomenda que você use `NOOP` ou um `deadline` agendador de e/S com e/S assíncrona nativa (AIO) no Linux. Em geral, os clientes da NetApp e os testes internos mostram melhores resultados com NoOps.
+
+O mecanismo de armazenamento InnoDB do MySQL usa o subsistema de e/S assíncrono (AIO nativo) no Linux para executar solicitações de leitura e gravação para páginas de arquivos de dados. Esse comportamento é controlado pela `innodb_use_native_aio` opção de configuração, que é ativada por padrão. Com AIO nativo, o tipo de agendador de e/S tem maior influência no desempenho de e/S. Realize benchmarks para determinar qual agendador de e/S fornece os melhores resultados para sua carga de trabalho e ambiente.
+
+Consulte a documentação relevante do Linux e MySQL para obter instruções sobre como configurar o agendador de e/S.

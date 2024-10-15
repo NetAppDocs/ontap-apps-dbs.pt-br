@@ -1,0 +1,40 @@
+---
+sidebar: sidebar 
+permalink: mssql/mssql-dr-smas-preferred-site.html 
+keywords: MSSQL,SQL Server, SnapMirror active sync, SMBC, overview 
+summary: Microsoft SQL Server e SM-as site preferido 
+---
+= Microsoft SQL Server e SM-as site preferido
+:allow-uri-read: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O comportamento de sincronização ativa do SnapMirror é simétrico, com uma exceção importante - configuração de site preferida.
+
+A sincronização ativa do SnapMirror considerará um site a "fonte" e o outro o "destino". Isso implica uma relação de replicação unidirecional, mas isso não se aplica ao comportamento de IO. A replicação é bidirecional e simétrica, e os tempos de resposta de e/S são os mesmos em ambos os lados do espelho.
+
+A `source` designação é controla o local preferido. Se o link de replicação for perdido, os caminhos de LUN na cópia de origem continuarão a servir dados enquanto os caminhos de LUN na cópia de destino ficarão indisponíveis até que a replicação seja restabelecida e o SnapMirror reinsira um estado síncrono. Os caminhos irão então retomar a veiculação de dados.
+
+A configuração de origem/destino pode ser visualizada através do SystemManager:
+
+image:smas-source-systemmanager.png["Captura de tela SM da fonte SM-as"]
+
+Ou na CLI:
+
+....
+Cluster2::> snapmirror show -destination-path jfs_as2:/cg/jfsAA
+
+                            Source Path: jfs_as1:/cg/jfsAA
+                       Destination Path: jfs_as2:/cg/jfsAA
+                      Relationship Type: XDP
+                Relationship Group Type: consistencygroup
+                    SnapMirror Schedule: -
+                 SnapMirror Policy Type: automated-failover-duplex
+                      SnapMirror Policy: AutomatedFailOverDuplex
+                            Tries Limit: -
+                      Throttle (KB/sec): -
+                           Mirror State: Snapmirrored
+                    Relationship Status: InSync
+....
+O segredo é que a fonte é o SVM no cluster1. Como mencionado acima, os termos "fonte" e "destino" não descrevem o fluxo de dados replicados. Ambos os sites podem processar uma gravação e replicá-la para o site oposto. Com efeito, ambos os clusters são fontes e destinos. O efeito de designar um cluster como uma fonte simplesmente controla qual cluster sobrevive como um sistema de armazenamento de leitura e gravação se o link de replicação for perdido.

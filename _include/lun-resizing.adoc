@@ -1,0 +1,5 @@
+= 
+:allow-uri-read: 
+
+
+Embora o redimensionamento LUN seja uma opção para aumentar a capacidade, geralmente é melhor usar um LVM, incluindo o Oracle ASM. Uma das principais razões pelas quais LVMs existem é evitar a necessidade de um redimensionamento LUN. Com uma LVM, vários LUNs são colados em um pool virtual de storage. Os volumes lógicos esculpidos fora deste pool são gerenciados pela LVM e podem ser facilmente redimensionados. Um benefício adicional é evitar hotspots em uma determinada unidade, distribuindo um determinado volume lógico em todos os LUNs disponíveis. A migração transparente geralmente pode ser realizada usando o gerenciador de volumes para realocar as extensões subjacentes de um volume lógico para novos LUNs.

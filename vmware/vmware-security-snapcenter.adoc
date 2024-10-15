@@ -1,0 +1,93 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-security-snapcenter.html 
+keywords: WP-7355, security, snapcenter, treat modeling, dast, vulnerability scanning, penetration testing,SCV,VMware,vSphere 
+summary: Este documento descreve os aspetos de segurança do plug-in do SnapCenter para VMware. 
+---
+= Plug-in do SnapCenter VMware vSphere
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O plug-in do NetApp SnapCenter para a engenharia de software VMware vSphere usa as seguintes atividades de desenvolvimento seguro:
+
+* *Modelagem de ameaças.* O objetivo da modelagem de ameaças é descobrir falhas de segurança em um recurso, componente ou produto no início do ciclo de vida do desenvolvimento de software. Um modelo de ameaça é uma representação estruturada de todas as informações que afetam a segurança de um aplicativo. Em essência, é uma visão da aplicação e do seu ambiente através da lente da segurança.
+* *Teste dinâmico de segurança de aplicativos (DAST).* Tecnologias projetadas para detetar condições vulneráveis em aplicativos em seu estado de execução. O DAST testa as interfaces HTTP e HTML expostas de aplicações web-enable.
+* *Moeda de código de terceiros.* Como parte do desenvolvimento de software e do uso de software de código aberto (OSS), é importante abordar vulnerabilidades de segurança que podem estar associadas ao OSS que foi incorporado ao seu produto. Este é um esforço contínuo, uma vez que a versão do componente OSS pode ter uma vulnerabilidade recentemente descoberta relatada a qualquer momento.
+* *Verificação de vulnerabilidades.* O objetivo da verificação de vulnerabilidades é detetar vulnerabilidades de segurança comuns e conhecidas nos produtos NetApp antes de serem lançadas aos clientes.
+* * Teste de penetração.* O teste de penetração é o processo de avaliação de um sistema, aplicativo da Web ou rede para encontrar vulnerabilidades de segurança que possam ser exploradas por um invasor. Os testes de penetração (testes de caneta) na NetApp são conduzidos por um grupo de empresas terceirizadas aprovadas e confiáveis. Seu escopo de teste inclui o lançamento de ataques contra um aplicativo ou software como intrusos hostis ou hackers usando métodos ou ferramentas de exploração sofisticados.
+* *Atividade de resposta a incidentes de Segurança do produto.* Vulnerabilidades de segurança são descobertas interna e externamente para a empresa e podem representar um sério risco para a reputação da NetApp se não forem abordadas em tempo hábil. Para facilitar esse processo, uma equipe de resposta a incidentes de Segurança do produto (PSIRT) relata e rastreia as vulnerabilidades.
+
+
+
+
+== Recursos de segurança do produto
+
+O plug-in do NetApp SnapCenter para VMware vSphere inclui os seguintes recursos de segurança em cada versão:
+
+* *Acesso restrito ao shell.* O SSH é desativado por padrão, e logins únicos só são permitidos se estiverem ativados a partir do console da VM.
+* *Aviso de acesso no banner de login.* O banner de login a seguir é exibido depois que o usuário insere um nome de usuário no prompt de login:
++
+*AVISO:* o acesso não autorizado a este sistema é proibido e será processado por lei. Ao acessar este sistema, você concorda que suas ações podem ser monitoradas se houver suspeita de uso não autorizado.
+
++
+Depois que o usuário concluir o login pelo canal SSH, a seguinte saída é exibida:
+
+
+
+....
+Linux vsc1 4.19.0-12-amd64 #1 SMP Debian 4.19.152-1 (2020-10-18) x86_64
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+....
+* *Controle de acesso baseado em função (RBAC).* Dois tipos de controles RBAC estão associados às ferramentas do ONTAP:
++
+** Privileges nativo do vCenter Server.
+** Privileges específico do plug-in do VMware vCenter. Para obter mais informações, https://docs.netapp.com/us-en/sc-plugin-vmware-vsphere/scpivs44_role_based_access_control.html["Controle de acesso baseado em função (RBAC)"^]consulte .
+
+
+* *Canais de comunicação criptografados.* Toda a comunicação externa acontece por HTTPS usando TLS.
+* * Exposição mínima do porto.* Apenas as portas necessárias estão abertas no firewall.
+
+
+A tabela a seguir fornece os detalhes da porta aberta.
+
+|===
+| Número da porta TCP v4/V6 | Função 
+
+
+| 8144 | Conexões HTTPS para API REST 
+
+
+| 8080 | Conexões HTTPS para GUI OVA 
+
+
+| 22 | SSH (desativado por padrão) 
+
+
+| 3306 | MySQL (somente conexões internas; conexões externas desativadas por padrão) 
+
+
+| 443 | Nginx (serviços de proteção de dados) 
+|===
+* *Suporte para certificados assinados pela Autoridade de Certificação (CA).* O plug-in do SnapCenter para VMware vSphere oferece suporte ao recurso de certificados assinados pela CA.  https://kb.netapp.com/Advice_and_Troubleshooting/Data_Protection_and_Security/SnapCenter/How_to_create_and_or_import_an_SSL_certificate_to_SnapCenter_Plug-in_for_VMware_vSphere["Como criar e/ou importar um certificado SSL para o plug-in SnapCenter para VMware vSphere (SCV)"^]Consulte .
+* *Políticas de senha.* As seguintes políticas de senha estão em vigor:
++
+** As senhas não são registradas em nenhum arquivo de log.
+** As senhas não são comunicadas em texto simples.
+** As senhas são configuradas durante o próprio processo de instalação.
+** Todas as informações de credenciais são armazenadas usando hash SHA256.
+
+
+* *Imagem base do sistema operacional.* O produto é fornecido com o sistema operacional base Debian para OVA com acesso restrito e acesso shell desativado. Isso reduz a ocupação física do ataque. Todos os sistemas operacionais baseados em versões do SnapCenter são atualizados com os patches de segurança mais recentes disponíveis para cobertura máxima de segurança.
+
+
+A NetApp desenvolve recursos de software e patches de segurança em relação ao plug-in do SnapCenter para o dispositivo VMware vSphere e, em seguida, os lança aos clientes como uma plataforma de software agrupada. Como esses dispositivos incluem dependências específicas do sistema sub-operacional Linux, bem como nosso software proprietário, a NetApp recomenda que você não faça alterações no sistema sub-operacional porque isso tem um alto potencial para afetar o dispositivo NetApp. Isto pode afetar a capacidade do NetApp de suportar o aparelho. A NetApp recomenda testar e implantar nossa versão de código mais recente para dispositivos porque eles são lançados para corrigir quaisquer problemas relacionados à segurança.

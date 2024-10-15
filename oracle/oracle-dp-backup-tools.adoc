@@ -1,0 +1,33 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dp-backup-tools.html 
+keywords: ontap, data protection 
+summary: Ferramentas de automação e gerenciamento de banco de dados Oracle 
+---
+= Ferramentas de automação e gerenciamento de banco de dados Oracle
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O principal valor do ONTAP em um ambiente de banco de dados Oracle vem das principais tecnologias da ONTAP, como cópias Snapshot instantâneas, replicação simples do SnapMirror e criação eficiente de volumes do FlexClone.
+
+Em alguns casos, a configuração simples desses principais recursos diretamente no ONTAP atende aos requisitos, mas as necessidades mais complicadas exigem uma camada de orquestração.
+
+
+
+== SnapCenter
+
+O SnapCenter é o principal produto de proteção de dados da NetApp. Em um nível muito baixo, ele é semelhante aos produtos SnapManager em termos de como executa backups de bancos de dados. No entanto, ele foi criado do zero para fornecer um painel único para gerenciamento de proteção de dados em sistemas de storage da NetApp.
+
+O SnapCenter inclui funções básicas, como backups e restaurações baseados em snapshot, replicação SnapMirror e SnapVault e outros recursos necessários para operar em escala para empresas de grande porte. Esses recursos avançados incluem funcionalidade de controle de acesso baseado em funções (RBAC) expandida, APIs RESTful para integração com produtos de orquestração de terceiros, gerenciamento central sem interrupções de plug-ins do SnapCenter em hosts de banco de dados e uma interface de usuário projetada para ambientes de escala de nuvem.
+
+
+
+== DESCANSO
+
+O ONTAP também contém um conjunto de APIs RESTful. Isso permite que fornecedores terceirizados de 3rd criem proteção de dados e outros aplicativos de gerenciamento com profunda integração com o ONTAP. Além disso, a API RESTful é fácil de consumir por clientes que desejam criar seus próprios fluxos de trabalho e utilitários de automação.

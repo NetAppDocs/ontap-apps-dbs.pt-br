@@ -1,0 +1,26 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-arch-6node.html 
+keywords: epic,cache,iris 
+summary: Arquitetura épica de seis nós 
+---
+= Arquitetura épica de seis nós
+:allow-uri-read: 
+
+
+[role="lead"]
+Os clientes podem querer começar com um design de seis nós ou fazer escalabilidade horizontal de quatro a seis nós de forma otimizada, com demanda crescente. Com a escalabilidade horizontal, você pode mover workloads entre nós e rebalancear de modo ininterrupto no cluster.
+
+Essa arquitetura oferece o melhor desempenho e equilíbrio de capacidade no cluster. Produção épica, Epic Report e Epic Test são executados no primeiro par de HA. O segundo par de HA é usado para Clarity, Hyperspace, VMware, NAS1 e os demais workloads da Epic. A recuperação de desastres é a mesma que a arquitetura de quatro nós na seção anterior.
+
+
+
+== Arquitetura de seis nós
+
+image:epic-6node.png["Arquitetura épica de 6 nós"]
+
+
+
+== Disposição do workload de seis nós
+
+image:epic-6node-design.png["Disposição épica de 6 nós"]

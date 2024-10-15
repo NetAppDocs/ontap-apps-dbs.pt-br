@@ -1,0 +1,84 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-arch-overview.html 
+keywords: epic,cache,iris 
+summary: Arquitetura épica 
+---
+= Arquitetura épica
+:allow-uri-read: 
+
+
+[role="lead"]
+Esta seção descreve o ambiente de software da Epic e os principais componentes que exigem storage. Ele fornece considerações essenciais para ajudar a orientar o design do armazenamento.
+
+A EPIC, com sede em Verona, Wisconsin, faz software para grupos médicos de médio a grande porte, hospitais e organizações de saúde integradas. Os clientes também incluem hospitais comunitários, instalações acadêmicas, organizações infantis, provedores de redes de segurança e sistemas multi-hospitalares. O software integrado ao EPIC abrange funções clínicas, de acesso e de receita e se estende para casa.
+
+Está além do escopo deste documento cobrir a ampla gama de funções suportadas pelo software Epic. No entanto, do ponto de vista do sistema de storage, todos os softwares da Epic compartilham um único banco de dados centrado em pacientes para cada implantação. A Epic está migrando do banco de dados InterSystems Caché para o novo banco de dados InterSystems Iris. Como os requisitos de armazenamento são os mesmos para Caché e Iris, vamos nos referir ao banco de dados como Iris em todo o resto deste documento. O Iris está disponível para os sistemas operacionais AIX e Linux.
+
+
+
+== Intersistemas Iris
+
+InterSystems Iris é o banco de dados usado pelo aplicativo Epic. Neste banco de dados, o servidor de dados é o ponto de acesso para dados armazenados persistentemente. O servidor de aplicativos gerencia consultas de banco de dados e faz solicitações de dados para o servidor de dados. Para a maioria dos ambientes de software da Epic, o uso da arquitetura de multiprocessadores simétricos (SMP) em um único servidor de banco de dados é suficiente para atender às solicitações de banco de dados dos aplicativos da Epic. Em grandes implantações, um modelo distribuído pode ser suportado usando o Enterprise Caché Protocol (ECP) da InterSystems.
+
+O uso de hardware em cluster habilitado para failover permite que um servidor de dados em espera acesse o mesmo armazenamento que o servidor de dados primário. Ele também permite que o servidor de dados em espera assuma responsabilidades de processamento durante uma falha de hardware.
+
+A InterSystems também fornece tecnologias para atender aos requisitos de replicação de dados, recuperação de desastres e alta disponibilidade (HA). A tecnologia de replicação da InterSystems é usada para replicar um banco de dados Iris de forma síncrona ou assíncrona de um servidor de dados primário para um ou mais servidores de dados secundários. O NetApp SnapMirror é usado para replicar o armazenamento WebBLOB ou para backup e recuperação de desastres.
+
+O banco de dados atualizado do Iris tem muitas vantagens:
+
+* Aumentou a escala e permite que organizações maiores, com várias instâncias da Epic, se consolidem em uma instância maior.
+* Um feriado de licenciamento onde os clientes podem agora se mover entre AIX e Red Hat Enterprise Linux (RHEL) sem pagar por uma nova licença de plataforma.
+
+
+
+
+== Servidores de banco de dados Caché e uso de armazenamento
+
+* *Produção* em ambientes de software da Epic, um único banco de dados centrado no paciente é implantado. Nos requisitos de hardware da Epic, o servidor físico que hospeda o servidor de dados Iris primário de leitura/gravação é chamado de servidor de banco de dados de produção. Este servidor requer armazenamento all-flash de alto desempenho para arquivos pertencentes à instância de banco de dados principal. Para alta disponibilidade, a Epic oferece suporte ao uso de um servidor de banco de dados de failover que tenha acesso aos mesmos arquivos. O Iris usa o Epic Mirror para replicação para relatórios somente leitura, recuperação de desastres e suporte a cópias somente leitura. Cada tipo de servidor de banco de dados pode ser comutado para o modo de leitura/gravação por motivos de continuidade de negócios.
+* *Report* Um servidor de banco de dados espelho de relatório fornece acesso somente leitura aos dados de produção. Ele hospeda um servidor de dados Iris configurado como um espelho de backup do servidor de dados Iris de produção. O servidor de banco de dados de relatórios tem os mesmos requisitos de capacidade de armazenamento que o servidor de banco de dados de produção. A performance de gravação do relatório é a mesma que a produção, mas as características do workload de leitura são diferentes e dimensionadas de maneira diferente.
+* *Suporta somente leitura* este servidor de banco de dados é opcional e não é mostrado a figura abaixo. Um servidor de banco de dados espelhado também pode ser implantado para dar suporte à funcionalidade Epic somente leitura, na qual o acesso é fornecido a uma cópia de produção no modo somente leitura. Este tipo de servidor de banco de dados pode ser comutado para o modo de leitura/gravação por motivos de continuidade de negócios.
+* *Recuperação de desastres* para atender aos objetivos de continuidade de negócios e recuperação de desastres, um servidor de banco de dados espelhado de recuperação de desastres é comumente implantado em um local geograficamente separado dos servidores de banco de dados espelhados de produção e/ou relatório. Um servidor de banco de dados espelhado de recuperação de desastres também hospeda um servidor de dados Iris configurado como um espelho de backup do servidor de dados Iris de produção. Se o local de produção ficar indisponível por um longo período de tempo, este servidor de banco de dados espelho de backup pode ser configurado para atuar como uma instância de leitura/gravação espelhada (SRW). O servidor de banco de dados espelho de backup tem os mesmos requisitos de armazenamento de arquivos que o servidor de banco de dados de produção. Em contraste, o armazenamento do banco de dados espelhado de backup é dimensionado da mesma forma que o storage de produção da perspetiva de desempenho para a continuidade dos negócios.
+
+
+image:epic-iris-odb.png["EPIC IRIS ODB"]
+
+* *Test* as organizações de saúde costumam implantar ambientes de desenvolvimento, teste e teste. Servidores de dados Iris adicionais para esses ambientes também exigem armazenamento, que pode ser acomodado pelo mesmo sistema de armazenamento. A Epic tem requisitos e restrições específicos para fornecer storage adicional a partir de um sistema de storage compartilhado. Esses requisitos específicos são tratados genericamente pelas melhores práticas neste documento.
+
+
+Além dos servidores de dados do Iris ODB, os ambientes de software da Epic geralmente incluem outros componentes, como o seguinte e como mostrado na figura abaixo:
+
+* Um servidor de banco de dados Oracle ou Microsoft SQL Server como um back-end para as ferramentas de relatório de negócios Clarity da Epic
+
+
+
+NOTE: O Clarity é usado para relatar dados extraídos diariamente do banco de dados Iris de relatório.
+
+* Servidor WebBLOB (SMB)
+* Servidor de banco de dados multiuso
+* Máquinas virtuais multiúso (VMs)
+* Hiperespaço para acesso ao cliente
+
+
+image:epic-databases.png["Banco de dados épico"]
+
+Os requisitos de storage de todos esses vários workloads, pools, protocolos nas e SAN podem ser consolidados e hospedados por um único cluster ONTAP. Com essa consolidação, as organizações de saúde têm uma estratégia única de gerenciamento de dados para todos os workloads da Epic e não da Epic.
+
+
+
+== Workloads de banco de dados operacional
+
+Cada servidor de banco de dados Epic executa e/S nos seguintes tipos de arquivos:
+
+* Ficheiros de base de dados
+* Arquivos de diário
+* Ficheiros de aplicação
+
+
+O workload de um servidor de banco de dados individual depende de sua função no ambiente de software da Epic. Por exemplo, arquivos de banco de dados de produção geralmente incorrem na carga de trabalho mais exigente, consistindo de 100% de solicitações de e/S aleatórias. O workload de qualquer banco de dados espelhado geralmente é menos exigente e tem menos solicitações de leitura. As cargas de trabalho de arquivo diário são principalmente sequenciais.
+
+A Epic mantém um modelo de workload para benchmark de desempenho de storage e workload de clientes. Para obter mais informações sobre o modelo de workload da Epic, os resultados de benchmark e as orientações sobre o uso de ferramentas de dimensionamento do NetApp para dimensionar o storage corretamente para ambientes da Epic, consulte https://fieldportal.netapp.com/content/192412?assetComponentId=192510["TR-3930i: Diretrizes de dimensionamento de NetApp para a Epic"^] (login no NetApp necessário).
+
+A Epic também fornece a cada cliente um guia de configuração de hardware personalizado que contém projeções de e/S e requisitos de capacidade de storage. Os requisitos de storage finais podem incluir ambientes de desenvolvimento, teste e/ou preparo e quaisquer outros workloads auxiliares que possam ser consolidados. Os clientes podem usar o guia de configuração de hardware para comunicar os requisitos totais de armazenamento ao NetApp. Este guia contém todos os dados necessários para dimensionar a implantação da Epic.
+
+Durante a fase de implantação, a Epic oferece um Guia de layout de storage de banco de dados, que fornece detalhes mais granulares em nível de LUN que podem ser usados para um design avançado de storage. Observe que o Guia de layout de armazenamento de banco de dados é recomendações gerais de armazenamento e não específico do NetApp. Use este guia para determinar o melhor layout de armazenamento no NetApp.

@@ -1,0 +1,127 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dr-mcc-rac.html 
+keywords: oracle, metrocluster, extended rac, RAC 
+summary: RAC estendido Oracle com MetroCluster 
+---
+= Oracle RAC estendido no MetroCluster
+:allow-uri-read: 
+
+
+[role="lead"]
+Muitos clientes otimizam seu rto alongando um cluster do Oracle RAC entre locais, gerando uma configuração totalmente ativo-ativo. O projeto geral se torna mais complicado porque deve incluir o gerenciamento de quórum do Oracle RAC. Além disso, os dados são acessados de ambos os sites, o que significa que uma mudança forçada pode levar ao uso de uma cópia desatualizada dos dados.
+
+Embora uma cópia dos dados esteja presente em ambos os sites, apenas o controlador que atualmente possui um agregado pode fornecer dados. Portanto, com clusters RAC estendidos, os nós remotos devem executar e/S em uma conexão local a local. O resultado é uma latência de e/S adicionada, mas essa latência geralmente não é um problema. A rede de interconexão RAC também deve ser estendida entre locais, o que significa que uma rede de alta velocidade e baixa latência é necessária de qualquer maneira. Se a latência adicionada causar um problema, o cluster pode ser operado de forma ativo-passivo. As operações com uso intenso de e/S precisariam então ser direcionadas para os nós RAC que são locais para a controladora que possui os agregados. Os nós remotos executam então operações de e/S mais leves ou são usados puramente como servidores de espera quentes.
+
+Se o RAC estendido ativo-ativo for necessário, a sincronização ativa do SnapMirror deve ser considerada no lugar do MetroCluster. A replicação SM-as permite que uma réplica específica dos dados seja preferida. Portanto, um cluster RAC estendido pode ser construído no qual todas as leituras ocorrem localmente. A I/o de leitura nunca cruza sites, o que proporciona a menor latência possível. Todas as atividades de gravação ainda devem transitar a conexão entre locais, mas esse tráfego é inevitável com qualquer solução de espelhamento síncrono.
+
+
+NOTE: Se os LUNs de inicialização, incluindo discos de inicialização virtualizados, forem usados com o Oracle RAC, o `misscount` parâmetro pode precisar ser alterado. Para obter mais informações sobre os parâmetros de tempo limite do RAC, link:oracle-app-config-rac.html["Oracle RAC com ONTAP"]consulte .
+
+
+
+== Configuração de dois locais
+
+Uma configuração RAC estendida de dois locais pode fornecer serviços de banco de dados ativo-ativo que podem sobreviver a muitos, mas não todos, cenários de desastre sem interrupções.
+
+
+
+=== Ficheiros de votação RAC
+
+A primeira consideração ao implantar o RAC estendido no MetroCluster deve ser o gerenciamento de quórum. O Oracle RAC tem dois mecanismos para gerenciar quórum: O batimento cardíaco do disco e o batimento cardíaco da rede. O heartbeat do disco monitora o acesso ao armazenamento usando os arquivos de votação. Com uma configuração RAC de local único, um único recurso de votação é suficiente, desde que o sistema de armazenamento subjacente ofereça recursos de HA.
+
+Em versões anteriores do Oracle, os arquivos de votação foram colocados em dispositivos de armazenamento físico, mas nas versões atuais do Oracle os arquivos de votação são armazenados em grupos de discos ASM.
+
+
+NOTE: O Oracle RAC é compatível com NFS. Durante o processo de instalação da grade, um conjunto de processos ASM é criado para apresentar o local NFS usado para arquivos de grade como um grupo de discos ASM. O processo é quase transparente para o usuário final e não requer gerenciamento contínuo do ASM após a conclusão da instalação.
+
+O primeiro requisito em uma configuração de dois locais é garantir que cada local possa sempre acessar mais da metade dos arquivos de votação de forma que garanta um processo de recuperação de desastres sem interrupções. Essa tarefa era simples antes que os arquivos de votação fossem armazenados em grupos de discos ASM, mas hoje os administradores precisam entender os princípios básicos da redundância ASM.
+
+Os grupos de discos ASM têm três opções para redundância `external`, `normal` e `high`. Em outras palavras, sem espelhamento, espelhado e espelhado de 3 vias. Uma opção mais recente chamada `Flex` também está disponível, mas raramente usada. O nível de redundância e o posicionamento dos dispositivos redundantes controlam o que acontece em cenários de falha. Por exemplo:
+
+* Colocar os arquivos de votação em um `diskgroup` recurso com `external` redundância garante despejo de um site se a conetividade entre sites for perdida.
+* Colocar os arquivos de votação em um `diskgroup` com `normal` redundância com apenas um disco ASM por site garante despejo de nó em ambos os sites se a conetividade entre sites for perdida porque nenhum dos sites teria quórum de maioria.
+* Colocar os arquivos de votação em um `diskgroup` `high` com redundância com dois discos em um local e um único disco no outro local permite operações ativas-ativas quando ambos os sites estão operacionais e mutuamente acessíveis. No entanto, se o site de disco único for isolado da rede, então esse site é despejado.
+
+
+
+
+=== Batimento cardíaco da rede RAC
+
+O batimento cardíaco da rede do Oracle RAC monitora a acessibilidade dos nós na interconexão de cluster. Para permanecer no cluster, um nó deve ser capaz de entrar em Contato com mais da metade dos outros nós. Em uma arquitetura de dois locais, esse requisito cria as seguintes opções para a contagem de nós RAC:
+
+* O posicionamento de um número igual de nós por local resulta em despejo em um local caso a conetividade de rede seja perdida.
+* O posicionamento de nós N em um local e nós N-1 no outro local garante que a perda de conetividade entre locais resulta no local com o maior número de nós restantes no quórum de rede e o local com menos nós despejando.
+
+
+Antes do Oracle 12cR2, não era viável controlar qual lado experimentaria um despejo durante a perda do local. Quando cada local tem um número igual de nós, o despejo é controlado pelo nó principal, que em geral é o primeiro nó RAC a inicializar.
+
+O Oracle 12cR2 introduz a capacidade de ponderação de nós. Essa capacidade dá a um administrador mais controle sobre como a Oracle resolve condições de split-brain. Como um exemplo simples, o comando a seguir define a preferência de um nó específico em um RAC:
+
+....
+[root@host-a ~]# /grid/bin/crsctl set server css_critical yes
+CRS-4416: Server attribute 'CSS_CRITICAL' successfully changed. Restart Oracle High Availability Services for new value to take effect.
+....
+Após reiniciar o Oracle High-Availability Services, a configuração será a seguinte:
+
+....
+[root@host-a lib]# /grid/bin/crsctl status server -f | egrep '^NAME|CSS_CRITICAL='
+NAME=host-a
+CSS_CRITICAL=yes
+NAME=host-b
+CSS_CRITICAL=no
+....
+O nó `host-a` agora é designado como o servidor crítico. Se os dois nós RAC estiverem isolados, `host-a` sobrevive e `host-b` é despejado.
+
+
+NOTE: Para obter detalhes completos, consulte o white paper da Oracle "Visão geral técnica do Oracle Clusterware 12c versão 2. "
+
+Para versões do Oracle RAC anteriores ao 12cR2, o nó principal pode ser identificado verificando os logs do CRS da seguinte forma:
+
+....
+[root@host-a ~]# /grid/bin/crsctl status server -f | egrep '^NAME|CSS_CRITICAL='
+NAME=host-a
+CSS_CRITICAL=yes
+NAME=host-b
+CSS_CRITICAL=no
+ [root@host-a ~]# grep -i 'master node' /grid/diag/crs/host-a/crs/trace/crsd.trc
+2017-05-04 04:46:12.261525 :   CRSSE:2130671360: {1:16377:2} Master Change Event; New Master Node ID:1 This Node's ID:1
+2017-05-04 05:01:24.979716 :   CRSSE:2031576832: {1:13237:2} Master Change Event; New Master Node ID:2 This Node's ID:1
+2017-05-04 05:11:22.995707 :   CRSSE:2031576832: {1:13237:221} Master Change Event; New Master Node ID:1 This Node's ID:1
+2017-05-04 05:28:25.797860 :   CRSSE:3336529664: {1:8557:2} Master Change Event; New Master Node ID:2 This Node's ID:1
+....
+Este log indica que o nó principal é `2` e o nó `host-a` tem uma ID de `1`. Esse fato significa que `host-a` não é o nó principal. A identidade do nó principal pode ser confirmada com o comando `olsnodes -n`.
+
+....
+[root@host-a ~]# /grid/bin/olsnodes -n
+host-a  1
+host-b  2
+....
+O nó com uma ID de `2` é `host-b`, que é o nó principal. Em uma configuração com números iguais de nós em cada site, o site com `host-b` é o site que sobrevive se os dois conjuntos perderem a conetividade de rede por qualquer motivo.
+
+É possível que a entrada de log que identifica o nó mestre possa ficar fora do sistema. Nesta situação, os carimbos de data/hora dos backups do Oracle Cluster Registry (OCR) podem ser usados.
+
+....
+[root@host-a ~]#  /grid/bin/ocrconfig -showbackup
+host-b     2017/05/05 05:39:53     /grid/cdata/host-cluster/backup00.ocr     0
+host-b     2017/05/05 01:39:53     /grid/cdata/host-cluster/backup01.ocr     0
+host-b     2017/05/04 21:39:52     /grid/cdata/host-cluster/backup02.ocr     0
+host-a     2017/05/04 02:05:36     /grid/cdata/host-cluster/day.ocr     0
+host-a     2017/04/22 02:05:17     /grid/cdata/host-cluster/week.ocr     0
+....
+Este exemplo mostra que o nó principal é `host-b`. Ele também indica uma mudança no nó mestre de `host-a` para `host-b` algum lugar entre 2:05 e 21:39 em 4 de maio. Este método de identificação do nó principal só é seguro se os logs do CRS também tiverem sido verificados porque é possível que o nó principal tenha sido alterado desde o backup OCR anterior. Se essa alteração tiver ocorrido, ela deverá estar visível nos logs do OCR.
+
+A maioria dos clientes escolhe um único grupo de discos de votação que atende todo o ambiente e um número igual de nós RAC em cada local. O grupo de discos deve ser colocado no site que contém o banco de dados. O resultado é que a perda de conetividade resulta em despejo no local remoto. O site remoto não teria mais quórum, nem teria acesso aos arquivos do banco de dados, mas o site local continua sendo executado como de costume. Quando a conetividade é restaurada, a instância remota pode ser colocada online novamente.
+
+Em caso de desastre, é necessário um switchover para colocar os arquivos do banco de dados e o grupo de discos de votação on-line no local sobrevivente. Se o desastre permitir que o AUSO acione o switchover, o NVFAIL não será acionado porque o cluster é conhecido por estar em sincronia e os recursos de storage ficam online normalmente. AUSO é uma operação muito rápida e deve ser concluída antes que o `disktimeout` período expire.
+
+Como existem apenas dois locais, não é possível usar qualquer tipo de software de quebra de informações externo automatizado, o que significa que o switchover forçado deve ser uma operação manual.
+
+
+
+== Configurações de três locais
+
+Um cluster RAC estendido é muito mais fácil de arquitetar com três locais. Os dois sites que hospedam cada metade do sistema MetroCluster também dão suporte aos workloads de banco de dados, enquanto o terceiro local serve como desempate para o banco de dados e para o sistema MetroCluster. A configuração do Oracle tiebreaker pode ser tão simples quanto colocar um membro do grupo de discos ASM usado para votar em um site 3rd e também pode incluir uma instância operacional no site 3rd para garantir que haja um número ímpar de nós no cluster RAC.
+
+
+NOTE: Consulte a documentação da Oracle sobre "grupo de falha de quórum" para obter informações importantes sobre o uso do NFS em uma configuração RAC estendida. Em resumo, as opções de montagem NFS podem precisar ser modificadas para incluir a opção de software para garantir que a perda de conetividade com os recursos de quórum de hospedagem de sites 3rd não pendure os servidores Oracle primários ou os processos Oracle RAC.

@@ -1,0 +1,30 @@
+= Contagem de LUN
+:allow-uri-read: 
+
+
+Um LUN é um objeto virtualizado no ONTAP que existe em todas as unidades no agregado de hospedagem. Como resultado, o desempenho do LUN não é afetado pelo seu tamanho porque o LUN se baseia no potencial de desempenho total do agregado, independentemente do tamanho escolhido.
+
+Por uma questão de conveniência, os clientes podem querer usar um LUN de um tamanho específico. Por exemplo, se um banco de dados for construído em um grupo de discos LVM ou Oracle ASM composto por dois LUNs de 1TB cada, esse grupo de discos deve ser aumentado em incrementos de 1TB. Pode ser preferível construir o grupo de discos a partir de oito LUNs de 500GB cada, para que o grupo de discos possa ser aumentado em incrementos menores.
+
+A prática de estabelecer um tamanho de LUN padrão universal é desencorajada porque isso pode complicar a capacidade de gerenciamento. Por exemplo, um tamanho de LUN padrão de 100GB pode funcionar bem quando um banco de dados ou datastore está no intervalo de 1TB a 2TB, mas um banco de dados ou datastore de 20TB GB de tamanho exigiria 200 LUNs. Isso significa que os tempos de reinicialização do servidor são mais longos, há mais objetos para gerenciar nas várias UIs e produtos como SnapCenter devem executar a descoberta em muitos objetos. O uso de menos LUNs maiores evita esses problemas.
+
+* A contagem de LUN é mais importante do que o tamanho do LUN.
+* O tamanho do LUN é controlado principalmente pelos requisitos de contagem de LUN.
+* Evite criar mais LUNs do que o necessário.
+
+
+
+
+== Contagem de LUN
+
+Ao contrário do tamanho do LUN, a contagem de LUN afeta o desempenho. O desempenho da aplicação geralmente depende da capacidade de executar e/S paralela pela camada SCSI. Como resultado, dois LUNs oferecem melhor performance do que um único LUN. Usar um LVM como Veritas VxVM, Linux LVM2 ou Oracle ASM é o método mais simples para aumentar o paralelismo.
+
+Os clientes da NetApp geralmente experimentaram o mínimo de benefícios ao aumentar o número de LUNs além de dezasseis, embora o teste de ambientes 100% SSD com e/S aleatória muito pesada tenha demonstrado melhorias adicionais em até 64 LUNs.
+
+[TIP]
+====
+*A NetApp recomenda* o seguinte:
+
+Em geral, quatro a dezesseis LUNs são suficientes para atender às necessidades de e/S de qualquer workload de banco de dados. Menos de quatro LUNs podem criar limitações de desempenho devido às limitações nas implementações de SCSI de host.
+
+====

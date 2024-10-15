@@ -1,0 +1,36 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-storage-san-config-lun-alignment.html 
+keywords: SAN, ASM, LVM 
+summary: Alinhamento LUN com bancos de dados Oracle 
+---
+= Alinhamento LUN para e/S de banco de dados Oracle
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Alinhamento LUN refere-se a otimizar e/S em relação ao layout do sistema de arquivos subjacente.
+
+Diretiva não resolvida no <stdin> - incluir::lun-alignment.adoc[]
+
+Consulte também a discussão sobre o alinhamento do bloco de compressão na link:oracle-ontap-config-efficiency.html["Eficiência"]seção . Qualquer layout que esteja alinhado com os limites do bloco de compressão 8KBD também está alinhado com os limites 4KBD.
+
+
+
+== Avisos de desalinhamento
+
+Diretiva não resolvida no <stdin> - include::database-misalignment-warnings.adoc[]
+
+O alinhamento em ambientes Solaris é mais complicado.  http://support.netapp.com/documentation/productlibrary/index.html?productID=61343["Configuração do host SAN ONTAP"^]Consulte para obter mais informações.
+
+|===
+| Cuidado 
+
+
+| Nos ambientes Solaris x86, tenha cuidado adicional com o alinhamento adequado, pois a maioria das configurações tem várias camadas de partições. Os cortes de partição do Solaris x86 geralmente existem em cima de uma tabela de partição de Registro de inicialização principal padrão. 
+|===

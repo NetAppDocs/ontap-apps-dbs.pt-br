@@ -1,0 +1,22 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-ontap-overview.html 
+keywords: epic,cache,iris 
+summary: Visão geral da Epic na ONTAP 
+---
+= ÉPICO em ONTAP
+:allow-uri-read: 
+
+
+[role="lead"]
+O Epic é mais fácil com o ONTAP.
+
+O ONTAP é uma plataforma de gerenciamento de dados que permite consolidar workloads da Epic enquanto atende a todos os requisitos de performance, proteção de dados e gerenciamento de dados.
+
+Somente na NetApp você padroniza todos os workloads do setor de saúde para SAN, nas e objetos em uma única plataforma de gerenciamento de dados de alta disponibilidade. O ONTAP é a plataforma de software de storage mais implantada no mundo e vem com quase 30 anos de inovação constante. Você pode enfrentar todos os desafios da Epic com ferramentas nativas de gerenciamento de dados da ONTAP e integração de aplicações. Não há necessidade de comprar uma infinidade de ferramentas de terceiros para preencher lacunas na solução.
+
+Muitos fornecedores de storage oferecem storage de bloco tradicional, confiável e rápido. Eles funcionam bem, mas normalmente são implantados em silos para executar um único workload, como produção, relatório, Clarity, VDI, VMware e nas. Cada um desses silos tem hardware diferente e ferramentas de gerenciamento diferentes, e eles geralmente são gerenciados por diferentes grupos DE TI. Esta abordagem tradicional adiciona ao maior problema com a saúde hoje em dia - complexidade.
+
+Com o NetApp, o gerenciamento de dados fica mais fácil e eficiente. Em vez de gastar dinheiro com o problema com silos superdimensionados, a ONTAP usa inovação e tecnologia para permitir um SLA consistente e garantido para cada workload em uma única plataforma em qualquer protocolo com proteção de dados integrada. Esses recursos e ferramentas também se estendem para a nuvem de sua escolha, conforme ilustrado abaixo.
+
+image:epic-consolidation.png["Escala e simplicidade no setor de saúde com o ONTAP"]

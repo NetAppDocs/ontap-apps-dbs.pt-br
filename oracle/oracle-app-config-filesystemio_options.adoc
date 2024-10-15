@@ -1,0 +1,38 @@
+---
+permalink: oracle/oracle-app-config-filesystemio_options.html 
+sidebar: sidebar 
+keywords: oracle, database, ontap, filesystemio_options, filesystemio, async, directio 
+summary: Parâmetros do banco de dados Oracle - filestimio_options 
+---
+= Parâmetros do banco de dados Oracle: Filestimio_options
+:allow-uri-read: 
+
+
+[role="lead"]
+O parâmetro de inicialização do Oracle `filesystemio_options` controla o uso de e/S assíncrona e direta
+
+Ao contrário da crença comum, a e/S assíncrona e direta não são mutuamente exclusivas. A NetApp observou que esse parâmetro é frequentemente mal configurado em ambientes de clientes, e essa configuração incorreta é diretamente responsável por muitos problemas de desempenho.
+
+E/S assíncrona significa que as operações de e/S Oracle podem ser paralelizadas. Antes da disponibilidade de e/S assíncrona em vários sistemas operacionais, os usuários configuraram vários processos dbwriter e alteraram a configuração do processo do servidor. Com e/S assíncrona, o próprio sistema operacional executa e/S em nome do software de banco de dados de maneira altamente eficiente e paralela. Esse processo não coloca os dados em risco, e operações críticas, como o Oracle refazer o log, ainda são executadas de forma síncrona.
+
+A e/S direta ignora o cache do buffer do sistema operacional. E/S em um sistema UNIX normalmente flui através do cache de buffer do sistema operacional. Isso é útil para aplicativos que não mantêm um cache interno, mas o Oracle tem seu próprio cache de buffer dentro do SGA. Em quase todos os casos, é melhor habilitar e/S direta e alocar RAM do servidor para o SGA em vez de confiar no cache de buffer do sistema operacional. O Oracle SGA usa a memória de forma mais eficiente. Além disso, quando a e/S flui pelo buffer do sistema operacional, ela está sujeita a processamento adicional, o que aumenta as latências. As latências aumentadas são especialmente percetíveis com e/S de gravação intensa quando a baixa latência é um requisito essencial.
+
+As opções para `filesystemio_options` são:
+
+* *assíncrono.* A Oracle envia solicitações de e/S para o sistema operacional para processamento. Esse processo permite que a Oracle execute outro trabalho em vez de esperar pela conclusão de e/S e, assim, aumenta a paralelização de e/S.
+* *directio.* A Oracle executa e/S diretamente contra arquivos físicos em vez de rotear e/S pelo cache do sistema operacional do host.
+* *nenhum.* A Oracle usa e/S síncrona e em buffer Nesta configuração, a escolha entre processos de servidor compartilhado e dedicado e o número de dbwriters são mais importantes.
+* * setall.* A Oracle usa e/S assíncrona e direta Em quase todos os casos, o uso de `setall` é ideal.
+
+
+
+NOTE: O `filesystemio_options` parâmetro não tem efeito em ambientes DNFS e ASM. O uso de DNFS ou ASM resulta automaticamente no uso de e/S assíncrona e direta
+
+Alguns clientes encontraram problemas assíncronos de I/o no passado, especialmente com versões anteriores do Red Hat Enterprise Linux 4 (RHEL4). Alguns conselhos desatualizados na internet ainda sugerem evitar IO assíncrono por causa de informações desatualizadas. E/S assíncrona é estável em todos os sistemas operacionais atuais. Não há razão para desativá-lo, ausente um bug conhecido com o sistema operacional.
+
+Se um banco de dados tiver usado e/S em buffer, um switch para direcionar e/S também pode garantir uma alteração no tamanho do SGA. A desativação da e/S armazenada em buffer elimina o benefício de desempenho que o cache do sistema operacional do host fornece para o banco de dados. Adicionar RAM de volta ao SGA repara este problema. O resultado líquido deve ser uma melhoria no desempenho de e/S.
+
+Embora seja quase sempre melhor usar RAM para o Oracle SGA do que para cache de buffer do SO, pode ser impossível determinar o melhor valor. Por exemplo, pode ser preferível usar e/S em buffer com tamanhos SGA muito pequenos em um servidor de banco de dados com muitas instâncias Oracle ativas intermitentemente. Este arranjo permite o uso flexível da RAM livre restante no sistema operacional por todas as instâncias de banco de dados em execução. Esta é uma situação altamente incomum, mas tem sido observada em alguns sites de clientes.
+
+
+TIP: *A NetApp recomenda* a configuração `filesystemio_options` para `setall`, mas esteja ciente de que, em algumas circunstâncias, a perda do cache de buffer do host pode exigir um aumento no SGA Oracle.

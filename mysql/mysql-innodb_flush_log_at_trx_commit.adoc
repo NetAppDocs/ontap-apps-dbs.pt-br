@@ -1,0 +1,28 @@
+---
+sidebar: sidebar 
+permalink: mysql/mysql-innodb_flush_log_at_trx_commit.html 
+keywords: MySQL,MariaDB,innodb_flush_log_at_trx_commi 
+summary: MySQL e innodb_flush_log_at_trx_commi 
+---
+= innodb_flush_log_at_trx_commit
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Quando há uma alteração nos dados, a alteração não é imediatamente gravada no armazenamento.
+
+Em vez disso, os dados são gravados em um buffer de log, que é uma parte da memória que o InnoDB atribui a alterações de buffer que são registradas no arquivo de log. O InnoDB limpa o buffer para o arquivo de log quando uma transação é confirmada, quando o buffer fica cheio, ou uma vez por segundo, qualquer evento acontece primeiro. A variável de configuração que controla este processo é innodb_flush_log_at_trx_commit. As opções de valor incluem:
+
+* Quando você define `innodb_flush_log_trx_at_commit=0`, o InnoDB grava os dados modificados (no pool de buffers do InnoDB) no arquivo de log (ib_logfile) e limpa o arquivo de log (gravação no armazenamento) a cada segundo. No entanto, não faz nada quando a transação é cometida. Se houver uma falha de energia ou falha do sistema, nenhum dos dados não lavados é recuperável porque não é gravado no arquivo de log ou nas unidades.
+* Quando você define `innodb_flush_log_trx_commit=1`o , o InnoDB grava o buffer de log no log de transações e passa para o armazenamento durável para cada transação. Por exemplo, para todos os commits de transação, o InnoDB grava no log e depois grava no armazenamento. O armazenamento mais lento afeta negativamente o desempenho; por exemplo, o número de transações InnoDB por segundo é reduzido.
+* Quando você define `innodb_flush_log_trx_commit=2`, o InnoDB grava o buffer de log no arquivo de log em cada commit; no entanto, ele não grava dados no armazenamento. O InnoDB limpa os dados uma vez a cada segundo. Mesmo que haja uma falha de energia ou falha do sistema, os dados da opção 2 estão disponíveis no arquivo de log e são recuperáveis.
+
+
+Se o desempenho for o objetivo principal, defina o valor como 2. Como o InnoDB grava nas unidades uma vez por segundo, não para cada commit de transação, o desempenho melhora drasticamente. Se ocorrer uma falha de energia ou falha, os dados podem ser recuperados do log de transações.
+
+Se a segurança de dados for o objetivo principal, defina o valor como 1 para que, para cada commit de transação, o InnoDB seja enviado para as unidades. No entanto, o desempenho pode ser afetado.
+
+
+TIP: *NetApp recomenda* defina o valor innodb_flush_log_trx_commit como 2 para um melhor desempenho.

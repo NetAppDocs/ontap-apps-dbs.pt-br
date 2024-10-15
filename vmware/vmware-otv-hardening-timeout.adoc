@@ -1,0 +1,21 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-otv-hardening-timeout.html 
+keywords: VMware, Data protection, security, OTV, Hardening, ONTAP Tools 
+summary: Guia de fortalecimento da segurança para ferramentas do ONTAP para VMware vSphere. 
+---
+= Tempo limite de inatividade
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Para impedir o acesso não autorizado, é configurado um tempo limite de inatividade, que faz logout automaticamente de usuários inativos por um determinado período durante o uso de recursos autorizados. Isso garante que somente usuários autorizados possam acessar os recursos e ajuda a manter a segurança.
+
+* Por padrão, as sessões do vSphere Client são encerradas após 120 minutos de tempo ocioso, exigindo que o usuário faça login novamente para continuar usando o cliente. Você pode alterar o valor do tempo limite editando o arquivo webclient.properties.você pode configurar o tempo limite do vSphere Client https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.vcenterhost.doc/GUID-975412DE-CDCB-49A1-8E2A-0965325D33A5.html["Configure o valor de tempo limite do vSphere Client"]
+* As ferramentas do ONTAP têm um tempo de logout de sessão da web-cli de 30 minutos.
+

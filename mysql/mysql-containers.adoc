@@ -1,0 +1,18 @@
+---
+sidebar: sidebar 
+permalink: mysql/mysql-containers.html 
+keywords: MySQL,MariaDB,containers,trident 
+summary: Conteinerização MySQL 
+---
+= Conteinerzation MySQL
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Conteinerização de bancos de dados MySQL está se tornando mais prevalente.
+
+O gerenciamento de contentores de baixo nível é quase sempre realizado através do Docker. As plataformas de gerenciamento de contêineres, como OpenShift e Kubernetes, simplificam ainda mais o gerenciamento de ambientes de contêineres grandes. Os benefícios da Conteinerização incluem custos mais baixos, porque não há necessidade de licenciar um hypervisor. Além disso, os containers permitem que vários bancos de dados sejam executados isolados uns dos outros enquanto compartilham o mesmo kernel subjacente e sistema operacional. Os contêineres podem ser provisionados em microssegundos.
+
+A NetApp oferece o Astra Trident para fornecer funcionalidades avançadas de gerenciamento de storage. Por exemplo, o Astra Trident permite que um contêiner criado no Kubernetes provisione automaticamente seu storage na camada apropriada, aplique políticas de exportação, defina políticas de snapshot e até clone um contêiner para outro. Para obter informações adicionais, consulte o link:https://docs.netapp.com/us-en/trident/index.html["Documentação do Astra Trident"].

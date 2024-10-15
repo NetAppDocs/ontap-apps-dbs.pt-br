@@ -1,0 +1,70 @@
+---
+sidebar: sidebar 
+permalink: microsoft/win_deploy_hyperv_replica_ce.html 
+keywords: Windows,Hyper-V,VHDX,VM,Virtual 
+summary: Saiba como implantar e configurar a réplica do Hyper-V com o Cluster de failover do Windows Server. 
+---
+= Implantar a réplica do Hyper-V em um ambiente em cluster
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Saiba como implantar e configurar a réplica do Hyper-V com o Cluster de failover do Windows Server.
+
+
+
+== Pré-requisitos
+
+* Você precisa ter clusters do Hyper-V localizados no mesmo local ou em locais geográficos separados, servindo como clusters primários e de réplica. Reveja link:win_deploy_hyperv.html["Implantar o Hyper-V Cluster"] para obter mais detalhes.
+* Se forem usados sites separados, o firewall em cada local deve ser configurado para permitir a comunicação entre os clusters primário e de réplica.
+* O cluster de réplica deve ter espaço suficiente para armazenar as cargas de trabalho replicadas.
+
+
+
+
+== Implantação
+
+. Ative regras de firewall em todos os nós de um cluster. Execute o cmdlet do PowerShell a seguir com o admin Privileges em todos os nós nos clusters primário e de réplica.
++
+....
+# For Kerberos authentication
+get-clusternode | ForEach-Object \{Invoke-command -computername $_.name -scriptblock \{Enable-Netfirewallrule -displayname "Hyper-V Replica HTTP Listener (TCP-In)"}}
+....
++
+....
+# For Certificate authentication
+get-clusternode | ForEach-Object \{Invoke-command -computername $_.name -scriptblock \{Enable-Netfirewallrule -displayname "Hyper-V Replica HTTPS Listener (TCP-In)"}}
+....
+. Configure o cluster de réplica.
++
+.. Configure o corretor de réplica Hyper-V com um nome NetBIOS e endereço IP para usar como ponto de conexão para o cluster que é usado como o cluster de réplica.
++
+... Abra o Gerenciador de Cluster de failover.
+... Expanda o cluster, clique em funções e clique no painel Configurar função a partir de ações.
+... Selecione Hyper-V Replica Broker na página Selecionar função.
+... Forneça o nome NetBIOS e o endereço IP a serem usados como ponto de conexão para o cluster (ponto de acesso do cliente).
+... Este processo cria uma função de corretor de réplica Hyper-V. Verifique se ele está online com sucesso.
+
+
+.. Configure as definições de replicação.
++
+... Clique com o botão direito do Mouse no corretor de réplica criado nas etapas anteriores e clique em Configurações de replicação.
+... Selecione Ativar este cluster como um servidor de réplica.
+... Na seção Autenticação e portas, selecione o método e a porta de autenticação.
+... Na seção autorização e armazenamento, selecione os servidores autorizados a replicar VMs para este cluster. Além disso, especifique o local padrão onde as VMs replicadas são armazenadas.
+
+
+
+
+
+
+
+
+== Replicação
+
+A replicação é semelhante ao processo descrito na link:win_deploy_hyperv_replica_oce["Réplica fora de um ambiente em cluster"]seção .

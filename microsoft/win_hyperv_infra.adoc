@@ -1,0 +1,303 @@
+---
+sidebar: sidebar 
+permalink: microsoft/win_hyperv_infra.html 
+keywords: Windows,Hyper-V,VHDX,VM,Virtual 
+summary: Infraestrutura de storage Hyper-V com ONTAP 
+---
+= Infraestrutura de storage Hyper-V no NetApp
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Uma infraestrutura de storage Hyper-V pode ser hospedada em sistemas de storage ONTAP. O armazenamento para o Hyper-V para armazenar os arquivos da VM e seus discos pode ser fornecido usando LUNs NetApp ou compartilhamentos NetApp CIFS, como mostrado na figura a seguir.
+
+image:win_image5.png["Infra-estrutura de armazenamento Hyper-V em NetApp, largura de 624 mm, altura de 338 mm"]
+
+
+
+== Armazenamento Hyper-V em LUNs NetApp
+
+* Provisione um LUN NetApp na máquina do servidor Hyper-V. Para obter mais informações, consulte a seção "link:win_san.html["Provisionamento em ambientes SAN"]."
+* Abra o Gerenciador do Hyper-V na seção Ferramentas do Gerenciador de servidores.
+* Selecione o servidor Hyper-V e clique em Configurações Hyper-V.
+* Especifique a pasta padrão para armazenar a VM e seu disco como LUN. Isso define o caminho padrão como LUN para o armazenamento Hyper-V. Se você quiser especificar o caminho explicitamente para uma VM, então você pode fazê-lo durante a criação da VM.
+
+
+
+
+== Armazenamento Hyper-V no NetApp CIFS
+
+Antes de iniciar as etapas listadas nesta seção, revise a seção "link:win_smb.html["Provisionamento em ambientes SMB"]." Para configurar o armazenamento Hyper-V no compartilhamento CIFS do NetApp, execute as seguintes etapas:
+
+. Abra o Gerenciador do Hyper-V na seção Ferramentas do Gerenciador de servidores.
+. Selecione o servidor Hyper-V e clique em Configurações Hyper-V.
+. Especifique a pasta padrão para armazenar a VM e seu disco como o compartilhamento CIFS. Isso define o caminho padrão como o compartilhamento CIFS para o armazenamento Hyper-V. Se você quiser especificar o caminho explicitamente para uma VM, então você pode fazê-lo durante a criação da VM.
+
+
+Cada VM no Hyper-V pode, por sua vez, ser fornecida com os LUNs e compartilhamentos CIFS do NetApp que foram fornecidos ao host físico. Este procedimento é o mesmo que para qualquer host físico. Os métodos a seguir podem ser usados para provisionar storage a uma VM:
+
+* Adicionando um LUN de storage usando o iniciador FC na VM
+* Adicionar um LUN de armazenamento utilizando o iniciador iSCSI na VM
+* Adicionando um disco físico de passagem a uma VM
+* Adicionando VHD/VHDX a uma VM do host
+
+
+
+
+=== Práticas recomendadas
+
+* Quando uma VM e seus dados são armazenados no storage NetApp, a NetApp recomenda a execução da deduplicação do NetApp no nível do volume em intervalos regulares. Essa prática resulta em economia significativa de espaço quando VMs idênticas são hospedadas em um compartilhamento CSV ou SMB. A deduplicação é executada no controlador de storage e não afeta o sistema host e o desempenho da VM.
+* Ao usar iSCSI LUNs para Hyper-V, certifique-se de ativar `iSCSI Service (TCP-In) for Inbound` e `iSCSI Service (TCP-Out) for Outbound` nas configurações de firewall no host Hyper-V. Isso permite que o tráfego iSCSI passe de e para o host Hyper-V e para o controlador NetApp.
+* A NetApp recomenda desmarcar a opção permitir que o sistema operacional de Gerenciamento compartilhe este adaptador de rede para o switch virtual Hyper-V. Isso cria uma rede dedicada para as VMs.
+
+
+
+
+=== Coisas para se lembrar
+
+* O provisionamento de uma VM usando Fibre Channel virtual requer um N_Port ID Virtualizationâ FC HBA habilitado. Suporte para um máximo de quatro portas FC.
+* Se o sistema host for configurado com várias portas FC e apresentado à VM, o MPIO deverá ser instalado na VM para habilitar o multipathing.
+* Os discos pass-through não podem ser provisionados para o host se o MPIO estiver sendo usado nesse host, porque os discos pass-through não suportam MPIO.
+* O disco usado para arquivos VHD/VHDx deve usar a formatação 64K para alocação.
+
+
+
+
+=== Leitura adicional
+
+* Para obter informações sobre HBAs FC, consulte http://mysupport.netapp.com/matrix/["Matriz de interoperabilidade do NetApp"].
+* Para obter mais informações sobre o Fibre Channel virtual, consulte a página da Microsoft https://technet.microsoft.com/en-us/library/hh831413.aspx["Visão geral do Hyper-V Virtual Fibre Channel"].
+
+
+
+
+== Transferência de dados descarregada
+
+O Microsoft ODX, também conhecido como descarga de cópia, permite transferências diretas de dados dentro de um dispositivo de armazenamento ou entre dispositivos de armazenamento compatíveis sem transferir os dados através do computador host. O ONTAP oferece suporte ao recurso ODX para protocolos CIFS e SAN. O ODX pode potencialmente melhorar o desempenho se as cópias estiverem dentro do mesmo volume, reduzir a utilização da CPU e da memória no cliente e reduzir a utilização da largura de banda de e/S.
+
+Com o ODX, é mais rápido e eficiente copiar arquivos dentro dos compartilhamentos SMB, dentro dos LUNs e entre os compartilhamentos SMB e LUNs se estiver no mesmo volume. Essa abordagem é mais útil em um cenário para o qual várias cópias da imagem dourada de um SO (VHD/VHDX) são necessárias dentro do mesmo volume. Várias cópias da mesma imagem dourada podem ser feitas em menos tempo se as cópias estiverem dentro do mesmo volume. O ODX também é aplicado na migração ao vivo de armazenamento Hyper-V para a movimentação do armazenamento de VM.
+
+Se a cópia estiver em volumes, talvez não haja ganhos significativos de desempenho em comparação com as cópias baseadas em host.
+
+Para ativar o recurso ODX no CIFS, execute os seguintes comandos CLI no controlador de armazenamento NetApp:
+
+. Ative o ODX para CIFS. defina o nível de privilégio para o grupo de diagnóstico::> definir - diagnóstico de privilégios
++
+....
+#enable the odx feature
+cluster::> vserver cifs options modify -vserver <vserver_name> -copy-offload-enabled true
+....
++
+....
+#return to admin privilege level
+cluster::> set privilege admin
+....
+. Para ativar o recurso ODX na SAN, execute os seguintes comandos CLI no controlador de armazenamento NetApp: N defina o nível de privilégio para o cluster de diagnóstico::> defina o diagnóstico de privilégio
++
+....
+#enable the odx feature
+cluster::> copy-offload modify -vserver <vserver_name> -scsi enabled
+....
++
+....
+#return to admin privilege level
+cluster::> set privilege admin
+....
+
+
+
+
+=== Coisas para se lembrar
+
+* Para CIFS, o ODX só está disponível quando o cliente e o servidor de armazenamento suportam SMB 3,0 e o recurso ODX.
+* Para ambientes SAN, o ODX só está disponível quando o cliente e o servidor de armazenamento suportam o recurso ODX.
+
+
+
+
+=== Leitura adicional
+
+Para obter informações sobre o ODX, https://docs.netapp.com/us-en/ontap/smb-admin/improve-microsoft-remote-copy-performance-concept.html["Melhorando o desempenho da cópia remota da Microsoft"] consulte e https://docs.netapp.com/us-en/ontap/san-admin/microsoft-offloaded-data-transfer-odx-concept.html["Transferências de dados descarregadas da Microsoft"] .
+
+
+
+== Cluster Hyper-V: Alta disponibilidade e escalabilidade para máquinas virtuais
+
+Os clusters de failover fornecem alta disponibilidade e escalabilidade para servidores Hyper-V. Um cluster de failover é um grupo de servidores Hyper-V independentes que trabalham em conjunto para aumentar a disponibilidade e a escalabilidade das VMs.
+
+Os servidores em cluster do Hyper-V (chamados nós) são conetados pela rede física e pelo software de cluster. Esses nós usam o storage compartilhado para armazenar os arquivos de VM, que incluem configuração, arquivos de disco rígido virtual (VHD) e cópias Snapshot. O storage compartilhado pode ser um compartilhamento NetApp SMB/CIFS ou um CSV em cima de um LUN NetApp, como mostrado abaixo. Esse storage compartilhado fornece um namespace consistente e distribuído que pode ser acessado simultaneamente por todos os nós do cluster. Portanto, se um nó falhar no cluster, o outro nó fornece serviço por um processo chamado failover. Os clusters de failover podem ser gerenciados usando o snap-in Gerenciador de Cluster de failover e os cmdlets do Windows PowerShell de clustering de failover.
+
+
+
+=== Volumes partilhados de cluster
+
+Os CSVs permitem que vários nós em um cluster de failover tenham simultaneamente acesso de leitura/gravação ao mesmo LUN NetApp que é provisionado como um volume NTFS ou refs. Com os CSVs, as funções em cluster podem fazer failover rapidamente de um nó para outro sem exigir uma alteração na propriedade da unidade ou desmontar e montar novamente um volume. Os CSVs também simplificam o gerenciamento de um número potencialmente grande de LUNs em um cluster de failover. Os CSVs fornecem um sistema de arquivos em cluster de uso geral que está em camadas acima de NTFS ou refs.
+
+image:win_image6.png["Cluster de failover Hyper-V e NetApp, largura de 624 mm, altura de 271 mm"]
+
+
+
+=== Práticas recomendadas
+
+* A NetApp recomenda desativar a comunicação do cluster na rede iSCSI para impedir que a comunicação interna do cluster e o tráfego CSV fluam na mesma rede.
+* A NetApp recomenda ter caminhos de rede redundantes (vários switches) para fornecer resiliência e QoS.
+
+
+
+
+=== Coisas para se lembrar
+
+* Os discos usados para CSV devem ser particionados com NTFS ou refs. Os discos formatados com FAT ou FAT32 não podem ser usados para um CSV.
+* Os discos usados para CSVs devem usar a formatação 64K para alocação.
+
+
+
+
+=== Leitura adicional
+
+Para obter informações sobre como implantar um cluster Hyper-V, consulte o Apêndice B: link:win_deploy_hyperv.html["Implantar o Hyper-V Cluster"].
+
+
+
+== Migração do Hyper-V Live: Migração de VMs
+
+Às vezes, é necessário, durante a vida útil das VMs, movê-las para um host diferente no cluster do Windows. Isso pode ser necessário se o host estiver ficando sem recursos do sistema ou se o host for necessário para reinicializar por motivos de manutenção. Da mesma forma, pode ser necessário mover uma VM para um compartilhamento de LUN ou SMB diferente. Isso pode ser necessário se o LUN ou compartilhamento atual estiver ficando sem espaço ou produzindo desempenho inferior ao esperado. A migração em tempo real do Hyper-V move VMs em execução de um servidor Hyper-V físico para outro sem efeito na disponibilidade da VM para os usuários. Você pode migrar VMs em tempo real entre servidores Hyper-V que fazem parte de um cluster de failover ou entre servidores Hyper-V independentes que não fazem parte de nenhum cluster.
+
+
+
+=== Migração ao vivo em um ambiente em cluster
+
+As VMs podem ser movidas de forma otimizada entre os nós de um cluster. A migração de VM é instantânea porque todos os nós do cluster compartilham o mesmo storage e têm acesso à VM e ao disco. A figura a seguir mostra a migração ao vivo em um ambiente em cluster.
+
+image:win_image7.png["Migração ao vivo em um ambiente em cluster, largura de 580 mm, altura de 295 mm"]
+
+
+
+=== Prática recomendada
+
+* Tenha uma porta dedicada para o tráfego de migração em tempo real.
+* Tenha uma rede de migração ao vivo de host dedicada para evitar problemas relacionados à rede durante a migração.
+
+
+
+
+=== Leitura adicional
+
+Para obter informações sobre como implantar a migração ao vivo em um ambiente em cluster, link:win_deploy_hyperv_lmce.html["Apêndice C: Implantar a migração do Hyper-V Live em um ambiente em cluster"]consulte .
+
+
+
+=== Migração ao vivo fora de um ambiente em cluster
+
+É possível migrar uma VM em tempo real entre dois servidores Hyper-V independentes e não agrupados. Esse processo pode usar migração ao vivo compartilhada ou compartilhada.
+
+* Na migração ao vivo compartilhada, a VM é armazenada em um compartilhamento SMB. Portanto, quando você migra uma VM ativa, o armazenamento da VM permanece no compartilhamento central de SMB para acesso instantâneo pelo outro nó, como mostrado abaixo.
+
+
+image:win_image8.png["Migração ao vivo compartilhada em um ambiente não agrupado, largura de 331 m, altura de 271 m."]
+
+* Na migração compartilhada nada ao vivo, cada servidor Hyper-V tem seu próprio armazenamento local (pode ser um compartilhamento SMB, um LUN ou DAS), e o armazenamento da VM é local para seu servidor Hyper-V. Quando uma VM é migrada em tempo real, o armazenamento da VM é espelhado para o servidor de destino através da rede cliente e, em seguida, a VM é migrada. A VM armazenada em DAS, um LUN ou um compartilhamento SMB/CIFS pode ser movida para um compartilhamento SMB/CIFS no outro servidor Hyper-V, como mostrado na figura a seguir. Ele também pode ser movido para um LUN, como mostrado na segunda figura.
+
+
+image:win_image9.png["Não compartilhou nada de migração ao vivo em um ambiente não agrupado para compartilhamentos SMB, largura de 624 mm, altura de 384 mm"]
+
+image:win_image10.png["Não compartilhou nada de migração ao vivo em um ambiente não agrupado para LUNs, largura de 624 mm, altura de 384 mm"]
+
+
+
+=== Leitura adicional
+
+Para obter informações sobre como implantar a migração ao vivo fora de um ambiente em cluster, link:win_deploy_hyperv_lmoce.html["Apêndice D: Implantar a migração do Hyper-V Live fora de um ambiente em cluster"]consulte .
+
+
+
+=== Migração ao vivo do Hyper-V Storage
+
+Durante a vida útil de uma VM, talvez seja necessário mover o armazenamento da VM (VHD/VHDX) para um compartilhamento de LUN ou SMB diferente. Isso pode ser necessário se o LUN ou compartilhamento atual estiver ficando sem espaço ou produzindo desempenho inferior ao esperado.
+
+O LUN ou o compartilhamento que atualmente hospeda a VM podem ficar sem espaço, ser reutilizados ou fornecer desempenho reduzido. Nessas circunstâncias, a VM pode ser movida sem tempo de inatividade para outro LUN ou compartilhar em um volume, agregado ou cluster diferente. Esse processo será mais rápido se o sistema de storage tiver funcionalidades de descarga de cópia. Os sistemas de storage NetApp são habilitados por padrão para descarga de cópia em ambientes CIFS e SAN.
+
+O recurso ODX executa cópias de arquivo completo ou subarquivo entre dois diretórios residentes em servidores remotos. Uma cópia é criada copiando dados entre os servidores (ou o mesmo servidor se ambos os arquivos de origem e de destino estiverem no mesmo servidor). A cópia é criada sem que o cliente leia os dados da origem ou escreva para o destino. Esse processo reduz o uso de processador e memória para o cliente ou servidor e minimiza a largura de banda de e/S de rede. A cópia é mais rápida se estiver dentro do mesmo volume. Se a cópia estiver em volumes, talvez não haja ganhos significativos de desempenho em comparação com as cópias baseadas em host. Antes de prosseguir com uma operação de cópia no host, confirme se as configurações de descarga de cópia estão configuradas no sistema de storage.
+
+Quando a migração ativa do armazenamento de VM é iniciada a partir de um host, a origem e o destino são identificados e a atividade de cópia é descarregada para o sistema de storage. Como a atividade é realizada pelo sistema de armazenamento, há um uso insignificante da CPU, memória ou rede do host.
+
+Os controladores de armazenamento NetApp suportam os seguintes cenários diferentes de ODX:
+
+* *IntraSVM.* Os dados pertencem ao mesmo SVM:
+* *Intradvolume, intranode.* Os arquivos de origem e destino ou LUNs residem no mesmo volume. A cópia é realizada com a tecnologia de arquivos FlexClone, que fornece benefícios adicionais de desempenho de cópia remota.
+* *Intervolume, intranode.* Os arquivos de origem e destino ou LUNs estão em volumes diferentes que estão no mesmo nó.
+* *Intervolume, internós.* Os arquivos de origem e destino ou LUNs estão em volumes diferentes localizados em nós diferentes.
+* *InterSVM.* Os dados pertencem a diferentes SVMs.
+* *Intervolume, intranode.* Os arquivos de origem e destino ou LUNs estão em volumes diferentes que estão no mesmo nó.
+* *Intervolume, internós.* Os arquivos de origem e destino ou LUNs estão em volumes diferentes que estão em nós diferentes.
+* *Intercluster.* A partir do ONTAP 9.0, o ODX também é compatível com transferências LUN entre clusters em ambientes SAN. O ODX é suportado apenas para protocolos SAN, não para SMB.
+
+
+Após a conclusão da migração, as políticas de backup e replicação devem ser reconfiguradas para refletir o novo volume que contém as VMs. Quaisquer backups anteriores que foram feitos não podem ser usados.
+
+O armazenamento de VM (VHD/VHDX) pode ser migrado entre os seguintes tipos de armazenamento:
+
+* DAS e o compartilhamento SMB
+* DAS e LUN
+* Um compartilhamento SMB e um LUN
+* Entre LUNs
+* Entre compartilhamentos SMB
+
+
+image:win_image11.png["Migração ativa de armazenamento Hyper-V, largura de 339 mm, altura de 352 mm"]
+
+
+
+=== Leitura adicional
+
+Para obter informações sobre como implantar a migração ao vivo de storage, link:win_deploy_hyperv_slm.html["Apêndice e: Implantar a migração ao vivo do Hyper-V Storage"]consulte .
+
+
+
+== Réplica do Hyper-V: Recuperação de desastres para máquinas virtuais
+
+A réplica do Hyper-V replica as VMs do Hyper-V de um local primário para VMs de réplica em um local secundário, fornecendo, de forma assíncrona, recuperação de desastres para as VMs. O servidor Hyper-V no site principal que hospeda as VMs é conhecido como servidor primário; o servidor Hyper-V no site secundário que recebe VMs replicadas é conhecido como servidor de réplica. Um cenário de exemplo de réplica do Hyper-V é mostrado na figura a seguir. Você pode usar a réplica do Hyper-V para VMs entre servidores Hyper-V que fazem parte de um cluster de failover ou entre servidores Hyper-V independentes que não fazem parte de nenhum cluster.
+
+image:win_image12.png["Hyper-V réplica, largura de 624 mm, altura de 201 mm"]
+
+
+
+=== Replicação
+
+Depois que a réplica do Hyper-V estiver habilitada para uma VM no servidor primário, a replicação inicial cria uma VM idêntica no servidor de réplica. Após a replicação inicial, a réplica do Hyper-V mantém um arquivo de log para os VHDs da VM. O ficheiro de registo é reproduzido na ordem inversa à réplica VHD de acordo com a frequência de replicação. Esse log e o uso da ordem inversa garantem que as alterações mais recentes sejam armazenadas e replicadas assincronamente. Se a replicação não ocorrer de acordo com a frequência esperada, é emitido um alerta.
+
+
+
+=== Replicação estendida
+
+A réplica do Hyper-V suporta replicação estendida na qual um servidor de réplica secundário pode ser configurado para recuperação de desastres. Um servidor de réplica secundário pode ser configurado para que o servidor de réplica receba as alterações nas VMs de réplica. Em um cenário de replicação estendida, as alterações nas VMs primárias no servidor primário são replicadas para o servidor de réplica. Em seguida, as alterações são replicadas para o servidor de réplica estendido. As VMs podem ser falhadas para o servidor de réplica estendido somente quando os servidores principal e de réplica estiverem inativos.
+
+
+
+=== Failover
+
+O failover não é automático; o processo deve ser acionado manualmente. Existem três tipos de failover:
+
+* *Failover de teste.* Esse tipo é usado para verificar se uma VM de réplica pode ser iniciada com sucesso no servidor de réplica e é iniciada na VM de réplica. Esse processo cria uma VM de teste duplicada durante o failover e não afeta a replicação regular da produção.
+* *Failover planejado.* Esse tipo é usado para fazer failover de VMs durante a inatividade planejada ou as interrupções esperadas. Esse processo é iniciado na VM principal, que deve ser desligado no servidor principal antes de um failover planejado ser executado. Após o failover da máquina, a réplica Hyper-V inicia a réplica VM no servidor de réplica.
+* *Failover não planejado.* Este tipo é utilizado quando ocorrem interrupções inesperadas. Esse processo é iniciado na VM de réplica e deve ser usado somente se a máquina principal falhar.
+
+
+
+
+=== Recuperação
+
+Ao configurar a replicação para uma VM, você pode especificar o número de pontos de recuperação. Os pontos de recuperação representam pontos no tempo a partir dos quais os dados podem ser recuperados de uma máquina replicada.
+
+
+
+=== Leitura adicional
+
+* Para obter informações sobre como implantar a réplica do Hyper-V fora de um ambiente em cluster, consulte a seção "link:win_deploy_hyperv_replica_oce.html["Implantar a réplica do Hyper-V fora de um ambiente em cluster"]."
+* Para obter informações sobre como implantar a réplica do Hyper-V em um ambiente em cluster, consulte a seção "link:win_deploy_hyperv_replica_ce.html["Implantar a réplica do Hyper-V em um ambiente em cluster"]."
+

@@ -1,0 +1,39 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-vsphere-cloning.html 
+keywords: Data protection, Space reclamation, VM and datastore cloning, Storage efficiency, thin provisioning, QoS, SIOC, Storage Distributed Resource Scheduler, DRS, Active IQ Unified Manager, Encryption 
+summary: O SnapCenter permite criar políticas de backup que podem ser aplicadas a vários trabalhos. Essas políticas podem definir agendamento, retenção, replicação e outros recursos. Elas continuam permitindo a seleção opcional de snapshots consistentes com VM, o que aproveita a capacidade do hipervisor de silenciar a I/o antes de tirar um snapshot da VMware. 
+---
+= Clonagem de VM e datastore
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Clonar um objeto de storage permite criar rapidamente cópias para uso adicional, como provisionamento de VMs adicionais, operações de backup/recuperação etc.
+
+No vSphere, você pode clonar uma VM, um disco virtual, um vVol ou um datastore. Depois de clonado, o objeto pode ser ainda mais personalizado, muitas vezes por meio de um processo automatizado. O vSphere é compatível com clones de cópia completa, bem como clones vinculados, onde ele controla as alterações separadamente do objeto original.
+
+Os clones vinculados são ótimos para economizar espaço, mas aumentam a quantidade de e/S que o vSphere lida com a VM, afetando a performance dessa VM e, talvez, o host geral. É por isso que os clientes da NetApp costumam usar clones baseados em sistema de storage para obter o melhor dos dois mundos: Uso eficiente do storage e maior performance.
+
+A figura a seguir mostra a clonagem de ONTAP.
+
+image:vsphere_ontap_image5.png["Clonagem de ONTAP"]
+
+A clonagem pode ser descarregada para sistemas que executam o ONTAP por meio de vários mecanismos, normalmente no nível de VM, vVol ou datastore. Estes incluem o seguinte:
+
+* VVols usando o fornecedor de APIs do NetApp vSphere para reconhecimento de armazenamento (VASA). Os clones do ONTAP são usados para dar suporte aos snapshots do VVol gerenciados pelo vCenter que são eficientes em termos de espaço com efeito de e/S mínimo para criá-los e excluí-los. As VMs também podem ser clonadas usando o vCenter, e elas também são descarregadas para o ONTAP, seja em um único datastore/volume ou entre datastores/volumes.
+* Clonagem e migração do vSphere usando as APIs do vSphere – Array Integration (VAAI). As operações de clonagem de VM podem ser descarregadas para o ONTAP em ambientes SAN e nas (a NetApp fornece um plug-in ESXi para habilitar o VAAI para NFS). O vSphere apenas descarrega as operações em VMs frias (desativadas) em um datastore nas, enquanto as operações em VMs quentes (clonagem e armazenamento vMotion) também são descarregadas para SAN. O ONTAP usa a abordagem mais eficiente com base nas licenças de produto de origem, destino e instalação. Esse recurso também é usado pelo VMware Horizon View.
+* SRA (usado com o VMware Site Recovery Manager). Aqui, os clones são usados para testar a recuperação da réplica de DR sem interrupções.
+* Backup e recuperação usando ferramentas do NetApp, como o SnapCenter. Os clones de VM são usados para verificar as operações de backup, bem como para montar um backup de VM para que arquivos individuais possam ser copiados.
+
+
+A clonagem descarregada do ONTAP pode ser invocada por ferramentas VMware, NetApp e de terceiros. Clones que são descarregados para o ONTAP têm várias vantagens. Na maioria dos casos, elas usam espaço eficiente, precisando de storage somente para alterações no objeto. Não há efeito de desempenho adicional para lê-las e gravá-las e, em alguns casos, o desempenho é aprimorado ao compartilhar blocos em caches de alta velocidade. Eles também descarregam ciclos de CPU e e/S de rede do servidor ESXi. A descarga de cópia em um armazenamento de dados tradicional usando um FlexVol volume pode ser rápida e eficiente com a licença FlexClone, mas as cópias entre volumes FlexVol podem ser mais lentas. Se você mantiver os modelos de VM como uma fonte de clones, considere colocá-los no volume do datastore (use pastas ou bibliotecas de conteúdo para organizá-los) para clones rápidos e com uso eficiente de espaço.
+
+Você também pode clonar um volume ou LUN diretamente no ONTAP para clonar um armazenamento de dados. Com os datastores NFS, a tecnologia FlexClone pode clonar um volume inteiro, e o clone pode ser exportado do ONTAP e montado pelo ESXi como outro datastore. Para armazenamentos de dados VMFS, o ONTAP pode clonar um LUN em um volume ou volume inteiro, incluindo um ou mais LUNs nele. Um LUN que contém um VMFS deve ser mapeado para um grupo de iniciadores ESXi (igroup) e, em seguida, demarcado pelo ESXi para ser montado e usado como um datastore regular. Para alguns casos de uso temporário, um VMFS clonado pode ser montado sem uma nova assinatura. Depois que um datastore é clonado, as VMs dentro dele podem ser registradas, reconfiguradas e personalizadas como se fossem VMs clonadas individualmente.
+
+Em alguns casos, recursos licenciados adicionais podem ser usados para aprimorar a clonagem, como o SnapRestore para backup ou o FlexClone. Essas licenças são frequentemente incluídas em pacotes de licenças sem nenhum custo adicional. É necessária uma licença FlexClone para as operações de clonagem da Vevolve, bem como para dar suporte a snapshots gerenciados de uma VVol (que são descarregados do hipervisor para a ONTAP). Uma licença do FlexClone também pode melhorar certos clones baseados em VAAI quando usados em um datastore/volume (cria cópias instantâneas com uso eficiente de espaço em vez de cópias em bloco). Ele também é usado pelo SRA ao testar a recuperação de uma réplica de DR e SnapCenter para operações de clone, além de pesquisar cópias de backup para restaurar arquivos individuais.

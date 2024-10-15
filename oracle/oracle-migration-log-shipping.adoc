@@ -1,0 +1,1229 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-migration-log-shipping.html 
+keywords: migration, oracle, log shipping 
+summary: Migração Oracle via envio de log 
+---
+= Migração de banco de dados Oracle via envio de log
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O objetivo de uma migração usando o envio de log é criar uma cópia dos arquivos de dados originais em um novo local e, em seguida, estabelecer um método de envio de alterações no novo ambiente.
+
+Uma vez estabelecido, o envio de log e a repetição podem ser automatizados para manter o banco de dados de réplica em grande parte em sincronia com a fonte. Por exemplo, um trabalho cron pode ser programado para (a) copiar os logs mais recentes para o novo local e (b) reproduzi-los a cada 15 minutos. Isso proporciona uma interrupção mínima no momento da transição, porque não mais de 15 minutos de logs de arquivo devem ser reproduzidos.
+
+O procedimento mostrado abaixo também é essencialmente uma operação clone do banco de dados. A lógica mostrada é semelhante ao mecanismo no NetApp SnapManager para Oracle (SMO) e no plug-in NetApp SnapCenter Oracle. Alguns clientes usaram o procedimento mostrado em scripts ou fluxos de trabalho WFA para operações de clonagem personalizadas. Embora esse procedimento seja mais manual do que o uso de SMO ou SnapCenter, ele ainda é facilmente programado e as APIs de gerenciamento de dados no ONTAP simplificam ainda mais o processo.
+
+
+
+== Envio de log - sistema de arquivos para sistema de arquivos
+
+Este exemplo demonstra a migração de um banco de dados chamado WAFFLE de um sistema de arquivos comum para outro sistema de arquivos comum localizado em um servidor diferente. Ele também ilustra o uso do SnapMirror para fazer uma cópia rápida dos arquivos de dados, mas isso não é parte integrante do procedimento geral.
+
+
+
+=== Criar cópia de segurança da base de dados
+
+O primeiro passo é criar um backup de banco de dados. Especificamente, este procedimento requer um conjunto de arquivos de dados que podem ser usados para a repetição do log de arquivamento.
+
+
+
+=== Ambiente
+
+Neste exemplo, o banco de dados de origem está em um sistema ONTAP. O método mais simples para criar um backup de um banco de dados é usando um snapshot. O banco de dados é colocado no modo hot backup por alguns segundos enquanto uma `snapshot create` operação é executada no volume que hospeda os arquivos de dados.
+
+....
+SQL> alter database begin backup;
+Database altered.
+....
+....
+Cluster01::*> snapshot create -vserver vserver1 -volume jfsc1_oradata hotbackup
+Cluster01::*>
+....
+....
+SQL> alter database end backup;
+Database altered.
+....
+O resultado é um instantâneo no disco chamado `hotbackup` que contém uma imagem dos arquivos de dados enquanto no modo de backup automático. Quando combinados com os logs de arquivo apropriados para tornar os arquivos de dados consistentes, os dados nesse snapshot podem ser usados como base de uma restauração ou um clone. Neste caso, ele é replicado para o novo servidor.
+
+
+
+=== Restauração de um novo ambiente
+
+Agora, o backup precisa ser restaurado no novo ambiente. Isso pode ser feito de várias maneiras, incluindo Oracle RMAN, restauração de um aplicativo de backup como NetBackup, ou uma operação de cópia simples de arquivos de dados que foram colocados no modo de backup ativo.
+
+Neste exemplo, o SnapMirror é usado para replicar o hotbackup instantâneo para um novo local.
+
+. Crie um novo volume para receber os dados instantâneos. Inicialize o espelhamento de `jfsc1_oradata` para `vol_oradata`.
++
+....
+Cluster01::*> volume create -vserver vserver1 -volume vol_oradata -aggregate data_01 -size 20g -state online -type DP -snapshot-policy none -policy jfsc3
+[Job 833] Job succeeded: Successful
+....
++
+....
+Cluster01::*> snapmirror initialize -source-path vserver1:jfsc1_oradata -destination-path vserver1:vol_oradata
+Operation is queued: snapmirror initialize of destination "vserver1:vol_oradata".
+Cluster01::*> volume mount -vserver vserver1 -volume vol_oradata -junction-path /vol_oradata
+Cluster01::*>
+....
+. Depois que o estado é definido pelo SnapMirror, indicando que a sincronização está concluída, atualize o espelho com base especificamente no instantâneo desejado.
++
+....
+Cluster01::*> snapmirror show -destination-path vserver1:vol_oradata -fields state
+source-path             destination-path        state
+----------------------- ----------------------- ------------
+vserver1:jfsc1_oradata vserver1:vol_oradata SnapMirrored
+....
++
+....
+Cluster01::*> snapmirror update -destination-path vserver1:vol_oradata -source-snapshot hotbackup
+Operation is queued: snapmirror update of destination "vserver1:vol_oradata".
+....
+. A sincronização bem-sucedida pode ser verificada visualizando o `newest-snapshot` campo no volume do espelho.
++
+....
+Cluster01::*> snapmirror show -destination-path vserver1:vol_oradata -fields newest-snapshot
+source-path             destination-path        newest-snapshot
+----------------------- ----------------------- ---------------
+vserver1:jfsc1_oradata vserver1:vol_oradata hotbackup
+....
+. O espelho pode então ser quebrado.
++
+....
+Cluster01::> snapmirror break -destination-path vserver1:vol_oradata
+Operation succeeded: snapmirror break for destination "vserver1:vol_oradata".
+Cluster01::>
+....
+. Monte o novo sistema de arquivos. Com sistemas de arquivos baseados em blocos, os procedimentos precisos variam de acordo com a LVM em uso. O zoneamento FC ou as conexões iSCSI devem ser configuradas. Depois que a conetividade com os LUNs for estabelecida, comandos como o Linux `pvscan` podem ser necessários para descobrir quais grupos de volume ou LUNs precisam ser configurados corretamente para serem descobertos pelo ASM.
++
+Neste exemplo, um sistema de arquivos NFS simples é usado. Este sistema de arquivos pode ser montado diretamente.
+
++
+....
+fas8060-nfs1:/vol_oradata        19922944   1639360   18283584   9% /oradata
+fas8060-nfs1:/vol_logs            9961472       128    9961344   1% /logs
+....
+
+
+
+
+=== Criar modelo de criação de controlfile
+
+Em seguida, você deve criar um modelo de controlfile. O `backup controlfile to trace` comando cria comandos de texto para recriar um controlfile. Esta função pode ser útil para restaurar um banco de dados de backup em algumas circunstâncias, e é frequentemente usada com scripts que executam tarefas como clonagem de banco de dados.
+
+. A saída do comando a seguir é usada para recriar os controlfiles para o banco de dados migrado.
++
+....
+SQL> alter database backup controlfile to trace as '/tmp/waffle.ctrl';
+Database altered.
+....
+. Depois que os arquivos de controle tiverem sido criados, copie o arquivo para o novo servidor.
++
+....
+[oracle@jfsc3 tmp]$ scp oracle@jfsc1:/tmp/waffle.ctrl /tmp/
+oracle@jfsc1's password:
+waffle.ctrl                                              100% 5199     5.1KB/s   00:00
+....
+
+
+
+
+=== Ficheiro de parâmetros de cópia de segurança
+
+Um arquivo de parâmetro também é necessário no novo ambiente. O método mais simples é criar um pfile a partir do spfile ou pfile atual. Neste exemplo, o banco de dados de origem está usando um spfile.
+
+....
+SQL> create pfile='/tmp/waffle.tmp.pfile' from spfile;
+File created.
+....
+
+
+=== Crie uma entrada oratab
+
+A criação de uma entrada oratab é necessária para o bom funcionamento de utilitários como oraenv. Para criar uma entrada oratab, execute a seguinte etapa.
+
+....
+WAFFLE:/orabin/product/12.1.0/dbhome_1:N
+....
+
+
+=== Prepare a estrutura do diretório
+
+Se os diretórios necessários ainda não estavam presentes, você deve criá-los ou o procedimento de inicialização do banco de dados falhar. Para preparar a estrutura de diretórios, preencha os seguintes requisitos mínimos.
+
+....
+[oracle@jfsc3 ~]$ . oraenv
+ORACLE_SID = [oracle] ? WAFFLE
+The Oracle base has been set to /orabin
+[oracle@jfsc3 ~]$ cd $ORACLE_BASE
+[oracle@jfsc3 orabin]$ cd admin
+[oracle@jfsc3 admin]$ mkdir WAFFLE
+[oracle@jfsc3 admin]$ cd WAFFLE
+[oracle@jfsc3 WAFFLE]$ mkdir adump dpdump pfile scripts xdb_wallet
+....
+
+
+=== Atualizações do arquivo de parâmetros
+
+. Para copiar o arquivo de parâmetro para o novo servidor, execute os seguintes comandos. O local padrão é o `$ORACLE_HOME/dbs` diretório. Neste caso, o pfile pode ser colocado em qualquer lugar. Ele só está sendo usado como um passo intermediário no processo de migração.
+
+
+....
+[oracle@jfsc3 admin]$ scp oracle@jfsc1:/tmp/waffle.tmp.pfile $ORACLE_HOME/dbs/waffle.tmp.pfile
+oracle@jfsc1's password:
+waffle.pfile                                             100%  916     0.9KB/s   00:00
+....
+. Edite o arquivo conforme necessário. Por exemplo, se a localização do log do arquivo foi alterada, o arquivo pfile deve ser alterado para refletir o novo local. Neste exemplo, apenas os controlfiles estão sendo relocados, em parte para distribuí-los entre os sistemas de arquivos de log e dados.
++
+....
+[root@jfsc1 tmp]# cat waffle.pfile
+WAFFLE.__data_transfer_cache_size=0
+WAFFLE.__db_cache_size=507510784
+WAFFLE.__java_pool_size=4194304
+WAFFLE.__large_pool_size=20971520
+WAFFLE.__oracle_base='/orabin'#ORACLE_BASE set from environment
+WAFFLE.__pga_aggregate_target=268435456
+WAFFLE.__sga_target=805306368
+WAFFLE.__shared_io_pool_size=29360128
+WAFFLE.__shared_pool_size=234881024
+WAFFLE.__streams_pool_size=0
+*.audit_file_dest='/orabin/admin/WAFFLE/adump'
+*.audit_trail='db'
+*.compatible='12.1.0.2.0'
+*.control_files='/oradata//WAFFLE/control01.ctl','/oradata//WAFFLE/control02.ctl'
+*.control_files='/oradata/WAFFLE/control01.ctl','/logs/WAFFLE/control02.ctl'
+*.db_block_size=8192
+*.db_domain=''
+*.db_name='WAFFLE'
+*.diagnostic_dest='/orabin'
+*.dispatchers='(PROTOCOL=TCP) (SERVICE=WAFFLEXDB)'
+*.log_archive_dest_1='LOCATION=/logs/WAFFLE/arch'
+*.log_archive_format='%t_%s_%r.dbf'
+*.open_cursors=300
+*.pga_aggregate_target=256m
+*.processes=300
+*.remote_login_passwordfile='EXCLUSIVE'
+*.sga_target=768m
+*.undo_tablespace='UNDOTBS1'
+....
+. Depois que as edições estiverem concluídas, crie um spfile baseado nesse pfile.
++
+....
+SQL> create spfile from pfile='waffle.tmp.pfile';
+File created.
+....
+
+
+
+
+=== Recrie controlfiles
+
+Em uma etapa anterior, a saída do `backup controlfile to trace` foi copiada para o novo servidor. A parte específica da saída necessária é o `controlfile recreation` comando. Esta informação pode ser encontrada no ficheiro na secção marcada `Set #1. NORESETLOGS`. Começa com a linha `create controlfile reuse database` e deve incluir a palavra `noresetlogs`. Termina com o caractere ponto e vírgula (; ).
+
+. Neste procedimento de exemplo, o arquivo lê o seguinte.
++
+....
+CREATE CONTROLFILE REUSE DATABASE "WAFFLE" NORESETLOGS  ARCHIVELOG
+    MAXLOGFILES 16
+    MAXLOGMEMBERS 3
+    MAXDATAFILES 100
+    MAXINSTANCES 8
+    MAXLOGHISTORY 292
+LOGFILE
+  GROUP 1 '/logs/WAFFLE/redo/redo01.log'  SIZE 50M BLOCKSIZE 512,
+  GROUP 2 '/logs/WAFFLE/redo/redo02.log'  SIZE 50M BLOCKSIZE 512,
+  GROUP 3 '/logs/WAFFLE/redo/redo03.log'  SIZE 50M BLOCKSIZE 512
+-- STANDBY LOGFILE
+DATAFILE
+  '/oradata/WAFFLE/system01.dbf',
+  '/oradata/WAFFLE/sysaux01.dbf',
+  '/oradata/WAFFLE/undotbs01.dbf',
+  '/oradata/WAFFLE/users01.dbf'
+CHARACTER SET WE8MSWIN1252
+;
+....
+. Edite este script como desejado para refletir a nova localização dos vários arquivos. Por exemplo, certos arquivos de dados conhecidos por oferecer suporte a e/S alta podem ser redirecionados para um sistema de arquivos em uma camada de storage de alto desempenho. Em outros casos, as alterações podem ser puramente por razões de administrador, como isolar os arquivos de dados de um determinado PDB em volumes dedicados.
+. Neste exemplo, a `DATAFILE` estrofe permanece inalterada, mas os logs de refazer são movidos para um novo local em `/redo` vez de compartilhar espaço com logs de arquivo no `/logs`.
++
+....
+CREATE CONTROLFILE REUSE DATABASE "WAFFLE" NORESETLOGS  ARCHIVELOG
+    MAXLOGFILES 16
+    MAXLOGMEMBERS 3
+    MAXDATAFILES 100
+    MAXINSTANCES 8
+    MAXLOGHISTORY 292
+LOGFILE
+  GROUP 1 '/redo/redo01.log'  SIZE 50M BLOCKSIZE 512,
+  GROUP 2 '/redo/redo02.log'  SIZE 50M BLOCKSIZE 512,
+  GROUP 3 '/redo/redo03.log'  SIZE 50M BLOCKSIZE 512
+-- STANDBY LOGFILE
+DATAFILE
+  '/oradata/WAFFLE/system01.dbf',
+  '/oradata/WAFFLE/sysaux01.dbf',
+  '/oradata/WAFFLE/undotbs01.dbf',
+  '/oradata/WAFFLE/users01.dbf'
+CHARACTER SET WE8MSWIN1252
+;
+....
++
+....
+SQL> startup nomount;
+ORACLE instance started.
+Total System Global Area  805306368 bytes
+Fixed Size                  2929552 bytes
+Variable Size             331353200 bytes
+Database Buffers          465567744 bytes
+Redo Buffers                5455872 bytes
+SQL> CREATE CONTROLFILE REUSE DATABASE "WAFFLE" NORESETLOGS  ARCHIVELOG
+  2      MAXLOGFILES 16
+  3      MAXLOGMEMBERS 3
+  4      MAXDATAFILES 100
+  5      MAXINSTANCES 8
+  6      MAXLOGHISTORY 292
+  7  LOGFILE
+  8    GROUP 1 '/redo/redo01.log'  SIZE 50M BLOCKSIZE 512,
+  9    GROUP 2 '/redo/redo02.log'  SIZE 50M BLOCKSIZE 512,
+ 10    GROUP 3 '/redo/redo03.log'  SIZE 50M BLOCKSIZE 512
+ 11  -- STANDBY LOGFILE
+ 12  DATAFILE
+ 13    '/oradata/WAFFLE/system01.dbf',
+ 14    '/oradata/WAFFLE/sysaux01.dbf',
+ 15    '/oradata/WAFFLE/undotbs01.dbf',
+ 16    '/oradata/WAFFLE/users01.dbf'
+ 17  CHARACTER SET WE8MSWIN1252
+ 18  ;
+Control file created.
+SQL>
+....
+
+
+Se algum arquivo estiver perdido ou os parâmetros estiverem mal configurados, são gerados erros que indicam o que deve ser corrigido. O banco de dados está montado, mas ainda não está aberto e não pode ser aberto porque os arquivos de dados em uso ainda estão marcados como estando no modo hot backup. Os logs de arquivamento devem primeiro ser aplicados para tornar o banco de dados consistente.
+
+
+
+=== Replicação inicial do log
+
+Pelo menos uma operação de resposta de log é necessária para tornar os arquivos de dados consistentes. Muitas opções estão disponíveis para reproduzir logs. Em alguns casos, o local do log do arquivo original no servidor original pode ser compartilhado por NFS e a resposta do log pode ser feita diretamente. Em outros casos, os logs do arquivo devem ser copiados.
+
+Por exemplo, uma operação simples `scp` pode copiar todos os logs atuais do servidor de origem para o servidor de migração:
+
+....
+[oracle@jfsc3 arch]$ scp jfsc1:/logs/WAFFLE/arch/* ./
+oracle@jfsc1's password:
+1_22_912662036.dbf                                       100%   47MB  47.0MB/s   00:01
+1_23_912662036.dbf                                       100%   40MB  40.4MB/s   00:00
+1_24_912662036.dbf                                       100%   45MB  45.4MB/s   00:00
+1_25_912662036.dbf                                       100%   41MB  40.9MB/s   00:01
+1_26_912662036.dbf                                       100%   39MB  39.4MB/s   00:00
+1_27_912662036.dbf                                       100%   39MB  38.7MB/s   00:00
+1_28_912662036.dbf                                       100%   40MB  40.1MB/s   00:01
+1_29_912662036.dbf                                       100%   17MB  16.9MB/s   00:00
+1_30_912662036.dbf                                       100%  636KB 636.0KB/s   00:00
+....
+
+
+=== Reprodução inicial do registo
+
+Depois que os arquivos estão no local do log de arquivamento, eles podem ser reproduzidos emitindo o comando `recover database until cancel` seguido da resposta `AUTO` para reproduzir automaticamente todos os logs disponíveis.
+
+....
+SQL> recover database until cancel;
+ORA-00279: change 382713 generated at 05/24/2016 09:00:54 needed for thread 1
+ORA-00289: suggestion : /logs/WAFFLE/arch/1_23_912662036.dbf
+ORA-00280: change 382713 for thread 1 is in sequence #23
+Specify log: {<RET>=suggested | filename | AUTO | CANCEL}
+AUTO
+ORA-00279: change 405712 generated at 05/24/2016 15:01:05 needed for thread 1
+ORA-00289: suggestion : /logs/WAFFLE/arch/1_24_912662036.dbf
+ORA-00280: change 405712 for thread 1 is in sequence #24
+ORA-00278: log file '/logs/WAFFLE/arch/1_23_912662036.dbf' no longer needed for
+this recovery
+...
+ORA-00279: change 713874 generated at 05/26/2016 04:26:43 needed for thread 1
+ORA-00289: suggestion : /logs/WAFFLE/arch/1_31_912662036.dbf
+ORA-00280: change 713874 for thread 1 is in sequence #31
+ORA-00278: log file '/logs/WAFFLE/arch/1_30_912662036.dbf' no longer needed for
+this recovery
+ORA-00308: cannot open archived log '/logs/WAFFLE/arch/1_31_912662036.dbf'
+ORA-27037: unable to obtain file status
+Linux-x86_64 Error: 2: No such file or directory
+Additional information: 3
+....
+A resposta final do log do arquivo relata um erro, mas isso é normal. O log indica que `sqlplus` estava procurando um arquivo de log específico e não o encontrou. A razão é, muito provavelmente, que o arquivo log ainda não existe.
+
+Se o banco de dados de origem puder ser desligado antes de copiar logs de arquivo, esta etapa deve ser executada apenas uma vez. Os logs de arquivo são copiados e reproduzidos e, em seguida, o processo pode continuar diretamente para o processo de transição que replica os logs críticos de refazer.
+
+
+
+=== Replicação e repetição de registos incrementais
+
+Na maioria dos casos, a migração não é realizada imediatamente. Pode ser dias ou mesmo semanas antes que o processo de migração seja concluído, o que significa que os logs devem ser enviados continuamente para o banco de dados de réplica e reproduzidos. Portanto, quando a transição chega, os dados mínimos devem ser transferidos e reproduzidos.
+
+Fazer isso pode ser script de várias maneiras, mas um dos métodos mais populares é usar rsync, um utilitário comum de replicação de arquivos. A maneira mais segura de usar este utilitário é configurá-lo como um daemon. Por exemplo, o `rsyncd.conf` arquivo a seguir mostra como criar um recurso `waffle.arch` chamado que é acessado com credenciais de usuário Oracle e é mapeado para `/logs/WAFFLE/arch`o . Mais importante ainda, o recurso é definido como somente leitura, o que permite que os dados de produção sejam lidos, mas não alterados.
+
+....
+[root@jfsc1 arch]# cat /etc/rsyncd.conf
+[waffle.arch]
+   uid=oracle
+   gid=dba
+   path=/logs/WAFFLE/arch
+   read only = true
+[root@jfsc1 arch]# rsync --daemon
+....
+O comando a seguir sincroniza o destino do log de arquivamento do novo servidor com o recurso rsync `waffle.arch` no servidor original. O `t` argumento em `rsync - potg` faz com que a lista de arquivos seja comparada com base no timestamp, e apenas novos arquivos são copiados. Este processo fornece uma atualização incremental do novo servidor. Esse comando também pode ser programado no cron para ser executado regularmente.
+
+....
+[oracle@jfsc3 arch]$ rsync -potg --stats --progress jfsc1::waffle.arch/* /logs/WAFFLE/arch/
+1_31_912662036.dbf
+      650240 100%  124.02MB/s    0:00:00 (xfer#1, to-check=8/18)
+1_32_912662036.dbf
+     4873728 100%  110.67MB/s    0:00:00 (xfer#2, to-check=7/18)
+1_33_912662036.dbf
+     4088832 100%   50.64MB/s    0:00:00 (xfer#3, to-check=6/18)
+1_34_912662036.dbf
+     8196096 100%   54.66MB/s    0:00:00 (xfer#4, to-check=5/18)
+1_35_912662036.dbf
+    19376128 100%   57.75MB/s    0:00:00 (xfer#5, to-check=4/18)
+1_36_912662036.dbf
+       71680 100%  201.15kB/s    0:00:00 (xfer#6, to-check=3/18)
+1_37_912662036.dbf
+     1144320 100%    3.06MB/s    0:00:00 (xfer#7, to-check=2/18)
+1_38_912662036.dbf
+    35757568 100%   63.74MB/s    0:00:00 (xfer#8, to-check=1/18)
+1_39_912662036.dbf
+      984576 100%    1.63MB/s    0:00:00 (xfer#9, to-check=0/18)
+Number of files: 18
+Number of files transferred: 9
+Total file size: 399653376 bytes
+Total transferred file size: 75143168 bytes
+Literal data: 75143168 bytes
+Matched data: 0 bytes
+File list size: 474
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 204
+Total bytes received: 75153219
+sent 204 bytes  received 75153219 bytes  150306846.00 bytes/sec
+total size is 399653376  speedup is 5.32
+....
+Depois que os logs tiverem sido recebidos, eles devem ser reproduzidos novamente. Exemplos anteriores mostram o uso do sqlplus para executar manualmente `recover database until cancel` , um processo que pode ser facilmente automatizado. O exemplo mostrado aqui usa o script descrito em link:oracle-migration-sample-scripts.html#replay-logs-on-database["Reproduzir Registos na base de dados"]. Os scripts aceitam um argumento que especifica o banco de dados que requer uma operação de repetição. Isso permite que o mesmo script seja usado em um esforço de migração multibanco de dados.
+
+....
+[oracle@jfsc3 logs]$ ./replay.logs.pl WAFFLE
+ORACLE_SID = [WAFFLE] ? The Oracle base remains unchanged with value /orabin
+SQL*Plus: Release 12.1.0.2.0 Production on Thu May 26 10:47:16 2016
+Copyright (c) 1982, 2014, Oracle.  All rights reserved.
+Connected to:
+Oracle Database 12c Enterprise Edition Release 12.1.0.2.0 - 64bit Production
+With the Partitioning, OLAP, Advanced Analytics and Real Application Testing options
+SQL> ORA-00279: change 713874 generated at 05/26/2016 04:26:43 needed for thread 1
+ORA-00289: suggestion : /logs/WAFFLE/arch/1_31_912662036.dbf
+ORA-00280: change 713874 for thread 1 is in sequence #31
+Specify log: {<RET>=suggested | filename | AUTO | CANCEL}
+ORA-00279: change 814256 generated at 05/26/2016 04:52:30 needed for thread 1
+ORA-00289: suggestion : /logs/WAFFLE/arch/1_32_912662036.dbf
+ORA-00280: change 814256 for thread 1 is in sequence #32
+ORA-00278: log file '/logs/WAFFLE/arch/1_31_912662036.dbf' no longer needed for
+this recovery
+ORA-00279: change 814780 generated at 05/26/2016 04:53:04 needed for thread 1
+ORA-00289: suggestion : /logs/WAFFLE/arch/1_33_912662036.dbf
+ORA-00280: change 814780 for thread 1 is in sequence #33
+ORA-00278: log file '/logs/WAFFLE/arch/1_32_912662036.dbf' no longer needed for
+this recovery
+...
+ORA-00279: change 1120099 generated at 05/26/2016 09:59:21 needed for thread 1
+ORA-00289: suggestion : /logs/WAFFLE/arch/1_40_912662036.dbf
+ORA-00280: change 1120099 for thread 1 is in sequence #40
+ORA-00278: log file '/logs/WAFFLE/arch/1_39_912662036.dbf' no longer needed for
+this recovery
+ORA-00308: cannot open archived log '/logs/WAFFLE/arch/1_40_912662036.dbf'
+ORA-27037: unable to obtain file status
+Linux-x86_64 Error: 2: No such file or directory
+Additional information: 3
+SQL> Disconnected from Oracle Database 12c Enterprise Edition Release 12.1.0.2.0 - 64bit Production
+With the Partitioning, OLAP, Advanced Analytics and Real Application Testing options
+....
+
+
+=== Redução
+
+Quando você estiver pronto para cortar para o novo ambiente, você deve executar uma sincronização final que inclua Registros de arquivamento e os logs de refazer. Se a localização original do registo de refazer ainda não for conhecida, pode ser identificada da seguinte forma:
+
+....
+SQL> select member from v$logfile;
+MEMBER
+--------------------------------------------------------------------------------
+/logs/WAFFLE/redo/redo01.log
+/logs/WAFFLE/redo/redo02.log
+/logs/WAFFLE/redo/redo03.log
+....
+. Encerre o banco de dados de origem.
+. Execute uma sincronização final dos logs de arquivo no novo servidor com o método desejado.
+. Os logs de refazer de origem devem ser copiados para o novo servidor. Neste exemplo, os logs de refazer foram relocados para um novo diretório em `/redo`.
++
+....
+[oracle@jfsc3 logs]$ scp jfsc1:/logs/WAFFLE/redo/* /redo/
+oracle@jfsc1's password:
+redo01.log                                                              100%   50MB  50.0MB/s   00:01
+redo02.log                                                              100%   50MB  50.0MB/s   00:00
+redo03.log                                                              100%   50MB  50.0MB/s   00:00
+....
+. Neste estágio, o novo ambiente de banco de dados contém todos os arquivos necessários para trazê-lo para o mesmo estado exato da origem. Os registos de arquivo têm de ser reproduzidos uma última vez.
++
+....
+SQL> recover database until cancel;
+ORA-00279: change 1120099 generated at 05/26/2016 09:59:21 needed for thread 1
+ORA-00289: suggestion : /logs/WAFFLE/arch/1_40_912662036.dbf
+ORA-00280: change 1120099 for thread 1 is in sequence #40
+Specify log: {<RET>=suggested | filename | AUTO | CANCEL}
+AUTO
+ORA-00308: cannot open archived log '/logs/WAFFLE/arch/1_40_912662036.dbf'
+ORA-27037: unable to obtain file status
+Linux-x86_64 Error: 2: No such file or directory
+Additional information: 3
+ORA-00308: cannot open archived log '/logs/WAFFLE/arch/1_40_912662036.dbf'
+ORA-27037: unable to obtain file status
+Linux-x86_64 Error: 2: No such file or directory
+Additional information: 3
+....
+. Uma vez concluído, os logs de refazer devem ser reproduzidos novamente. Se a mensagem `Media recovery complete` for retornada, o processo será bem-sucedido e os bancos de dados serão sincronizados e poderão ser abertos.
++
+....
+SQL> recover database;
+Media recovery complete.
+SQL> alter database open;
+Database altered.
+....
+
+
+
+
+== Registo de envio - ASM para o sistema de ficheiros
+
+Este exemplo demonstra o uso do Oracle RMAN para migrar um banco de dados. É muito semelhante ao exemplo anterior de sistema de arquivos para o envio de log do sistema de arquivos, mas os arquivos no ASM não são visíveis para o host. As únicas opções de migração de dados localizados em dispositivos ASM são a realocação do ASM LUN ou o Oracle RMAN para executar as operações de cópia.
+
+Embora o RMAN seja um requisito para copiar arquivos do Oracle ASM, o uso do RMAN não se limita ao ASM. O RMAN pode ser usado para migrar de qualquer tipo de armazenamento para qualquer outro tipo.
+
+Este exemplo mostra a realocação de um banco de dados chamado PANCAKE do armazenamento ASM para um sistema de arquivos regular localizado em um servidor diferente em caminhos `/oradata` e `/logs`.
+
+
+
+=== Criar cópia de segurança da base de dados
+
+O primeiro passo é criar um backup do banco de dados para ser migrado para um servidor alternativo. Como a fonte usa o Oracle ASM, o RMAN deve ser usado. Um simples backup RMAN pode ser executado da seguinte forma. Este método cria um backup marcado que pode ser facilmente identificado pelo RMAN mais tarde no procedimento.
+
+O primeiro comando define o tipo de destino para o backup e o local a ser usado. O segundo inicia o backup dos arquivos de dados somente.
+
+....
+RMAN> configure channel device type disk format '/rman/pancake/%U';
+using target database control file instead of recovery catalog
+old RMAN configuration parameters:
+CONFIGURE CHANNEL DEVICE TYPE DISK FORMAT   '/rman/pancake/%U';
+new RMAN configuration parameters:
+CONFIGURE CHANNEL DEVICE TYPE DISK FORMAT   '/rman/pancake/%U';
+new RMAN configuration parameters are successfully stored
+RMAN> backup database tag 'ONTAP_MIGRATION';
+Starting backup at 24-MAY-16
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=251 device type=DISK
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+input datafile file number=00001 name=+ASM0/PANCAKE/system01.dbf
+input datafile file number=00002 name=+ASM0/PANCAKE/sysaux01.dbf
+input datafile file number=00003 name=+ASM0/PANCAKE/undotbs101.dbf
+input datafile file number=00004 name=+ASM0/PANCAKE/users01.dbf
+channel ORA_DISK_1: starting piece 1 at 24-MAY-16
+channel ORA_DISK_1: finished piece 1 at 24-MAY-16
+piece handle=/rman/pancake/1gr6c161_1_1 tag=ONTAP_MIGRATION comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:03
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+including current control file in backup set
+including current SPFILE in backup set
+channel ORA_DISK_1: starting piece 1 at 24-MAY-16
+channel ORA_DISK_1: finished piece 1 at 24-MAY-16
+piece handle=/rman/pancake/1hr6c164_1_1 tag=ONTAP_MIGRATION comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+Finished backup at 24-MAY-16
+....
+
+
+=== Ficheiro de controlo de cópia de segurança
+
+Um ficheiro de controlo de cópia de segurança é necessário mais tarde no procedimento para a `duplicate database` operação.
+
+....
+RMAN> backup current controlfile format '/rman/pancake/ctrl.bkp';
+Starting backup at 24-MAY-16
+using channel ORA_DISK_1
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+including current control file in backup set
+channel ORA_DISK_1: starting piece 1 at 24-MAY-16
+channel ORA_DISK_1: finished piece 1 at 24-MAY-16
+piece handle=/rman/pancake/ctrl.bkp tag=TAG20160524T032651 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+Finished backup at 24-MAY-16
+....
+
+
+=== Ficheiro de parâmetros de cópia de segurança
+
+Um arquivo de parâmetro também é necessário no novo ambiente. O método mais simples é criar um pfile a partir do spfile ou pfile atual. Neste exemplo, o banco de dados de origem usa um spfile.
+
+....
+RMAN> create pfile='/rman/pancake/pfile' from spfile;
+Statement processed
+....
+
+
+=== Script de renomeação do arquivo ASM
+
+Vários locais de arquivo atualmente definidos nos controlfiles mudam quando o banco de dados é movido. O script a seguir cria um script RMAN para facilitar o processo. Este exemplo mostra um banco de dados com um número muito pequeno de arquivos de dados, mas normalmente os bancos de dados contêm centenas ou até mesmo milhares de arquivos de dados.
+
+Este script pode ser encontrado em link:oracle-migration-sample-scripts.html#asm-to-file-system-name-conversion["ASM para conversão de nome de sistema de arquivos"] e faz duas coisas.
+
+Primeiro, ele cria um parâmetro para redefinir os locais de log refazer chamados `log_file_name_convert`. É essencialmente uma lista de campos alternados. O primeiro campo é a localização de um log de refazer atual e o segundo campo é a localização no novo servidor. O padrão é então repetido.
+
+A segunda função é fornecer um modelo para renomeação de arquivos de dados. O script percorre os arquivos de dados, puxa as informações de nome e número do arquivo e formata-as como um script RMAN. Em seguida, ele faz o mesmo com os arquivos temporários. O resultado é um script rman simples que pode ser editado como desejado para garantir que os arquivos sejam restaurados para o local desejado.
+
+....
+SQL> @/rman/mk.rename.scripts.sql
+Parameters for log file conversion:
+*.log_file_name_convert = '+ASM0/PANCAKE/redo01.log',
+'/NEW_PATH/redo01.log','+ASM0/PANCAKE/redo02.log',
+'/NEW_PATH/redo02.log','+ASM0/PANCAKE/redo03.log', '/NEW_PATH/redo03.log'
+rman duplication script:
+run
+{
+set newname for datafile 1 to '+ASM0/PANCAKE/system01.dbf';
+set newname for datafile 2 to '+ASM0/PANCAKE/sysaux01.dbf';
+set newname for datafile 3 to '+ASM0/PANCAKE/undotbs101.dbf';
+set newname for datafile 4 to '+ASM0/PANCAKE/users01.dbf';
+set newname for tempfile 1 to '+ASM0/PANCAKE/temp01.dbf';
+duplicate target database for standby backup location INSERT_PATH_HERE;
+}
+PL/SQL procedure successfully completed.
+....
+Capture a saída desta tela. O `log_file_name_convert` parâmetro é colocado no arquivo pfile como descrito abaixo. O nome do arquivo de dados RMAN e o script duplicado devem ser editados de acordo para colocar os arquivos de dados nos locais desejados. Neste exemplo, todos eles são colocados `/oradata/pancake` em .
+
+....
+run
+{
+set newname for datafile 1 to '/oradata/pancake/pancake.dbf';
+set newname for datafile 2 to '/oradata/pancake/sysaux.dbf';
+set newname for datafile 3 to '/oradata/pancake/undotbs1.dbf';
+set newname for datafile 4 to '/oradata/pancake/users.dbf';
+set newname for tempfile 1 to '/oradata/pancake/temp.dbf';
+duplicate target database for standby backup location '/rman/pancake';
+}
+....
+
+
+=== Prepare a estrutura do diretório
+
+Os scripts estão quase prontos para serem executados, mas primeiro a estrutura de diretórios deve estar no lugar. Se os diretórios necessários ainda não estiverem presentes, eles devem ser criados ou o procedimento de inicialização do banco de dados falha. O exemplo abaixo reflete os requisitos mínimos.
+
+....
+[oracle@jfsc2 ~]$ mkdir /oradata/pancake
+[oracle@jfsc2 ~]$ mkdir /logs/pancake
+[oracle@jfsc2 ~]$ cd /orabin/admin
+[oracle@jfsc2 admin]$ mkdir PANCAKE
+[oracle@jfsc2 admin]$ cd PANCAKE
+[oracle@jfsc2 PANCAKE]$ mkdir adump dpdump pfile scripts xdb_wallet
+....
+
+
+=== Crie uma entrada oratab
+
+O comando a seguir é necessário para que utilitários como oraenv funcionem corretamente.
+
+....
+PANCAKE:/orabin/product/12.1.0/dbhome_1:N
+....
+
+
+=== Atualizações de parâmetros
+
+O arquivo pfile salvo deve ser atualizado para refletir quaisquer alterações de caminho no novo servidor. As alterações no caminho do arquivo de dados são alteradas pelo script de duplicação RMAN, e quase todos os bancos de dados exigem alterações nos `control_files` parâmetros e. `log_archive_dest` Também pode haver locais de arquivo de auditoria que devem ser alterados e parâmetros como `db_create_file_dest` podem não ser relevantes fora do ASM. Um DBA experiente deve analisar cuidadosamente as alterações propostas antes de prosseguir.
+
+Neste exemplo, as alterações de chave são as localizações do arquivo de controle, o destino do arquivo de log e a adição do `log_file_name_convert` parâmetro.
+
+....
+PANCAKE.__data_transfer_cache_size=0
+PANCAKE.__db_cache_size=545259520
+PANCAKE.__java_pool_size=4194304
+PANCAKE.__large_pool_size=25165824
+PANCAKE.__oracle_base='/orabin'#ORACLE_BASE set from environment
+PANCAKE.__pga_aggregate_target=268435456
+PANCAKE.__sga_target=805306368
+PANCAKE.__shared_io_pool_size=29360128
+PANCAKE.__shared_pool_size=192937984
+PANCAKE.__streams_pool_size=0
+*.audit_file_dest='/orabin/admin/PANCAKE/adump'
+*.audit_trail='db'
+*.compatible='12.1.0.2.0'
+*.control_files='+ASM0/PANCAKE/control01.ctl','+ASM0/PANCAKE/control02.ctl'
+*.control_files='/oradata/pancake/control01.ctl','/logs/pancake/control02.ctl'
+*.db_block_size=8192
+*.db_domain=''
+*.db_name='PANCAKE'
+*.diagnostic_dest='/orabin'
+*.dispatchers='(PROTOCOL=TCP) (SERVICE=PANCAKEXDB)'
+*.log_archive_dest_1='LOCATION=+ASM1'
+*.log_archive_dest_1='LOCATION=/logs/pancake'
+*.log_archive_format='%t_%s_%r.dbf'
+'/logs/path/redo02.log'
+*.log_file_name_convert = '+ASM0/PANCAKE/redo01.log', '/logs/pancake/redo01.log', '+ASM0/PANCAKE/redo02.log', '/logs/pancake/redo02.log', '+ASM0/PANCAKE/redo03.log',  '/logs/pancake/redo03.log'
+*.open_cursors=300
+*.pga_aggregate_target=256m
+*.processes=300
+*.remote_login_passwordfile='EXCLUSIVE'
+*.sga_target=768m
+*.undo_tablespace='UNDOTBS1'
+....
+Depois que os novos parâmetros são confirmados, os parâmetros devem ser colocados em vigor. Existem várias opções, mas a maioria dos clientes cria um spfile baseado no pfile de texto.
+
+....
+bash-4.1$ sqlplus / as sysdba
+SQL*Plus: Release 12.1.0.2.0 Production on Fri Jan 8 11:17:40 2016
+Copyright (c) 1982, 2014, Oracle.  All rights reserved.
+Connected to an idle instance.
+SQL> create spfile from pfile='/rman/pancake/pfile';
+File created.
+....
+
+
+=== Nomunt de arranque
+
+A etapa final antes de replicar o banco de dados é abrir os processos do banco de dados, mas não montar os arquivos. Nesta etapa, os problemas com o spfile podem se tornar evidentes. Se o `startup nomount` comando falhar por causa de um erro de parâmetro, é simples desligar, corrigir o modelo pfile, recarregá-lo como um spfile e tentar novamente.
+
+....
+SQL> startup nomount;
+ORACLE instance started.
+Total System Global Area  805306368 bytes
+Fixed Size                  2929552 bytes
+Variable Size             373296240 bytes
+Database Buffers          423624704 bytes
+Redo Buffers                5455872 bytes
+....
+
+
+=== Duplique o banco de dados
+
+Restaurar o backup RMAN anterior para o novo local consome mais tempo do que outras etapas deste processo. O banco de dados deve ser duplicado sem uma alteração no ID do banco de dados (DBID) ou redefinir os logs. Isso impede que os logs sejam aplicados, que é uma etapa necessária para sincronizar totalmente as cópias.
+
+Conete-se ao banco de dados com RMAN como aux e emita o comando duplicar banco de dados usando o script criado em uma etapa anterior.
+
+....
+[oracle@jfsc2 pancake]$ rman auxiliary /
+Recovery Manager: Release 12.1.0.2.0 - Production on Tue May 24 03:04:56 2016
+Copyright (c) 1982, 2014, Oracle and/or its affiliates.  All rights reserved.
+connected to auxiliary database: PANCAKE (not mounted)
+RMAN> run
+2> {
+3> set newname for datafile 1 to '/oradata/pancake/pancake.dbf';
+4> set newname for datafile 2 to '/oradata/pancake/sysaux.dbf';
+5> set newname for datafile 3 to '/oradata/pancake/undotbs1.dbf';
+6> set newname for datafile 4 to '/oradata/pancake/users.dbf';
+7> set newname for tempfile 1 to '/oradata/pancake/temp.dbf';
+8> duplicate target database for standby backup location '/rman/pancake';
+9> }
+executing command: SET NEWNAME
+executing command: SET NEWNAME
+executing command: SET NEWNAME
+executing command: SET NEWNAME
+executing command: SET NEWNAME
+Starting Duplicate Db at 24-MAY-16
+contents of Memory Script:
+{
+   restore clone standby controlfile from  '/rman/pancake/ctrl.bkp';
+}
+executing Memory Script
+Starting restore at 24-MAY-16
+allocated channel: ORA_AUX_DISK_1
+channel ORA_AUX_DISK_1: SID=243 device type=DISK
+channel ORA_AUX_DISK_1: restoring control file
+channel ORA_AUX_DISK_1: restore complete, elapsed time: 00:00:01
+output file name=/oradata/pancake/control01.ctl
+output file name=/logs/pancake/control02.ctl
+Finished restore at 24-MAY-16
+contents of Memory Script:
+{
+   sql clone 'alter database mount standby database';
+}
+executing Memory Script
+sql statement: alter database mount standby database
+released channel: ORA_AUX_DISK_1
+allocated channel: ORA_AUX_DISK_1
+channel ORA_AUX_DISK_1: SID=243 device type=DISK
+contents of Memory Script:
+{
+   set newname for tempfile  1 to
+ "/oradata/pancake/temp.dbf";
+   switch clone tempfile all;
+   set newname for datafile  1 to
+ "/oradata/pancake/pancake.dbf";
+   set newname for datafile  2 to
+ "/oradata/pancake/sysaux.dbf";
+   set newname for datafile  3 to
+ "/oradata/pancake/undotbs1.dbf";
+   set newname for datafile  4 to
+ "/oradata/pancake/users.dbf";
+   restore
+   clone database
+   ;
+}
+executing Memory Script
+executing command: SET NEWNAME
+renamed tempfile 1 to /oradata/pancake/temp.dbf in control file
+executing command: SET NEWNAME
+executing command: SET NEWNAME
+executing command: SET NEWNAME
+executing command: SET NEWNAME
+Starting restore at 24-MAY-16
+using channel ORA_AUX_DISK_1
+channel ORA_AUX_DISK_1: starting datafile backup set restore
+channel ORA_AUX_DISK_1: specifying datafile(s) to restore from backup set
+channel ORA_AUX_DISK_1: restoring datafile 00001 to /oradata/pancake/pancake.dbf
+channel ORA_AUX_DISK_1: restoring datafile 00002 to /oradata/pancake/sysaux.dbf
+channel ORA_AUX_DISK_1: restoring datafile 00003 to /oradata/pancake/undotbs1.dbf
+channel ORA_AUX_DISK_1: restoring datafile 00004 to /oradata/pancake/users.dbf
+channel ORA_AUX_DISK_1: reading from backup piece /rman/pancake/1gr6c161_1_1
+channel ORA_AUX_DISK_1: piece handle=/rman/pancake/1gr6c161_1_1 tag=ONTAP_MIGRATION
+channel ORA_AUX_DISK_1: restored backup piece 1
+channel ORA_AUX_DISK_1: restore complete, elapsed time: 00:00:07
+Finished restore at 24-MAY-16
+contents of Memory Script:
+{
+   switch clone datafile all;
+}
+executing Memory Script
+datafile 1 switched to datafile copy
+input datafile copy RECID=5 STAMP=912655725 file name=/oradata/pancake/pancake.dbf
+datafile 2 switched to datafile copy
+input datafile copy RECID=6 STAMP=912655725 file name=/oradata/pancake/sysaux.dbf
+datafile 3 switched to datafile copy
+input datafile copy RECID=7 STAMP=912655725 file name=/oradata/pancake/undotbs1.dbf
+datafile 4 switched to datafile copy
+input datafile copy RECID=8 STAMP=912655725 file name=/oradata/pancake/users.dbf
+Finished Duplicate Db at 24-MAY-16
+....
+
+
+=== Replicação inicial do log
+
+Agora você deve enviar as alterações do banco de dados de origem para um novo local. Fazer isso pode exigir uma combinação de etapas. O método mais simples seria fazer com que o RMAN no banco de dados de origem escrevesse logs de arquivo em uma conexão de rede compartilhada. Se um local compartilhado não estiver disponível, um método alternativo é usar o RMAN para gravar em um sistema de arquivos local e, em seguida, usar RCP ou rsync para copiar os arquivos.
+
+Neste exemplo, o `/rman` diretório é um compartilhamento NFS disponível para o banco de dados original e migrado.
+
+Uma questão importante aqui é a `disk format` cláusula. O formato de disco do backup é `%h_%e_%a.dbf`, o que significa que você deve usar o formato de número de thread, número de sequência e ID de ativação para o banco de dados. Embora as letras sejam diferentes, isso corresponde ao `log_archive_format='%t_%s_%r.dbf` parâmetro no pfile. Este parâmetro também especifica Registros de arquivo no formato de número de thread, número de sequência e ID de ativação. O resultado final é que os backups dos arquivos de log na fonte usam uma convenção de nomenclatura esperada pelo banco de dados. Isso torna operações como `recover database` muito mais simples porque sqlplus antecipa corretamente os nomes dos logs do arquivo a serem reproduzidos.
+
+....
+RMAN> configure channel device type disk format '/rman/pancake/logship/%h_%e_%a.dbf';
+old RMAN configuration parameters:
+CONFIGURE CHANNEL DEVICE TYPE DISK FORMAT   '/rman/pancake/arch/%h_%e_%a.dbf';
+new RMAN configuration parameters:
+CONFIGURE CHANNEL DEVICE TYPE DISK FORMAT   '/rman/pancake/logship/%h_%e_%a.dbf';
+new RMAN configuration parameters are successfully stored
+released channel: ORA_DISK_1
+RMAN> backup as copy archivelog from time 'sysdate-2';
+Starting backup at 24-MAY-16
+current log archived
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=373 device type=DISK
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=54 RECID=70 STAMP=912658508
+output file name=/rman/pancake/logship/1_54_912576125.dbf RECID=123 STAMP=912659482
+channel ORA_DISK_1: archived log copy complete, elapsed time: 00:00:01
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=41 RECID=29 STAMP=912654101
+output file name=/rman/pancake/logship/1_41_912576125.dbf RECID=124 STAMP=912659483
+channel ORA_DISK_1: archived log copy complete, elapsed time: 00:00:01
+...
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=45 RECID=33 STAMP=912654688
+output file name=/rman/pancake/logship/1_45_912576125.dbf RECID=152 STAMP=912659514
+channel ORA_DISK_1: archived log copy complete, elapsed time: 00:00:01
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=47 RECID=36 STAMP=912654809
+output file name=/rman/pancake/logship/1_47_912576125.dbf RECID=153 STAMP=912659515
+channel ORA_DISK_1: archived log copy complete, elapsed time: 00:00:01
+Finished backup at 24-MAY-16
+....
+
+
+=== Reprodução inicial do registo
+
+Depois que os arquivos estão no local do log de arquivamento, eles podem ser reproduzidos emitindo o comando `recover database until cancel` seguido da resposta `AUTO` para reproduzir automaticamente todos os logs disponíveis. O arquivo de parâmetros está direcionando Registros de arquivo para `/logs/archive`, mas isso não corresponde ao local onde o RMAN foi usado para salvar logs. O local pode ser temporariamente redirecionado da seguinte forma antes de recuperar o banco de dados.
+
+....
+SQL> alter system set log_archive_dest_1='LOCATION=/rman/pancake/logship' scope=memory;
+System altered.
+SQL> recover standby database until cancel;
+ORA-00279: change 560224 generated at 05/24/2016 03:25:53 needed for thread 1
+ORA-00289: suggestion : /rman/pancake/logship/1_49_912576125.dbf
+ORA-00280: change 560224 for thread 1 is in sequence #49
+Specify log: {<RET>=suggested | filename | AUTO | CANCEL}
+AUTO
+ORA-00279: change 560353 generated at 05/24/2016 03:29:17 needed for thread 1
+ORA-00289: suggestion : /rman/pancake/logship/1_50_912576125.dbf
+ORA-00280: change 560353 for thread 1 is in sequence #50
+ORA-00278: log file '/rman/pancake/logship/1_49_912576125.dbf' no longer needed
+for this recovery
+...
+ORA-00279: change 560591 generated at 05/24/2016 03:33:56 needed for thread 1
+ORA-00289: suggestion : /rman/pancake/logship/1_54_912576125.dbf
+ORA-00280: change 560591 for thread 1 is in sequence #54
+ORA-00278: log file '/rman/pancake/logship/1_53_912576125.dbf' no longer needed
+for this recovery
+ORA-00308: cannot open archived log '/rman/pancake/logship/1_54_912576125.dbf'
+ORA-27037: unable to obtain file status
+Linux-x86_64 Error: 2: No such file or directory
+Additional information: 3
+....
+A resposta final do log do arquivo relata um erro, mas isso é normal. O erro indica que sqlplus estava procurando um arquivo de log específico e não o encontrou. A razão é mais provável que o arquivo log ainda não existe.
+
+Se o banco de dados de origem puder ser desligado antes de copiar logs de arquivo, esta etapa deve ser executada apenas uma vez. Os logs de arquivo são copiados e reproduzidos e, em seguida, o processo pode continuar diretamente para o processo de transição que replica os logs críticos de refazer.
+
+
+
+=== Replicação e repetição de registos incrementais
+
+Na maioria dos casos, a migração não é realizada imediatamente. Pode ser dias ou mesmo semanas antes que o processo de migração seja concluído, o que significa que os logs devem ser continuamente enviados para o banco de dados de réplica e reproduzidos. Isso garante que os dados mínimos devem ser transferidos e reproduzidos quando a transição chegar.
+
+Este processo pode ser facilmente programado. Por exemplo, o comando a seguir pode ser agendado no banco de dados original para garantir que o local usado para o envio de logs seja atualizado continuamente.
+
+....
+[oracle@jfsc1 pancake]$ cat copylogs.rman
+configure channel device type disk format '/rman/pancake/logship/%h_%e_%a.dbf';
+backup as copy archivelog from time 'sysdate-2';
+....
+....
+[oracle@jfsc1 pancake]$ rman target / cmdfile=copylogs.rman
+Recovery Manager: Release 12.1.0.2.0 - Production on Tue May 24 04:36:19 2016
+Copyright (c) 1982, 2014, Oracle and/or its affiliates.  All rights reserved.
+connected to target database: PANCAKE (DBID=3574534589)
+RMAN> configure channel device type disk format '/rman/pancake/logship/%h_%e_%a.dbf';
+2> backup as copy archivelog from time 'sysdate-2';
+3>
+4>
+using target database control file instead of recovery catalog
+old RMAN configuration parameters:
+CONFIGURE CHANNEL DEVICE TYPE DISK FORMAT   '/rman/pancake/logship/%h_%e_%a.dbf';
+new RMAN configuration parameters:
+CONFIGURE CHANNEL DEVICE TYPE DISK FORMAT   '/rman/pancake/logship/%h_%e_%a.dbf';
+new RMAN configuration parameters are successfully stored
+Starting backup at 24-MAY-16
+current log archived
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=369 device type=DISK
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=54 RECID=123 STAMP=912659482
+RMAN-03009: failure of backup command on ORA_DISK_1 channel at 05/24/2016 04:36:22
+ORA-19635: input and output file names are identical: /rman/pancake/logship/1_54_912576125.dbf
+continuing other job steps, job failed will not be re-run
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=41 RECID=124 STAMP=912659483
+RMAN-03009: failure of backup command on ORA_DISK_1 channel at 05/24/2016 04:36:23
+ORA-19635: input and output file names are identical: /rman/pancake/logship/1_41_912576125.dbf
+continuing other job steps, job failed will not be re-run
+...
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=45 RECID=152 STAMP=912659514
+RMAN-03009: failure of backup command on ORA_DISK_1 channel at 05/24/2016 04:36:55
+ORA-19635: input and output file names are identical: /rman/pancake/logship/1_45_912576125.dbf
+continuing other job steps, job failed will not be re-run
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=47 RECID=153 STAMP=912659515
+RMAN-00571: ===========================================================
+RMAN-00569: =============== ERROR MESSAGE STACK FOLLOWS ===============
+RMAN-00571: ===========================================================
+RMAN-03009: failure of backup command on ORA_DISK_1 channel at 05/24/2016 04:36:57
+ORA-19635: input and output file names are identical: /rman/pancake/logship/1_47_912576125.dbf
+Recovery Manager complete.
+....
+Depois que os logs tiverem sido recebidos, eles devem ser reproduzidos novamente. Exemplos anteriores mostraram o uso do sqlplus para executar manualmente `recover database until cancel` , que pode ser facilmente automatizado. O exemplo mostrado aqui usa o script descrito em link:oracle-migration-sample-scripts.html#replay-logs-on-standby-database["Reproduzir Registos na base de dados em espera"]. O script aceita um argumento que especifica o banco de dados que requer uma operação de repetição. Esse processo permite que o mesmo script seja usado em um esforço de migração de multibanco de dados.
+
+....
+[root@jfsc2 pancake]# ./replaylogs.pl PANCAKE
+ORACLE_SID = [oracle] ? The Oracle base has been set to /orabin
+SQL*Plus: Release 12.1.0.2.0 Production on Tue May 24 04:47:10 2016
+Copyright (c) 1982, 2014, Oracle.  All rights reserved.
+Connected to:
+Oracle Database 12c Enterprise Edition Release 12.1.0.2.0 - 64bit Production
+With the Partitioning, OLAP, Advanced Analytics and Real Application Testing options
+SQL> ORA-00279: change 560591 generated at 05/24/2016 03:33:56 needed for thread 1
+ORA-00289: suggestion : /rman/pancake/logship/1_54_912576125.dbf
+ORA-00280: change 560591 for thread 1 is in sequence #54
+Specify log: {<RET>=suggested | filename | AUTO | CANCEL}
+ORA-00279: change 562219 generated at 05/24/2016 04:15:08 needed for thread 1
+ORA-00289: suggestion : /rman/pancake/logship/1_55_912576125.dbf
+ORA-00280: change 562219 for thread 1 is in sequence #55
+ORA-00278: log file '/rman/pancake/logship/1_54_912576125.dbf' no longer needed for this recovery
+ORA-00279: change 562370 generated at 05/24/2016 04:19:18 needed for thread 1
+ORA-00289: suggestion : /rman/pancake/logship/1_56_912576125.dbf
+ORA-00280: change 562370 for thread 1 is in sequence #56
+ORA-00278: log file '/rman/pancake/logship/1_55_912576125.dbf' no longer needed for this recovery
+...
+ORA-00279: change 563137 generated at 05/24/2016 04:36:20 needed for thread 1
+ORA-00289: suggestion : /rman/pancake/logship/1_65_912576125.dbf
+ORA-00280: change 563137 for thread 1 is in sequence #65
+ORA-00278: log file '/rman/pancake/logship/1_64_912576125.dbf' no longer needed for this recovery
+ORA-00308: cannot open archived log '/rman/pancake/logship/1_65_912576125.dbf'
+ORA-27037: unable to obtain file status
+Linux-x86_64 Error: 2: No such file or directory
+Additional information: 3
+SQL> Disconnected from Oracle Database 12c Enterprise Edition Release 12.1.0.2.0 - 64bit Production
+With the Partitioning, OLAP, Advanced Analytics and Real Application Testing options
+....
+
+
+=== Redução
+
+Quando estiver pronto para ser cortado para o novo ambiente, você deve executar uma sincronização final. Ao trabalhar com sistemas de arquivos regulares, é fácil garantir que o banco de dados migrado seja 100% sincronizado com o original, pois os logs de refazer originais são copiados e reproduzidos. Não há uma boa maneira de fazer isso com ASM. Apenas os logs de arquivo podem ser facilmente retratados. Para se certificar de que nenhum dado é perdido, o encerramento final do banco de dados original deve ser realizado com cuidado.
+
+. Primeiro, o banco de dados deve ser silenciado, garantindo que nenhuma alteração esteja sendo feita. Essa quiescência pode incluir a desativação de operações agendadas, o desligamento de ouvintes e/ou o desligamento de aplicativos.
+. Depois que essa etapa é tomada, a maioria dos DBAs cria uma tabela fictícia para servir como um marcador do desligamento.
+. Forçar um arquivo de log para garantir que a criação da tabela fictícia seja gravada nos logs do arquivo. Para fazer isso, execute os seguintes comandos:
++
+....
+SQL> create table cutovercheck as select * from dba_users;
+Table created.
+SQL> alter system archive log current;
+System altered.
+SQL> shutdown immediate;
+Database closed.
+Database dismounted.
+ORACLE instance shut down.
+....
+. Para copiar o último dos registos de arquivo, execute os seguintes comandos. O banco de dados deve estar disponível, mas não aberto.
++
+....
+SQL> startup mount;
+ORACLE instance started.
+Total System Global Area  805306368 bytes
+Fixed Size                  2929552 bytes
+Variable Size             331353200 bytes
+Database Buffers          465567744 bytes
+Redo Buffers                5455872 bytes
+Database mounted.
+....
+. Para copiar os logs de arquivo, execute os seguintes comandos:
++
+....
+RMAN> configure channel device type disk format '/rman/pancake/logship/%h_%e_%a.dbf';
+2> backup as copy archivelog from time 'sysdate-2';
+3>
+4>
+using target database control file instead of recovery catalog
+old RMAN configuration parameters:
+CONFIGURE CHANNEL DEVICE TYPE DISK FORMAT   '/rman/pancake/logship/%h_%e_%a.dbf';
+new RMAN configuration parameters:
+CONFIGURE CHANNEL DEVICE TYPE DISK FORMAT   '/rman/pancake/logship/%h_%e_%a.dbf';
+new RMAN configuration parameters are successfully stored
+Starting backup at 24-MAY-16
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=8 device type=DISK
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=54 RECID=123 STAMP=912659482
+RMAN-03009: failure of backup command on ORA_DISK_1 channel at 05/24/2016 04:58:24
+ORA-19635: input and output file names are identical: /rman/pancake/logship/1_54_912576125.dbf
+continuing other job steps, job failed will not be re-run
+...
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=45 RECID=152 STAMP=912659514
+RMAN-03009: failure of backup command on ORA_DISK_1 channel at 05/24/2016 04:58:58
+ORA-19635: input and output file names are identical: /rman/pancake/logship/1_45_912576125.dbf
+continuing other job steps, job failed will not be re-run
+channel ORA_DISK_1: starting archived log copy
+input archived log thread=1 sequence=47 RECID=153 STAMP=912659515
+RMAN-00571: ===========================================================
+RMAN-00569: =============== ERROR MESSAGE STACK FOLLOWS ===============
+RMAN-00571: ===========================================================
+RMAN-03009: failure of backup command on ORA_DISK_1 channel at 05/24/2016 04:59:00
+ORA-19635: input and output file names are identical: /rman/pancake/logship/1_47_912576125.dbf
+....
+. Por fim, reproduza os registos de arquivo restantes no novo servidor.
++
+....
+[root@jfsc2 pancake]# ./replaylogs.pl PANCAKE
+ORACLE_SID = [oracle] ? The Oracle base has been set to /orabin
+SQL*Plus: Release 12.1.0.2.0 Production on Tue May 24 05:00:53 2016
+Copyright (c) 1982, 2014, Oracle.  All rights reserved.
+Connected to:
+Oracle Database 12c Enterprise Edition Release 12.1.0.2.0 - 64bit Production
+With the Partitioning, OLAP, Advanced Analytics and Real Application Testing options
+SQL> ORA-00279: change 563137 generated at 05/24/2016 04:36:20 needed for thread 1
+ORA-00289: suggestion : /rman/pancake/logship/1_65_912576125.dbf
+ORA-00280: change 563137 for thread 1 is in sequence #65
+Specify log: {<RET>=suggested | filename | AUTO | CANCEL}
+ORA-00279: change 563629 generated at 05/24/2016 04:55:20 needed for thread 1
+ORA-00289: suggestion : /rman/pancake/logship/1_66_912576125.dbf
+ORA-00280: change 563629 for thread 1 is in sequence #66
+ORA-00278: log file '/rman/pancake/logship/1_65_912576125.dbf' no longer needed
+for this recovery
+ORA-00308: cannot open archived log '/rman/pancake/logship/1_66_912576125.dbf'
+ORA-27037: unable to obtain file status
+Linux-x86_64 Error: 2: No such file or directory
+Additional information: 3
+SQL> Disconnected from Oracle Database 12c Enterprise Edition Release 12.1.0.2.0 - 64bit Production
+With the Partitioning, OLAP, Advanced Analytics and Real Application Testing options
+....
+. Nesse estágio, replique todos os dados. O banco de dados está pronto para ser convertido de um banco de dados de reserva para um banco de dados operacional ativo e, em seguida, aberto.
++
+....
+SQL> alter database activate standby database;
+Database altered.
+SQL> alter database open;
+Database altered.
+....
+. Confirmar a presença da tabela fictícia e, em seguida, soltá-la.
++
+....
+SQL> desc cutovercheck
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ USERNAME                                  NOT NULL VARCHAR2(128)
+ USER_ID                                   NOT NULL NUMBER
+ PASSWORD                                           VARCHAR2(4000)
+ ACCOUNT_STATUS                            NOT NULL VARCHAR2(32)
+ LOCK_DATE                                          DATE
+ EXPIRY_DATE                                        DATE
+ DEFAULT_TABLESPACE                        NOT NULL VARCHAR2(30)
+ TEMPORARY_TABLESPACE                      NOT NULL VARCHAR2(30)
+ CREATED                                   NOT NULL DATE
+ PROFILE                                   NOT NULL VARCHAR2(128)
+ INITIAL_RSRC_CONSUMER_GROUP                        VARCHAR2(128)
+ EXTERNAL_NAME                                      VARCHAR2(4000)
+ PASSWORD_VERSIONS                                  VARCHAR2(12)
+ EDITIONS_ENABLED                                   VARCHAR2(1)
+ AUTHENTICATION_TYPE                                VARCHAR2(8)
+ PROXY_ONLY_CONNECT                                 VARCHAR2(1)
+ COMMON                                             VARCHAR2(3)
+ LAST_LOGIN                                         TIMESTAMP(9) WITH TIME ZONE
+ ORACLE_MAINTAINED                                  VARCHAR2(1)
+SQL> drop table cutovercheck;
+Table dropped.
+....
+
+
+
+
+== REDO log migração sem interrupções
+
+Há momentos em que um banco de dados é organizado corretamente em geral, com exceção dos logs de refazer. Isso pode acontecer por muitos motivos, sendo que o mais comum está relacionado a instantâneos. Produtos como SnapManager para Oracle, SnapCenter e a estrutura de gerenciamento de storage NetApp Snap Creator permitem a recuperação quase instantânea de um banco de dados, mas somente se você reverter o estado dos volumes de arquivos de dados. Se os logs de refazer compartilham espaço com os arquivos de dados, a reversão não pode ser executada com segurança porque isso resultaria na destruição dos logs de refazer, provavelmente significando perda de dados. Portanto, os logs de refazer devem ser relocados.
+
+Esse procedimento é simples e pode ser realizado sem interrupções.
+
+
+
+=== Configuração atual do registo de reprocessamento
+
+. Identifique o número de grupos de registo de refazer e os respetivos números de grupo.
++
+....
+SQL> select group#||' '||member from v$logfile;
+GROUP#||''||MEMBER
+--------------------------------------------------------------------------------
+1 /redo0/NTAP/redo01a.log
+1 /redo1/NTAP/redo01b.log
+2 /redo0/NTAP/redo02a.log
+2 /redo1/NTAP/redo02b.log
+3 /redo0/NTAP/redo03a.log
+3 /redo1/NTAP/redo03b.log
+rows selected.
+....
+. Introduza o tamanho dos registos de refazer.
++
+....
+SQL> select group#||' '||bytes from v$log;
+GROUP#||''||BYTES
+--------------------------------------------------------------------------------
+1 524288000
+2 524288000
+3 524288000
+....
+
+
+
+
+=== Crie novos logs
+
+. Para cada log de refazer, crie um novo grupo com um tamanho e número correspondentes de membros.
++
+....
+SQL> alter database add logfile ('/newredo0/redo01a.log', '/newredo1/redo01b.log') size 500M;
+Database altered.
+SQL> alter database add logfile ('/newredo0/redo02a.log', '/newredo1/redo02b.log') size 500M;
+Database altered.
+SQL> alter database add logfile ('/newredo0/redo03a.log', '/newredo1/redo03b.log') size 500M;
+Database altered.
+SQL>
+....
+. Verifique a nova configuração.
++
+....
+SQL> select group#||' '||member from v$logfile;
+GROUP#||''||MEMBER
+--------------------------------------------------------------------------------
+1 /redo0/NTAP/redo01a.log
+1 /redo1/NTAP/redo01b.log
+2 /redo0/NTAP/redo02a.log
+2 /redo1/NTAP/redo02b.log
+3 /redo0/NTAP/redo03a.log
+3 /redo1/NTAP/redo03b.log
+4 /newredo0/redo01a.log
+4 /newredo1/redo01b.log
+5 /newredo0/redo02a.log
+5 /newredo1/redo02b.log
+6 /newredo0/redo03a.log
+6 /newredo1/redo03b.log
+12 rows selected.
+....
+
+
+
+
+=== Soltar registos antigos
+
+. Solte os logs antigos (grupos 1, 2 e 3).
++
+....
+SQL> alter database drop logfile group 1;
+Database altered.
+SQL> alter database drop logfile group 2;
+Database altered.
+SQL> alter database drop logfile group 3;
+Database altered.
+....
+. Se encontrar um erro que o impeça de largar um registo ativo, force um interrutor para o registo seguinte para libertar o bloqueio e force um ponto de verificação global. Veja o exemplo a seguir deste processo. A tentativa de soltar o grupo de arquivos de log 2, que estava localizado no local antigo, foi negada porque ainda havia dados ativos neste arquivo de log.
++
+....
+SQL> alter database drop logfile group 2;
+alter database drop logfile group 2
+*
+ERROR at line 1:
+ORA-01623: log 2 is current log for instance NTAP (thread 1) - cannot drop
+ORA-00312: online log 2 thread 1: '/redo0/NTAP/redo02a.log'
+ORA-00312: online log 2 thread 1: '/redo1/NTAP/redo02b.log'
+....
+. Um arquivo de log seguido por um ponto de verificação permite que você solte o arquivo de log.
++
+....
+SQL> alter system archive log current;
+System altered.
+SQL> alter system checkpoint;
+System altered.
+SQL> alter database drop logfile group 2;
+Database altered.
+....
+. Em seguida, elimine os registos do sistema de ficheiros. Você deve realizar este processo com extremo cuidado.
+

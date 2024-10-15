@@ -1,0 +1,29 @@
+---
+sidebar: sidebar 
+permalink: mysql/mysql-innodb_io_capacity.html 
+keywords: MySQL,MariaDB,innodb_io_capacity 
+summary: MySQL e innodb_io_Capacity 
+---
+= innodb_io_capacity
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+No plug-in InnoDB, um novo parâmetro chamado innodb_io_Capacity foi adicionado a partir do MySQL 5,7.
+
+Ele controla o número máximo de IOPS que o InnoDB executa (que inclui a taxa de limpeza de páginas sujas, bem como o tamanho do lote do buffer de inserção [ibuf]). O parâmetro innodb_io_Capacity define um limite superior em IOPS por tarefas de fundo do InnoDB, como limpar páginas do pool de buffers e mesclar dados do buffer de mudança.
+
+Defina o parâmetro innodb_io_Capacity para o número aproximado de operações de e/S que o sistema pode executar por segundo. Idealmente, mantenha a configuração o mais baixa possível, mas não tão baixa que as atividades de fundo desacelerem. Se a configuração for muito alta, os dados serão removidos do pool de buffers e inserirão o buffer muito rapidamente para que o armazenamento em cache forneça um benefício significativo.
+
+
+TIP: *A NetApp recomenda* que, se estiver usando essa configuração em NFS, analise o resultado do teste de IOPS (SysBench/fio) e defina o parâmetro de acordo. Use o menor valor possível para flushing e purging para manter-se a menos que você veja mais páginas modificadas ou sujas do que você deseja no pool de buffers InnoDB.
+
+
+CAUTION: Não use valores extremos como 20.000 ou mais, a menos que você tenha provado que valores mais baixos não são suficientes para sua carga de trabalho.
+
+O parâmetro InnoDB_io_Capacity regula as taxas de lavagem e e/S relacionadas
+
+
+CAUTION: Você pode prejudicar seriamente o desempenho definindo este parâmetro ou o parâmetro innodb_io_Capacity_Max muito alto e desperdiçando operações de e/S com lavagem prematura.

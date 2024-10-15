@@ -1,0 +1,9 @@
+= Eficiência de armazenamento sensível à temperatura
+:allow-uri-read: 
+
+
+
+
+=== Eficiência de armazenamento sensível à temperatura
+
+A eficiência de armazenamento sensível à temperatura (TSSE) está disponível no ONTAP 9.8 e posterior. Ele depende de mapas de calor de acesso a blocos para identificar blocos acessados com pouca frequência e compactá-los com maior eficiência.

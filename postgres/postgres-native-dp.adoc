@@ -1,0 +1,28 @@
+---
+sidebar: sidebar 
+permalink: postgres/postgres-native-dp.html 
+keywords: PostgreSQL,database,postgres 
+summary: Proteção de dados PostgreSQL P 
+---
+= Proteção de dados PostgreSQL
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Um dos principais aspetos do design de armazenamento é habilitar a proteção para volumes PostgreSQL. Os clientes podem proteger seus bancos de dados PostgreSQL usando a abordagem dump ou usando backups do sistema de arquivos. Esta seção explica as diferentes abordagens de backup de bancos de dados individuais ou de todo o cluster.
+
+Existem três abordagens para fazer backup de dados PostgreSQL:
+
+* Despejo do SQL Server
+* Backup no nível do sistema de arquivo
+* Arquivamento contínuo
+
+
+A ideia por trás do método de despejo do SQL Server é gerar um arquivo com comandos do SQL Server que, quando retornados ao servidor, pode recriar o banco de dados como era no momento do despejo. PostgreSQL fornece os programas utilitários `pg_dump` e `pg_dump_all` para criar backup individual e em nível de cluster. Esses despejos são lógicos e não contêm informações suficientes para serem usados pelo replay WAL.
+
+Uma estratégia alternativa de backup é usar o backup em nível de sistema de arquivos, no qual os administradores copiam diretamente os arquivos que o PostgreSQL usa para armazenar os dados no banco de dados. Este método é feito no modo offline: O banco de dados ou cluster deve ser desligado. Outra alternativa é usar `pg_basebackup` para executar o backup de streaming quente do banco de dados PostgreSQL.

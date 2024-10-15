@@ -1,0 +1,82 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-migration-planning.html 
+keywords: migration, oracle 
+summary: Planejamento de migração de banco de dados Oracle 
+---
+= Planejamento de migração de banco de dados Oracle
+:allow-uri-read: 
+
+
+[role="lead"]
+A migração de dados Oracle pode ocorrer em um de três níveis: O banco de dados, o host ou o storage array.
+
+As diferenças estão em qual componente da solução geral é responsável pela movimentação de dados: O banco de dados, o sistema operacional host ou o sistema de storage.
+
+A figura abaixo mostra um exemplo dos níveis de migração e do fluxo de dados. No caso da migração no nível do banco de dados, os dados são movidos do sistema de storage original pelas camadas do host e do banco de dados para o novo ambiente. A migração em nível de host é semelhante, mas os dados não passam pela camada de aplicativo e são gravados no novo local usando processos de host. Finalmente, com a migração no nível do storage, um array como um sistema NetApp FAS é responsável pela movimentação de dados.
+
+image:levels.png["Erro: Imagem gráfica em falta"]
+
+Uma migração no nível do banco de dados geralmente se refere ao uso do Oracle log enviado por meio de um banco de dados de reserva para concluir uma migração na camada Oracle. As migrações em nível de host são executadas usando a capacidade nativa da configuração do sistema operacional do host. Essa configuração inclui operações de cópia de arquivos usando comandos como cp, tar e Oracle Recovery Manager (RMAN) ou usando um gerenciador de volume lógico (LVM) para realocar os bytes subjacentes de um sistema de arquivos. O Oracle Automatic Storage Management (ASM) é categorizado como um recurso no nível do host, porque é executado abaixo do nível do aplicativo de banco de dados. O ASM ocupa o lugar do gerenciador de volume lógico usual em um host. Finalmente, os dados podem ser migrados no nível de storage array, o que significa que estão abaixo do nível do sistema operacional.
+
+
+
+== Considerações de Planejamento
+
+A melhor opção para migração depende de uma combinação de fatores, incluindo a escala do ambiente a ser migrado, a necessidade de evitar tempo de inatividade e o esforço geral necessário para realizar a migração. Bancos de dados grandes obviamente exigem mais tempo e esforço para a migração, mas a complexidade dessa migração é mínima. Pequenos bancos de dados podem ser migrados rapidamente, mas, se houver milhares para serem migrados, a escala do esforço pode criar complicações. Finalmente, quanto maior o banco de dados, maior a probabilidade de ser crítico para os negócios, o que dá origem a uma necessidade de minimizar o tempo de inatividade, preservando um caminho de back-out.
+
+Algumas das considerações para o Planejamento de uma estratégia de migração são discutidas aqui.
+
+
+
+== Tamanho dos dados
+
+Os tamanhos dos bancos de dados a serem migrados obviamente afetam o Planejamento da migração, embora o tamanho não afete necessariamente o tempo de transição. Quando uma grande quantidade de dados precisa ser migrada, a principal consideração é a largura de banda. As operações de cópia são geralmente realizadas com e/S sequenciais eficientes Como uma estimativa conservadora, suponha 50% de utilização da largura de banda de rede disponível para operações de cópia. Por exemplo, uma porta FC de 8GB GB pode transferir cerca de 800MBps GB teoricamente. Assumindo 50% de utilização, um banco de dados pode ser copiado a uma taxa de cerca de 400Mbps. Portanto, um banco de dados 10TB pode ser copiado em cerca de sete horas a essa taxa.
+
+A migração em distâncias maiores geralmente requer uma abordagem mais criativa, como o processo de envio de logs explicado em link:oracle-migration-datafile-move.html["Movimentação online do arquivo de dados"]. As redes IP de longa distância raramente têm largura de banda em qualquer lugar perto das velocidades LAN ou SAN. Em um caso, o NetApp ajudou com a migração de longa distância de um banco de dados 220TB com taxas de geração de arquivos log muito altas. A abordagem escolhida para transferência de dados foi o envio diário de fitas, pois esse método oferecia a máxima largura de banda possível.
+
+
+
+== Contagem da base de dados
+
+Em muitos casos, o problema de mover uma grande quantidade de dados não é o tamanho dos dados, mas sim a complexidade da configuração que suporta o banco de dados. Simplesmente saber que 50TB de bancos de dados devem ser migrados não é informação suficiente. Pode ser um único banco de dados de missão crítica 50TB, uma coleção de 4, 000 bancos de dados legados ou uma combinação de dados de produção e não produção. Em alguns casos, grande parte dos dados consiste em clones de um banco de dados de origem. Esses clones não precisam ser migrados porque podem ser facilmente recriados, especialmente quando a nova arquitetura foi projetada para utilizar volumes NetApp FlexClone.
+
+Para Planejar a migração, você deve entender quantos bancos de dados estão no escopo e como eles devem ser priorizados. À medida que o número de bancos de dados aumenta, a opção de migração preferida tende a ser menor e menor na pilha. Por exemplo, copiar um único banco de dados pode ser facilmente executado com RMAN e uma pequena interrupção. Essa é a replicação no nível do host.
+
+Se houver bancos de dados 50, pode ser mais fácil evitar a configuração de uma nova estrutura de sistema de arquivos para receber uma cópia RMAN e, em vez disso, mover os dados no lugar. Esse processo pode ser feito aproveitando a migração LVM baseada em host para realocar dados de LUNs antigos para novos LUNs. Isso move a responsabilidade da equipe do administrador do banco de dados (DBA) para a equipe do sistema operacional e, como resultado, os dados são migrados de forma transparente em relação ao banco de dados. A configuração do sistema de arquivos não foi alterada.
+
+Por fim, se for necessário migrar bancos de dados 500 em servidores 200, opções baseadas em armazenamento, como o recurso de importação de LUN estrangeiro (FLI) do ONTAP, podem ser usadas para realizar uma migração direta dos LUNs.
+
+
+
+== Requisitos de rearquitetura
+
+Normalmente, um layout de arquivo de banco de dados deve ser alterado para aproveitar os recursos do novo storage array; no entanto, isso nem sempre é o caso. Por exemplo, os recursos dos all-flash arrays EF-Series são direcionados principalmente à performance de SAN e à confiabilidade de SAN. Na maioria dos casos, os bancos de dados podem ser migrados para um array da EF-Series sem considerações especiais para o layout de dados. Os únicos requisitos são alto IOPS, baixa latência e confiabilidade robusta. Embora existam práticas recomendadas relacionadas a fatores como configuração RAID ou Dynamic Disk Pools, os projetos EF-Series raramente exigem alterações significativas na arquitetura de storage geral para utilizar esses recursos.
+
+Em contraste, a migração para o ONTAP geralmente requer mais consideração do layout do banco de dados para garantir que a configuração final forneça o valor máximo. Por si só, o ONTAP oferece muitos recursos para um ambiente de banco de dados, mesmo sem nenhum esforço de arquitetura específico. O mais importante é que ele oferece a capacidade de migrar sem interrupções para um novo hardware quando o hardware atual atinge seu fim de vida útil. De um modo geral, uma migração para o ONTAP é a última migração que você precisaria executar. O hardware subsequente é atualizado e os dados são migrados para novas Mídias sem interrupções.
+
+Com algum Planejamento, ainda mais benefícios estão disponíveis. As considerações mais importantes envolvem o uso de instantâneos. Os snapshots são a base para realizar backups, restaurações e operações de clonagem quase instantâneos. Como exemplo do poder dos snapshots, o maior uso conhecido é com um único banco de dados de 996TB GB executado em cerca de 250 LUNs em controladores de 6. Esse banco de dados pode ser feito em 2 minutos, restaurado em 2 minutos e clonado em 15 minutos. Os benefícios adicionais incluem a capacidade de mover dados pelo cluster em resposta a alterações no workload e a aplicação de controles de qualidade do serviço (QoS) para fornecer performance boa e consistente em um ambiente de vários bancos de dados.
+
+Tecnologias como controles de QoS, realocação de dados, snapshots e clonagem funcionam em praticamente qualquer configuração. No entanto, alguns pensamentos geralmente são necessários para maximizar os benefícios. Em alguns casos, os layouts de armazenamento de banco de dados podem exigir alterações de design para maximizar o investimento no novo storage array. Essas alterações no design podem afetar a estratégia de migração porque as migrações baseadas em host ou baseadas em storage replicam o layout de dados original. Etapas adicionais podem ser necessárias para concluir a migração e fornecer um layout de dados otimizado para o ONTAP. Os procedimentos mostrados em link:oracle-migration-procedures-overview.html["Visão geral dos procedimentos de migração Oracle"] e mais tarde demonstram alguns dos métodos para não apenas migrar um banco de dados, mas para migrá-lo para o layout final ideal com o mínimo de esforço.
+
+
+
+== Tempo de redução
+
+A interrupção máxima permitida de serviço durante a transição deve ser determinada. É um erro comum supor que todo o processo de migração causa interrupções. Muitas tarefas podem ser concluídas antes do início de qualquer interrupção de serviço e muitas opções permitem a conclusão da migração sem interrupção ou interrupção. Mesmo quando a interrupção é inevitável, você ainda deve definir a interrupção máxima de serviço permitida, pois a duração do tempo de transição varia de procedimento para procedimento.
+
+Por exemplo, copiar um banco de dados 10TB normalmente requer aproximadamente sete horas para ser concluído. Se as necessidades empresariais permitirem uma interrupção de sete horas, a cópia de arquivos é uma opção fácil e segura para migração. Se cinco horas forem inaceitáveis, um processo simples de envio de logs (consulte link:oracle-migration-log-shipping["Oracle log de envio"]) pode ser configurado com o mínimo de esforço para reduzir o tempo de transferência para aproximadamente 15 minutos. Durante esse tempo, um administrador de banco de dados pode concluir o processo. Se 15 minutos forem inaceitáveis, o processo de transição final pode ser automatizado por meio de script para reduzir o tempo de transição para apenas alguns minutos. Você sempre pode acelerar uma migração, mas isso acontece com o custo de tempo e esforço. As metas de tempo de transição devem ser baseadas no que é aceitável para o negócio.
+
+
+
+== Caminho de back-out
+
+Nenhuma migração é completamente livre de riscos. Mesmo que a tecnologia funcione perfeitamente, há sempre a possibilidade de erro do usuário. O risco associado a um caminho de migração escolhido deve ser considerado juntamente com as consequências de uma migração falhada. Por exemplo, o recurso transparente de migração de armazenamento on-line do Oracle ASM é um de seus principais recursos, e esse método é um dos mais confiáveis conhecidos. No entanto, os dados estão sendo copiados irreversivelmente com este método. No caso altamente improvável de que um problema ocorra com ASM, não há um caminho de back-out fácil. A única opção é restaurar o ambiente original ou usar o ASM para reverter a migração de volta para os LUNs originais. O risco pode ser minimizado, mas não eliminado, executando um backup do tipo snapshot no sistema de storage original, supondo que o sistema seja capaz de executar tal operação.
+
+
+
+== Ensaio
+
+Alguns procedimentos de migração devem ser totalmente verificados antes da execução. A necessidade de migração e ensaio do processo de transição é uma solicitação comum com bancos de dados de missão crítica para os quais a migração deve ser bem-sucedida e o tempo de inatividade deve ser minimizado. Além disso, os testes de aceitação do usuário são frequentemente incluídos como parte do trabalho de pós-migração, e o sistema geral pode ser devolvido à produção somente após a conclusão desses testes.
+
+Se houver necessidade de ensaio, vários recursos do ONTAP podem tornar o processo muito mais fácil. Em particular, os snapshots podem redefinir um ambiente de teste e criar rapidamente várias cópias com uso eficiente de espaço de um ambiente de banco de dados.

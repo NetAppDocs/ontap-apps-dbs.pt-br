@@ -1,0 +1,11 @@
+= 
+:allow-uri-read: 
+
+
+A disposição em categorias de um conjunto de dados com o FabricPool resulta em uma dependência entre o storage array primário e a categoria de armazenamento de objetos. Há muitas opções de armazenamento de objetos que oferecem níveis variados de disponibilidade. É importante entender o impacto de uma possível perda de conectividade entre o storage array primário e a camada de storage de objetos.
+
+Se uma e/S emitida para o ONTAP exigir dados da camada de capacidade e o ONTAP não puder alcançar o nível de capacidade para recuperar blocos, a e/S eventualmente expirará. O efeito deste tempo limite depende do protocolo utilizado. Em um ambiente NFS, o ONTAP responde com uma resposta EJUKEBOX ou EDELAY, dependendo do protocolo. Alguns sistemas operacionais mais antigos podem interpretar isso como um erro, mas os sistemas operacionais atuais e os níveis de patch atuais do cliente Oracle Direct NFS tratam isso como um erro recuperável e continuam aguardando a conclusão da e/S.
+
+Um tempo limite mais curto se aplica a ambientes SAN. Se um bloco no ambiente de armazenamento de objetos for necessário e permanecer inacessível por dois minutos, um erro de leitura será retornado ao host. O volume ONTAP e os LUNs permanecem online, mas o sistema operacional do host pode sinalizar o sistema de arquivos como estando em um estado de erro.
+
+A política de problemas de conetividade de storage de objetos `snapshot-only` é menos preocupante porque apenas os dados de backup são dispostos em camadas. Problemas de comunicação atrasariam a recuperação de dados, mas de outra forma não afetariam os dados que estão sendo usados ativamente. As `auto` políticas e `all` permitem a disposição em camadas de dados inativos do LUN ativo, o que significa que um erro durante a recuperação de dados do armazenamento de objetos pode afetar a disponibilidade do banco de dados. Uma implantação de SAN com essas políticas deve ser usada somente com conexões de rede e storage de objetos de classe empresarial projetadas para alta disponibilidade. NetApp StorageGRID é a opção superior.

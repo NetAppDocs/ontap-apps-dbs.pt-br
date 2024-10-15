@@ -1,0 +1,17 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-config-sizing.html 
+keywords: epic,cache,iris 
+summary: Dimensionamento de storage para Epic 
+---
+= Dimensionamento de storage para Epic
+:allow-uri-read: 
+
+
+[role="lead"]
+Você deve trabalhar com nossa equipe de aliança Epic para confirmar todos os designs da Epic. A equipe pode ser alcançada em NetApp.com. Todas as implantações precisam atender às solicitações dos clientes, aderindo às práticas recomendadas pela Epic e pela NetApp.
+
+Para obter informações sobre como usar as ferramentas de dimensionamento do NetApp para determinar o tamanho e o número corretos de grupos RAID para as necessidades de storage do ambiente de software da Epic, consulte link:https://fieldportal.netapp.com/content/192412?assetComponentId=192510["TR-3930i: Diretrizes de dimensionamento de NetApp para a Epic"^] (login no NetApp necessário).
+
+
+NOTE: O acesso ao portal de campo do NetApp é necessário.

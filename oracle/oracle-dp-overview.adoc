@@ -1,0 +1,31 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dp-overview.html 
+keywords: oracle, database, ontap 
+summary: Visão geral da proteção de dados Oracle 
+---
+= Proteção de dados Oracle com ONTAP
+:allow-uri-read: 
+
+
+[role="lead"]
+O NetApp sabe que os dados mais críticos são encontrados em bancos de dados.
+
+Uma empresa não pode operar sem acesso a seus dados e, às vezes, os dados definem o negócio. No entanto, a proteção de dados é mais do que apenas garantir um backup utilizável. No entanto, é preciso realizar os backups de maneira rápida e confiável, além de armazená-los em segurança.
+
+O outro lado da proteção de dados é a recuperação de dados. Quando os dados estão inacessíveis, a empresa é afetada e pode estar inoperante até que os dados sejam restaurados. Este processo deve ser rápido e confiável. Finalmente, a maioria dos bancos de dados deve ser protegida contra desastres, o que significa manter uma réplica do banco de dados. A réplica deve estar suficientemente atualizada. Também deve ser rápido e simples tornar a réplica um banco de dados totalmente operacional.
+
+
+NOTE: Esta documentação substitui o relatório técnico publicado anteriormente _TR-4591: Proteção de dados Oracle: Backup, recuperação e replicação._
+
+
+
+== Planejamento
+
+A arquitetura de proteção de dados empresariais certa depende dos requisitos de negócios relacionados à retenção de dados, capacidade de recuperação e tolerância de interrupções durante vários eventos.
+
+Por exemplo, considere o número de aplicações, bancos de dados e conjuntos de dados importantes no escopo. Criar uma estratégia de backup para um único conjunto de dados que garanta a conformidade com SLAs típicos é bastante simples, pois não há muitos objetos para gerenciar. À medida que o número de conjuntos de dados aumenta, o monitoramento se torna mais complicado e os administradores podem ser forçados a gastar um tempo cada vez maior lidando com falhas de backup. À medida que um ambiente atinge a nuvem e o provedor de serviços dimensiona, é necessária uma abordagem totalmente diferente.
+
+O tamanho do conjunto de dados também afeta a estratégia. Por exemplo, existem muitas opções para backup e recuperação com um banco de dados 100GB porque o conjunto de dados é tão pequeno. A simples cópia de dados de Mídia de backup com ferramentas tradicionais normalmente fornece um rto suficiente para recuperação. Um banco de dados 100TB normalmente precisa de uma estratégia completamente diferente, a menos que o rto permita uma interrupção de vários dias, caso em que um procedimento tradicional de backup e recuperação baseado em cópia pode ser aceitável.
+
+Finalmente, existem fatores fora do próprio processo de backup e recuperação. Por exemplo, existem bancos de dados que suportam atividades críticas de produção, tornando a recuperação um evento raro que só é realizado por DBAs qualificados? Alternativamente, os bancos de dados fazem parte de um grande ambiente de desenvolvimento em que a recuperação é uma ocorrência frequente e gerenciada por uma EQUIPE DE TI generalista?

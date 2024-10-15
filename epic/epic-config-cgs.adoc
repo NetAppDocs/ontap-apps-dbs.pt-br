@@ -1,0 +1,38 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-config-cgs.html 
+keywords: epic,cache,iris 
+summary: Configuração épica de snapshots de storage 
+---
+= Configuração de eficiência de storage épica
+:allow-uri-read: 
+
+
+[role="lead"]
+Os aplicativos com armazenamento distribuído em mais de um volume com um ou mais LUNs de quantidades apropriadas para a carga de trabalho precisam do backup do conteúdo, garantindo que a proteção de dados consistente exija CGS.
+
+Grupos de consistência (CGS para abreviação) fornecem essa capacidade e muito mais. Eles podem ser usados todas as noites para criar snapshots consistentes sob demanda ou programados usando uma política. Use isso para restaurar, clonar e até mesmo replicar dados.
+
+Para obter informações adicionais sobre a CGS, consulte a. link:https://docs.netapp.com/us-en/ontap/consistency-groups/["Visão geral dos grupos de consistência"^]
+
+Assim que os volumes e LUNs forem provisionados conforme detalhado nas seções anteriores deste documento, eles poderão ser configurados em um conjunto de CGS. A melhor prática recomendada é configurá-los como descrito na imagem abaixo:
+
+image:epic-cg-layout.png["Layout de grupo de consistência épica"]
+
+
+
+== Instantâneos do grupo de consistência
+
+Um cronograma de instantâneos CG noturno deve ser definido em cada um dos CGS-filho associado aos volumes que fornecem armazenamento para o banco de dados de produção. Isso resultará em um novo conjunto de backups consistentes desses CGS todas as noites. Eles podem ser usados para clonar o banco de dados de produção para uso em ambientes que não sejam de produção, como desenvolvimento e teste. A NetApp desenvolveu fluxos de trabalho Ansible automatizados baseados em CG para a Epic a fim de automatizar o backup dos bancos de dados de produção, os ambientes de atualização e teste também.
+
+Os snapshots CG podem ser usados para dar suporte às operações de restauração do banco de dados de produção da Epic.
+
+Para volumes SAN, desative a política de instantâneos padrão em cada volume usado para CGS. Esses snapshots geralmente são gerenciados pela aplicação de backup usada ou pelo serviço de automação do NetApp Epic Ansible.
+
+Para volumes SAN, desative a política de instantâneos padrão em cada volume. Esses snapshots geralmente são gerenciados por uma aplicação de backup ou pela automação do Epic Ansible.[NS2]
+
+Os conjuntos de dados WebBLOB e VMware devem ser configurados como apenas volumes, não associados ao CGS. Você pode usar o SnapMirror para manter snapshots em sistemas de storage separados da produção.
+
+Quando concluída, a configuração ficaria da seguinte forma:
+
+image:epic-cg-snapshots.png["Épico com snapshots CG"]

@@ -1,0 +1,64 @@
+---
+sidebar: sidebar 
+permalink: mysql/mysql-mysql-over-san.html 
+keywords: MySQL,MariaDB,SAN 
+summary: MySQL com SAN 
+---
+= MySQL com SAN
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Existem duas opções para configurar o MySQL com SAN usando o modelo de dois volumes usual.
+
+Bancos de dados menores podem ser colocados em um par de LUNs padrão, desde que as demandas de e/S e capacidade estejam dentro dos limites de um único sistema de arquivos LUN. Por exemplo, um banco de dados que requer aproximadamente 2K IOPS aleatório pode ser hospedado em um único sistema de arquivos em um único LUN. Da mesma forma, um banco de dados com apenas 100GB MB de tamanho caberia em um único LUN sem criar um problema de gerenciamento.
+
+Bancos de dados maiores exigem vários LUNs. Por exemplo, um banco de dados que requer 100K IOPS provavelmente precisará de pelo menos oito LUNs. Um único LUN se tornaria um gargalo devido ao número inadequado de canais SCSI para unidades. Um banco de dados 10TB seria igualmente difícil de gerenciar em um único LUN 10TB. Os gerenciadores lógicos de volume são projetados para unir os recursos de desempenho e capacidade de vários LUNs para melhorar o desempenho e a capacidade de gerenciamento.
+
+Em ambos os casos, um par de volumes ONTAP deve ser suficiente. Com uma configuração simples, o LUN do arquivo de dados seria colocado em um volume dedicado, assim como o LUN de log. Com uma configuração lógica do gerenciador de volumes, todos os LUNs no grupo de volumes de arquivos de dados estariam em um volume dedicado e os LUNs do grupo de volumes de log estariam em um segundo volume dedicado.
+
+[TIP]
+====
+*A NetApp recomenda* usando dois sistemas de arquivos para implantações MySQL na SAN:
+
+* O primeiro sistema de arquivos armazena todos os dados MySQL, incluindo tablespace, dados e índice.
+* O segundo sistema de arquivos armazena todos os logs (logs binários, logs lentos e logs de transações).
+
+
+Existem várias razões para separar dados dessa maneira, incluindo:
+
+* Os padrões de e/S de arquivos de dados e arquivos de log diferem. Separá-los permitiria mais opções com controles de QoS.
+* O uso ideal da tecnologia Snapshot requer a capacidade de restaurar os arquivos de dados de forma independente. Commingling arquivos de dados com arquivos de log interfere com a restauração de arquivos de dados.
+* A tecnologia NetApp SnapMirror pode ser usada para fornecer uma funcionalidade de recuperação de desastres simples e de baixo RPO para um banco de dados. No entanto, ela requer diferentes programações de replicação para arquivos e logs de dados.
+
+
+====
+
+NOTE: Use esse layout básico de dois volumes para preparar a solução para o futuro, de modo que todos os recursos do ONTAP possam ser usados, se necessário.
+
+[TIP]
+====
+*A NetApp recomenda* a formatação da sua unidade com o sistema de arquivos ext4 devido aos seguintes recursos:
+
+* Abordagem estendida aos recursos de gerenciamento de blocos usados no sistema de arquivos de journaling (JFS) e recursos de alocação atrasada do sistema de arquivos estendido (XFS).
+* EXT4 permite sistemas de arquivos de até 1 exbibyte (2 60 bytes) e arquivos de até 16 tebibytes (16 * 2 40 bytes). Em contraste, o sistema de arquivos ext3 suporta apenas um tamanho máximo de sistema de arquivos de 16TB e um tamanho máximo de arquivo de 2TB.
+* Em sistemas de arquivos ext4, a alocação de vários blocos (mballoc) aloca vários blocos para um arquivo em uma única operação, em vez de alocá-los um por um, como em ext3. Essa configuração reduz a sobrecarga de chamar o alocador de bloco várias vezes e otimiza a alocação de memória.
+* Embora o XFS seja o padrão para muitas distribuições Linux, ele gerencia metadados de forma diferente e não é adequado para algumas configurações do MySQL.
+
+
+====
+[TIP]
+====
+*A NetApp recomenda* usar opções de tamanho de bloco 4K com o utilitário mkfs para alinhar com o tamanho de LUN de bloco existente.
+
+`mkfs.ext4 -b 4096`
+
+====
+Os LUNs NetApp armazenam dados em 4KB blocos físicos, o que rende oito blocos lógicos de 512 bytes.
+
+Se você não configurar o mesmo tamanho de bloco, a e/S não será alinhada com os blocos físicos corretamente e poderá gravar em duas unidades diferentes em um grupo RAID, resultando em latência.
+
+
+NOTE: É importante alinhar a e/S para operações de leitura/gravação suaves. No entanto, quando a e/S começa em um bloco lógico que não está no início de um bloco físico, a e/S está desalinhada. As operações de e/S são alinhadas somente quando começam em um bloco lógico, o primeiro bloco lógico em um bloco físico.

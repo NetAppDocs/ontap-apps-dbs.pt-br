@@ -1,0 +1,130 @@
+---
+sidebar: sidebar 
+permalink: microsoft/win_environment.html 
+keywords: Windows,Hyper-V,VHDX,VM,Virtual 
+summary: Saiba mais sobre o armazenamento NetApp e o ambiente de servidor Windows 
+---
+= Armazenamento NetApp e ambiente Windows Server
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Como mencionado no link:win_overview.html["Visão geral"], as controladoras de storage NetApp fornecem uma arquitetura realmente unificada que dá suporte aos protocolos de arquivo, bloco e objeto. Isso inclui SMB/CIFS, NFS, NVMe/TCP, NVMe/FC, iSCSI, FC (FCP) e S3, além de criar acesso unificado de cliente e host. O mesmo controlador de storage pode, ao mesmo tempo, fornecer serviço de storage de bloco na forma de LUNs SAN e serviço de arquivos como NFS e SMB/CIFS. O ONTAP também está disponível como um ASA (All SAN Array) que otimiza o acesso ao host por meio de multipathing ativo-ativo simétrico com iSCSI e FCP, enquanto os sistemas ONTAP unificados usam multipathing ativo-ativo assimétrico. Em ambos os modos, o ONTAP usa o ANA para gerenciamento de multipath NVMe sobre Fabrics (NVMe-of).
+
+Uma controladora de storage NetApp executando o ONTAP pode dar suporte aos seguintes workloads em um ambiente Windows Server:
+
+* VMs hospedadas em compartilhamentos SMB 3,0 continuamente disponíveis
+* VMs hospedadas em LUNs de volume compartilhado (CSV) de cluster executadas em iSCSI ou FC
+* Bancos de dados SQL Server em compartilhamentos SMB 3,0
+* Bancos de dados SQL Server em NVMe-of, iSCSI ou FC
+* Outros workloads de aplicações
+
+
+Além disso, os recursos de eficiência de storage da NetApp, como deduplicação, cópias NetApp FlexClone(R), tecnologia NetApp Snapshot, thin Provisioning, compactação e disposição em camadas de storage, agregam valor significativo para workloads executados em Windows Server.
+
+
+
+== ONTAP data Management
+
+O ONTAP é um software de gerenciamento executado em um controlador de storage da NetApp. Referido como um nó, um controlador de armazenamento NetApp é um dispositivo de hardware com um processador, RAM e NVRAM. O nó pode ser conetado a unidades de disco SATA, SAS ou SSD ou a uma combinação dessas unidades.
+
+Vários nós são agregados em um sistema em cluster. Os nós no cluster comunicam-se continuamente entre si para coordenar as atividades do cluster. Os nós também podem mover dados de forma transparente de nó para nó usando caminhos redundantes para uma rede de cluster dedicada que consiste em dois switches Ethernet 10Gb. Os nós no cluster podem assumir o controle uns dos outros para fornecer alta disponibilidade durante quaisquer cenários de failover. Os clusters são administrados em um cluster inteiro, em vez de por nó, e os dados são fornecidos a partir de uma ou mais máquinas virtuais de storage (SVMs). Para fornecer dados, um cluster precisa ter pelo menos um SVM.
+
+A unidade básica de um cluster é o nó e os nós são adicionados ao cluster como parte de um par de alta disponibilidade (HA). Os pares DE HA permitem alta disponibilidade comunicando-se entre si por meio de uma interconexão de HA (separada da rede de cluster dedicada) e mantendo conexões redundantes com os discos do par de HA. Os discos não são compartilhados entre pares de HA, embora as gavetas possam conter discos que pertencem a um dos membros de um par de HA. A figura a seguir mostra uma implantação de storage do NetApp em um ambiente do Windows Server.
+
+image:win_image1.png["Implantação de armazenamento NetApp no ambiente do Windows Server, largura de 624 mm, altura de 479 mm"]
+
+
+
+== Máquinas virtuais de armazenamento
+
+O ONTAP SVM é um servidor de storage lógico que fornece acesso a dados a LUNs e/ou namespace nas a partir de uma ou mais interfaces lógicas (LIFs). O SVM é, portanto, a unidade básica de segmentação de storage que permite a alocação segura a vários clientes no ONTAP. Cada SVM é configurado para possuir volumes de storage provisionados de um agregado físico e interfaces lógicas (LIFs) atribuídas a uma rede Ethernet física ou a portas de destino FC.
+
+Discos lógicos (LUNs) ou compartilhamentos CIFS são criados dentro dos volumes de uma SVM e são mapeados para hosts e clusters do Windows para fornecer espaço de storage, conforme mostrado na figura a seguir. Os SVMs são independentes de nós e baseados em cluster; eles podem usar recursos físicos, como volumes ou portas de rede em qualquer lugar do cluster.
+
+image:win_image2.png["Máquina virtual de armazenamento ONTAP, largura de 572mm, altura de 443mm"]
+
+
+
+== Provisionamento de armazenamento NetApp para Windows Server
+
+O storage pode ser provisionado para o Windows Server em ambientes SAN e nas. Em um ambiente SAN, o storage é fornecido como discos de LUNs no volume NetApp como storage de bloco. Em um ambiente nas, o storage é fornecido como compartilhamentos CIFS/SMB em volumes NetApp como storage de arquivos. Esses discos e compartilhamentos podem ser aplicados no Windows Server da seguinte forma:
+
+* Storage para hosts do Windows Server para workloads de aplicativos
+* Armazenamento para Nano Server e contentores
+* Armazenamento para hosts Hyper-V individuais para armazenar VMs
+* Armazenamento compartilhado para clusters Hyper-V na forma de CSVs para armazenar VMs
+* Armazenamento para bancos de dados SQL Server
+
+
+
+
+== Gerenciamento do storage do NetApp
+
+Para conetar, configurar e gerenciar o armazenamento do NetApp a partir do Windows Server 2016, use um dos seguintes métodos:
+
+* *Secure Shell (SSH).* Use qualquer cliente SSH no Windows Server para executar comandos NetApp CLI.
+* *System Manager.* Este é o produto de gerenciamento baseado em GUI da NetApp.
+* *Kit de ferramentas do NetApp PowerShell.* Este é o Toolkit do NetApp PowerShell para automatizar e implementar scripts e fluxos de trabalho personalizados.
+
+
+
+
+== Kit de ferramentas do NetApp
+
+O NetApp PowerShell Toolkit (PSTK) é um módulo do PowerShell que fornece automação de ponta a ponta e permite a administração de storage do ONTAP. O módulo ONTAP contém mais de 2.000 cmdlets e ajuda na administração de FAS, NetApp All Flash FAS (AFF), hardware comum e recursos de nuvem.
+
+
+
+=== Coisas para se lembrar
+
+* O NetApp não suporta espaços de armazenamento do Windows Server. Os espaços de armazenamento são usados apenas para JBOD (apenas um monte de discos) e não funciona com qualquer tipo de RAID (armazenamento de conexão direta [DAS] ou SAN).
+* Os pools de armazenamento em cluster no Windows Server não são suportados pelo ONTAP.
+* O NetApp suporta o formato de disco rígido virtual compartilhado (VHDX) para cluster de convidados em ambientes SAN do Windows.
+* O Windows Server não suporta a criação de pools de armazenamento usando iSCSI ou FC LUNs.
+
+
+
+
+=== Leitura adicional
+
+* Para obter mais informações sobre o Kit de ferramentas do NetApp PowerShell, visite o https://mysupport.netapp.com/site/tools/tool-eula/ontap-powershell-toolkit["Site de suporte da NetApp"].
+* Para obter informações sobre as práticas recomendadas do NetApp PowerShell Toolkit, https://www.netapp.com/media/16861-tr-4475.pdf?v=93202073432AM["TR-4475: Guia de práticas recomendadas do kit de ferramentas do NetApp PowerShell"] consulte .
+
+
+
+
+== Melhores práticas de rede
+
+As redes Ethernet podem ser amplamente segregadas nos seguintes grupos:
+
+* Uma rede cliente para as VMs
+* Mais uma rede de armazenamento (iSCSI ou SMB conetando-se aos sistemas de armazenamento)
+* Uma rede de comunicação de cluster (heartbeat e outra comunicação entre os nós do cluster)
+* Uma rede de gerenciamento (para monitorar e solucionar problemas do sistema)
+* Uma rede de migração (para migração ao vivo do host)
+* Replicação de VM (uma réplica do Hyper-V)
+
+
+
+
+=== Práticas recomendadas
+
+* A NetApp recomenda ter portas físicas dedicadas para cada uma das funcionalidades anteriores para isolamento e desempenho da rede.
+* Para cada um dos requisitos de rede anteriores (exceto para os requisitos de armazenamento), várias portas de rede físicas podem ser agregadas para distribuir carga ou fornecer tolerância a falhas.
+* A NetApp recomenda ter um switch virtual dedicado criado no host Hyper-V para conexão de armazenamento convidado dentro da VM.
+* Certifique-se de que o host Hyper-V e os caminhos de dados iSCSI Guest usam diferentes portas físicas e switches virtuais para isolamento seguro entre o convidado e o host.
+* A NetApp recomenda evitar o agrupamento de NIC para NICs iSCSI.
+* A NetApp recomenda o uso de ONTAP multipath input/output (MPIO) configurado no host para fins de armazenamento.
+* A NetApp recomenda o uso de MPIO em uma VM convidada se estiver usando iniciadores iSCSI convidados. O uso do MPIO deve ser evitado dentro do convidado se você usar discos pass-through. Neste caso, a instalação do MPIO no host deve ser suficiente.
+* A NetApp recomenda não aplicar políticas de QoS ao switch virtual atribuído à rede de storage.
+* A NetApp recomenda não usar o endereçamento IP privado automático (APIPA) em NICs físicos porque o APIPA não é roteável e não está registrado no DNS.
+* A NetApp recomenda a ativação de quadros jumbo para redes de migração CSV, iSCSI e Live para aumentar a taxa de transferência e reduzir os ciclos da CPU.
+* A NetApp recomenda desmarcar a opção permitir que o sistema operacional de Gerenciamento compartilhe esta placa de rede para que o switch virtual Hyper-V crie uma rede dedicada para as VMs.
+* A NetApp recomenda a criação de caminhos de rede redundantes (vários switches) para migração em tempo real e para a rede iSCSI para fornecer resiliência e QoS.
+

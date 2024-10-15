@@ -1,0 +1,16 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dr-snapmirror-cg.html 
+keywords: oracle, data protection, DR, CG 
+summary: Recuperação de desastres do grupo de consistência e banco de dados Oracle 
+---
+= Recuperação de desastres do grupo de consistência e banco de dados Oracle
+:allow-uri-read: 
+
+
+[role="lead"]
+A replicação do grupo de consistência pode ser tão simples quanto programar a replicação de um único volume via SnapMirror. Isso inclui datafiles, controlfiles, logs de arquivo e logs de refazer. Cada atualização do SnapMirror resulta em uma nova cópia do banco de dados no site de destino que é consistente e pronta para ativação quebrando o espelho.
+
+Quando um banco de dados deve abranger volumes, é necessário um snapshot de grupo de consistência (cg-snapshot).
+
+Um benefício adicional dessa estratégia quando usada com o SnapMirror no modo de replicação em nível de bloco é a replicação completa de todos os snapshots no sistema de storage de origem. O complemento completo de backups é replicado, além da cópia de recuperação de desastres.

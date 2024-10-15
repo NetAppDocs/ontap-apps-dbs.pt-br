@@ -1,0 +1,20 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-config-huk.html 
+keywords: epic,cache,iris 
+summary: EPIC em ONTAP - Utilitários de host 
+---
+= EPIC em ONTAP - Utilitários de host
+:allow-uri-read: 
+
+
+[role="lead"]
+Os utilitários de host NetApp são pacotes de software para vários sistemas operacionais que contêm utilitários de gerenciamento, como o `sanlun` binário CLI, drivers multipath e outros arquivos importantes necessários para operações de SAN adequadas.
+
+[TIP]
+====
+*A NetApp recomenda* a instalação dos Utilitários de host do NetApp em hosts que estejam conetados e acessando sistemas de armazenamento do NetApp. Para obter mais informações, consulte link:https://imt.netapp.com/matrix/["Ferramenta de Matriz de interoperabilidade"^] e link:https://docs.netapp.com/us-en/ontap-sanhost/["Anfitriões de SAN"^] documentação.
+
+====
+
+NOTE: Com o AIX, é especialmente importante que os Utilitários de host sejam instalados antes de descobrir LUNs. Isso garante que o comportamento de multipathing LUN esteja configurado corretamente. Se a descoberta foi realizada sem os Utilitários do host, os LUNs precisarão ser desfigurados do sistema usando o `rmdev -dl` comando e, em seguida, redescobertos via `cfgmgr` ou uma reinicialização.

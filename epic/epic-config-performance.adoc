@@ -1,0 +1,23 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-config-performance.html 
+keywords: epic,cache,iris,QoS 
+summary: Gerenciamento de performance épico 
+---
+= Gerenciamento de performance épico
+:allow-uri-read: 
+
+
+[role="lead"]
+A maioria dos all-flash arrays garante a performance necessária para os workloads da Epic. O diferencial do NetApp é a capacidade de definir políticas de performance no nível básico e garantir uma performance consistente para cada aplicação.
+
+
+
+== Qualidade do serviço (QoS)
+
+A NetApp recomenda o uso de QoS. O benefício da QoS é a capacidade de consolidar todos os workloads da Epic. Todos os protocolos e pools de storage podem residir em menos hardware. Não é necessário separar pools de storage.
+
+* A NetApp recomenda que todos os workloads no cluster sejam atribuídos a uma política de QoS para melhor gerenciar o espaço livre no cluster.
+* A NetApp recomenda o balanceamento de todos os workloads uniformemente entre o par de HA.
+* Não use políticas de QoS ao executar qualquer teste de e/S; caso contrário, o teste do Genio falhará. Analise os diferentes workloads de produção por 2-4 semanas antes de atribuir políticas de QoS.
+

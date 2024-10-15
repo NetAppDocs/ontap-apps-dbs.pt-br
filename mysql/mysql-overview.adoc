@@ -1,0 +1,23 @@
+---
+sidebar: sidebar 
+permalink: mysql/mysql-overview.html 
+keywords: MySQL,MariaDB,TR-4722 
+summary: MySQL no ONTAP 
+---
+= Bancos de dados MySQL no ONTAP
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+MySQL e suas variantes, incluindo MariaDB e Percona MySQL, é o banco de dados mais popular do mundo.
+
+
+NOTE: Esta documentação sobre o ONTAP e o banco de dados MySQL substitui o banco de dados _TR-4722: MySQL publicado anteriormente sobre as melhores práticas do ONTAP._
+
+ONTAP é uma plataforma ideal para banco de dados MySQL porque o ONTAP é literalmente projetado para bancos de dados. Vários recursos, como otimizações aleatórias de latência de e/S para qualidade avançada de serviço (QoS) e funcionalidade básica do FlexClone, foram criados especificamente para atender às necessidades dos workloads de banco de dados.
+
+Recursos adicionais, como atualizações sem interrupções, (incluindo substituição de storage) garantem que seus bancos de dados essenciais permaneçam disponíveis. Você também pode ter recuperação instantânea de desastres para ambientes grandes por meio do MetroCluster ou selecionar bancos de dados usando o SnapMirror active Sync.
+
+Mais importante ainda, o ONTAP oferece desempenho incomparável com a capacidade de dimensionar a solução para suas necessidades exclusivas. Nossos sistemas high-end podem fornecer mais de 1M IOPS com latências medidas em microssegundos. No entanto, se você só precisa de 100K IOPS, é possível dimensionar corretamente sua solução de storage com uma controladora menor que ainda executa o mesmo sistema operacional de storage.

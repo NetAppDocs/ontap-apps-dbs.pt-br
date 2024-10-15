@@ -1,0 +1,28 @@
+---
+sidebar: sidebar 
+permalink: postgres/postgres-overview.html 
+keywords: PostgreSQL,database,postgres 
+summary: Bancos de dados PostgreSQL no ONTAP 
+---
+= Bancos de dados PostgreSQL no ONTAP
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+PostgreSQL vem com variantes que incluem PostgreSQL, PostgreSQL Plus e EDB Postgres Advanced Server (EPAS). O PostgreSQL é normalmente implantado como banco de dados back-end para aplicativos de várias camadas. Ele é suportado por pacotes de middleware comuns (como PHP, Java, Python, Tcl/Tk, ODBC e JDBC) e tem sido historicamente uma escolha popular para sistemas de gerenciamento de banco de dados de código aberto. O ONTAP é uma excelente escolha para executar bancos de dados PostgreSQL de acordo com sua confiabilidade, alto desempenho e recursos eficientes de gerenciamento de dados.
+
+
+NOTE: Esta documentação sobre o ONTAP e o banco de dados PostgreSQL substitui o banco de dados _TR-4770: PostgreSQL publicado anteriormente sobre as melhores práticas do ONTAP._
+
+À medida que os dados crescem exponencialmente, o gerenciamento de dados se torna mais complexo para as empresas. Essa complexidade aumenta os custos de licenciamento, operação, suporte e manutenção. Para reduzir o TCO geral, considere mudar de bancos de dados comerciais para de código aberto com armazenamento de back-end confiável e de alto desempenho.
+
+O ONTAP é uma plataforma ideal porque o ONTAP é literalmente projetado para bancos de dados. Vários recursos, como otimizações aleatórias de latência de e/S para qualidade avançada de serviço (QoS) e funcionalidade básica do FlexClone, foram criados especificamente para atender às necessidades dos workloads de banco de dados.
+
+Recursos adicionais, como atualizações sem interrupções, (incluindo substituição de storage) garantem que seus bancos de dados essenciais permaneçam disponíveis. Você também pode ter recuperação instantânea de desastres para ambientes grandes por meio do MetroCluster ou selecionar bancos de dados usando o SnapMirror active Sync.
+
+Mais importante ainda, o ONTAP oferece desempenho incomparável com a capacidade de dimensionar a solução para suas necessidades exclusivas. Nossos sistemas high-end podem fornecer mais de 1M IOPS com latências medidas em microssegundos. No entanto, se você só precisa de 100K IOPS, pode redimensionar sua solução de storage com uma controladora menor que ainda executa o mesmo sistema operacional de storage.

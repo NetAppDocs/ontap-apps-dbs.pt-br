@@ -1,0 +1,113 @@
+---
+section: vmware
+title: VMware
+entries:
+- title: VMware vSphere com ONTAP
+  entries:
+  - title: Visão geral
+    url: "/vmware/vmware-vsphere-overview.html"
+  - title: Storage unificado
+    url: "/vmware/vmware-vsphere-unified.html"
+  - title: Ferramentas de virtualização
+    url: "/vmware/vmware-vsphere-vtools.html"
+  - title: Gerenciamento baseado em políticas de storage e volume virtual
+    url: "/vmware/vmware-vsphere-vvols_and_spbm.html"
+  - title: Armazenamentos de dados e protocolos
+    entries:
+    - title: Visão geral
+      url: "/vmware/vmware-vsphere-datastores-top.html"
+    - title: SAN
+      url: "/vmware/vmware-vsphere-datastores-san.html"
+    - title: NFS
+      url: "/vmware/vmware-vsphere-datastores-nfs.html"
+    - title: Volumes FlexGroup
+      url: "/vmware/vmware-vsphere-datastores-fg.html"
+  - title: Configuração de rede
+    url: "/vmware/vmware-vsphere-network.html"
+  - title: Clonagem
+    url: "/vmware/vmware-vsphere-cloning.html"
+  - title: Proteção de dados
+    url: "/vmware/vmware-vsphere-dp.html"
+  - title: QoS
+    url: "/vmware/vmware-vsphere-qos.html"
+  - title: Backup e migração para a nuvem
+    url: "/vmware/vmware-vsphere-cloud_migration_backup.html"
+  - title: Criptografia para dados do vSphere
+    url: "/vmware/vmware-vsphere-encryption.html"
+  - title: Active IQ Unified Manager
+    url: "/vmware/vmware-vsphere-aiqum.html"
+  - title: Gerenciamento baseado em política de storage
+    url: "/vmware/vmware-vsphere-policy-and-vvols.html"
+  - title: Programador de recursos distribuídos do VMware Storage
+    url: "/vmware/vmware-vsphere-sdrs.html"
+  - title: Definições recomendadas
+    url: "/vmware/vmware-vsphere-settings.html"
+- title: Volumes virtuais (vVols) com ONTAP
+  entries:
+  - title: Visão geral
+    url: "/vmware/vmware-vvols-overview.html"
+  - title: Usando vVols com ONTAP
+    url: "/vmware/vmware-vvols-ontap.html"
+  - title: Implantação de storage vVols
+    url: "/vmware/vmware-vvols-deploy.html"
+  - title: Protegendo vVols
+    url: "/vmware/vmware-vvols-protect.html"
+  - title: Solução de problemas
+    url: "/vmware/vmware-vvols-resources.html"
+- title: VMware Site Recovery Manager com ONTAP
+  entries:
+  - title: Visão geral do SRM com ONTAP
+    url: "/vmware/vmware-srm-overview.html"
+  - title: Práticas recomendadas de implantação
+    url: "/vmware/vmware-srm-deployment_best_practices.html"
+  - title: Práticas recomendadas operacionais
+    url: "/vmware/vmware-srm-operational_best_practices.html"
+  - title: Topologias de replicação
+    url: "/vmware/vmware-srm-replication_topologies.html"
+  - title: Solução de problemas do SRM ao usar a replicação vVols
+    url: "/vmware/vmware-srm-vvol-troubleshooting.html"
+  - title: Informações adicionais para o SRM
+    url: "/vmware/vmware-srm-additional-information.html"
+- title: Cluster de armazenamento do vSphere Metro com o ONTAP
+  entries:
+  - title: Visão geral do vMSC
+    url: "/vmware/vmware_vmsc_overview.html"
+  - title: Solução vSphere HA
+    url: "/vmware/vmware_vmsc_solution.html"
+  - title: Projeto vMSC
+    url: "/vmware/vmware_vmsc_design.html"
+  - title: Resiliência do vMSC
+    url: "/vmware/vmware_vmsc_resiliency.html"
+  - title: Cenários vMSC com MCC
+    url: "/vmware/vmware_vmsc_scen_mcc.html"
+- title: Segurança do produto
+  entries:
+  - title: Ferramentas do ONTAP para VMware vSphere
+    url: "/vmware/vmware-security-tools.html"
+  - title: Plug-in do SnapCenter para VMware vSphere
+    url: "/vmware/vmware-security-snapcenter.html"
+- title: Guia de fortalecimento da segurança para as ferramentas do ONTAP para VMware
+    vSphere
+  entries:
+  - title: Visão geral do endurecimento das ferramentas do ONTAP
+    url: "/vmware/vmware-otv-hardening-overview.html"
+  - title: Verificando a integridade das ferramentas do ONTAP instalam pacotes
+    url: "/vmware/vmware-otv-hardening-integrity.html"
+  - title: Portas e protocolos
+    url: "/vmware/vmware-otv-hardening-ports.html"
+  - title: Pontos de acesso (usuários)
+    url: "/vmware/vmware-otv-hardening-access.html"
+  - title: TLS mútuo
+    url: "/vmware/vmware-otv-hardening-mutual-tls.html"
+  - title: Certificado HTTPS
+    url: "/vmware/vmware-otv-hardening-https-cert.html"
+  - title: Banner de login
+    url: "/vmware/vmware-otv-hardening-login-banner.html"
+  - title: Tempo limite de inatividade
+    url: "/vmware/vmware-otv-hardening-timeout.html"
+  - title: Ataque DOS
+    url: "/vmware/vmware-otv-hardening-dos.html"
+  - title: Configuração NTP
+    url: "/vmware/vmware-otv-hardening-ntp.html"
+  - title: Políticas de senha
+    url: "/vmware/vmware-otv-hardening-passwords.html"

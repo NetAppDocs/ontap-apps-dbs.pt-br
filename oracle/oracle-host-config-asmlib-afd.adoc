@@ -1,0 +1,67 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-host-config-asmlib-afd.html 
+keywords: oracle, database, ontap, asmlib, block size, oracleasm, multipath, afd 
+summary: Bancos de dados Oracle com Linux e ASMlib/ASM Filter Driver 
+---
+= Bancos de dados Oracle com ASMLib/AFD (ASM Filter Driver)
+:allow-uri-read: 
+
+
+[role="lead"]
+Tópicos de configuração específicos para o sistema operacional Linux usando AFD e ASMlib
+
+
+
+== Tamanhos de blocos ASMlib
+
+ASMlib é uma biblioteca de gerenciamento ASM opcional e utilitários associados. Seu valor principal é a capacidade de carimbar um LUN ou um arquivo baseado em NFS como um recurso ASM com uma etiqueta legível por humanos.
+
+Versões recentes do ASMlib detetam um parâmetro LUN chamado Logical Blocks per Physical Block expoent (LBPPBE). Esse valor não foi reportado pelo destino SCSI ONTAP até recentemente. Ele agora retorna um valor que indica que um tamanho de bloco 4KB é preferido. Esta não é uma definição de tamanho de bloco, mas é uma dica para qualquer aplicativo que usa LBPPBE que I/os de um determinado tamanho podem ser manipulados de forma mais eficiente. No entanto, o ASMlib interpreta LBPPBE como um tamanho de bloco e marca persistentemente o cabeçalho ASM quando o dispositivo ASM é criado.
+
+Esse processo pode causar problemas com atualizações e migrações de várias maneiras, tudo com base na incapacidade de misturar dispositivos ASMlib com diferentes tamanhos de bloco no mesmo grupo de discos ASM.
+
+Por exemplo, arrays mais antigos geralmente relataram um valor LBPPBE de 0 ou não relataram esse valor de todo. ASMlib interpreta isso como um tamanho de bloco de 512 bytes. Matrizes mais recentes seriam interpretadas como tendo um tamanho de bloco 4KB. Não é possível misturar dispositivos de 512 bytes e 4KB no mesmo grupo de discos ASM. Isso bloquearia um usuário de aumentar o tamanho do grupo de discos ASM usando LUNs de dois arrays ou utilizando ASM como uma ferramenta de migração. Em outros casos, o RMAN pode não permitir a cópia de arquivos entre um grupo de discos ASM com um tamanho de bloco de 512 bytes e um grupo de discos ASM com um tamanho de bloco de 4KBMB.
+
+A solução preferida é corrigir o ASMlib. O ID do bug Oracle é 13999609, e o patch está presente no oracleasm-support-2,1.8-1 e superior. Este patch permite que um usuário defina o parâmetro `ORACLEASM_USE_LOGICAL_BLOCK_SIZE` como `true` no `/etc/sysconfig/oracleasm` arquivo de configuração. Isso impede que o ASMlib use o parâmetro LBPPBE, o que significa que os LUNs na nova matriz agora são reconhecidos como dispositivos de bloco de 512 bytes.
+
+
+NOTE: A opção não altera o tamanho do bloco em LUNs que foram previamente carimbados pelo ASMlib. Por exemplo, se um grupo de discos ASM com blocos de 512 bytes precisar ser migrado para um novo sistema de armazenamento que relata um bloco 4KB, a opção `ORACLEASM_USE_LOGICAL_BLOCK_SIZE` deve ser definida antes que os novos LUNs sejam carimbados com ASMlib. Se os dispositivos já tiverem sido carimbados por oracleasm, eles devem ser reformatados antes de serem carimbados com um novo tamanho de bloco. Primeiro, desfigure o dispositivo com `oracleasm deletedisk`e, em seguida, limpe os primeiros 1GB do dispositivo com `dd if=/dev/zero of=/dev/mapper/device bs=1048576 count=1024`. Por fim, se o dispositivo tiver sido particionado anteriormente, use o `kpartx` comando para remover partições obsoletas ou simplesmente reiniciar o sistema operacional.
+
+Se o ASMlib não puder ser corrigido, o ASMlib pode ser removido da configuração. Esta alteração é disruptiva e requer a remoção de carimbo de discos ASM e certificar-se de que o `asm_diskstring` parâmetro está definido corretamente. No entanto, essa alteração não requer a migração de dados.
+
+
+
+== Tamanhos de bloco do Acionamento do filtro ASM (AFD)
+
+O AFD é uma biblioteca de gerenciamento ASM opcional que está se tornando a substituição do ASMlib. Do ponto de vista do armazenamento, ele é muito semelhante ao ASMlib, mas inclui recursos adicionais, como a capacidade de bloquear e/S não-Oracle para reduzir as chances de erros de usuário ou aplicativo que poderiam corromper dados.
+
+
+
+=== Tamanhos de bloco de dispositivos
+
+Como o ASMlib, o AFD também lê o parâmetro LUN blocos lógicos por expoente de bloco físico (LBPPBE) e, por padrão, usa o tamanho do bloco físico, não o tamanho do bloco lógico.
+
+Isso pode criar um problema se AFD for adicionado a uma configuração existente onde os dispositivos ASM já estejam formatados como dispositivos de bloco de 512 bytes. O driver AFD reconheceria o LUN como um dispositivo 4K e a incompatibilidade entre o rótulo ASM e o dispositivo físico impediria o acesso. Da mesma forma, as migrações seriam afetadas porque não é possível misturar dispositivos de 512 bytes e 4KB no mesmo grupo de discos ASM. Isso bloquearia um usuário de aumentar o tamanho do grupo de discos ASM usando LUNs de dois arrays ou utilizando ASM como uma ferramenta de migração. Em outros casos, o RMAN pode não permitir a cópia de arquivos entre um grupo de discos ASM com um tamanho de bloco de 512 bytes e um grupo de discos ASM com um tamanho de bloco de 4KBMB.
+
+A solução é simples - AFD inclui um parâmetro para controlar se usa os tamanhos de blocos lógicos ou físicos. Este é um parâmetro global que afeta todos os dispositivos no sistema. Para forçar o AFD a usar o tamanho do bloco lógico, defina `options oracleafd oracleafd_use_logical_block_size=1` no `/etc/modprobe.d/oracleafd.conf` arquivo.
+
+
+
+=== Tamanhos de transferência multipath
+
+As recentes alterações do kernel do linux impõem restrições de tamanho de e/S enviadas para dispositivos multipath, e o AFD não honra essas restrições. Os I/os são então rejeitados, o que faz com que o caminho LUN fique offline. O resultado é uma incapacidade de instalar o Oracle Grid, configurar ASM ou criar um banco de dados.
+
+A solução é especificar manualmente o comprimento máximo de transferência no arquivo multipath.conf para LUNs ONTAP:
+
+....
+devices {
+            device {
+                vendor "NETAPP"
+                product "LUN.*"
+                max_sectors_kb 4096
+        }
+    }
+....
+
+CAUTION: Mesmo que não existam problemas atualmente, este parâmetro deve ser definido se AFD for usado para garantir que uma futura atualização do linux não cause problemas inesperadamente.

@@ -1,0 +1,26 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dr-smas-fail-interconnect.html 
+keywords: Oracle, SnapMirror active sync, SMBC, failover 
+summary: Failover de sincronização ativa do Oracle e do SnapMirror 
+---
+= SnapMirror ative Sync - perda da replicação do Oracle RAC
+:allow-uri-read: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+A perda do link de replicação do Oracle RAC produzirá um resultado semelhante à perda de conetividade do SnapMirror, exceto que os tempos limite serão menores por padrão. Sob as configurações padrão, um nó Oracle RAC aguardará 200 segundos após a perda de conetividade de armazenamento antes de despejar, mas só aguardará 30 segundos após a perda do batimento cardíaco da rede RAC.
+
+As mensagens CRS são semelhantes às mostradas abaixo. Você pode ver o intervalo de tempo limite de 30 segundos. Uma vez que CSS_critical foi definido em jfs12, localizado no local A, que será o local para sobreviver e jfs13 no local B será despejado.
+
+....
+2024-09-12 10:56:44.047 [ONMD(3528)]CRS-1611: Network communication with node jfs13 (2) has been missing for 75% of the timeout interval.  If this persists, removal of this node from cluster will occur in 6.980 seconds
+2024-09-12 10:56:48.048 [ONMD(3528)]CRS-1610: Network communication with node jfs13 (2) has been missing for 90% of the timeout interval.  If this persists, removal of this node from cluster will occur in 2.980 seconds
+2024-09-12 10:56:51.031 [ONMD(3528)]CRS-1607: Node jfs13 is being evicted in cluster incarnation 621599354; details at (:CSSNM00007:) in /gridbase/diag/crs/jfs12/crs/trace/onmd.trc.
+2024-09-12 10:56:52.390 [CRSD(6668)]CRS-7503: The Oracle Grid Infrastructure process 'crsd' observed communication issues between node 'jfs12' and node 'jfs13', interface list of local node 'jfs12' is '192.168.30.1:33194;', interface list of remote node 'jfs13' is '192.168.30.2:33621;'.
+2024-09-12 10:56:55.683 [ONMD(3528)]CRS-1601: CSSD Reconfiguration complete. Active nodes are jfs12 .
+2024-09-12 10:56:55.722 [CRSD(6668)]CRS-5504: Node down event reported for node 'jfs13'.
+2024-09-12 10:56:57.222 [CRSD(6668)]CRS-2773: Server 'jfs13' has been removed from pool 'Generic'.
+2024-09-12 10:56:57.224 [CRSD(6668)]CRS-2773: Server 'jfs13' has been removed from pool 'ora.NTAP'.
+....

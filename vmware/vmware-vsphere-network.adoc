@@ -1,0 +1,189 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-vsphere-network.html 
+keywords: vSphere, datastore, VMFS, FC, FCoE, NVMe/FC, iSCSI, NFS, vVols 
+summary: Esta página descreve as práticas recomendadas para a implementação de uma solução de storage ONTAP em um ambiente VMware vSphere. 
+---
+= Configuração de rede
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+A configuração das configurações de rede ao usar o vSphere com sistemas executando o ONTAP é simples e semelhante a outras configurações de rede.
+
+Aqui estão algumas coisas a considerar:
+
+* Separe o tráfego de rede de armazenamento de outras redes. Uma rede separada pode ser obtida usando uma VLAN dedicada ou switches separados para armazenamento. Se a rede de armazenamento partilhar caminhos físicos, como uplinks, poderá necessitar de portas de QoS ou uplink adicionais para garantir uma largura de banda suficiente. Não conete os hosts diretamente ao storage; use os switches para ter caminhos redundantes e permitir que o VMware HA funcione sem intervenção. link:vmware-vsphere-network.html["Ligação direta em rede"]Consulte para obter informações adicionais.
+* Os frames grandes podem ser usados se desejado e suportados pela sua rede, especialmente ao usar iSCSI. Se forem usados, certifique-se de que estejam configurados de forma idêntica em todos os dispositivos de rede, VLANs e assim por diante no caminho entre o armazenamento e o host ESXi. Caso contrário, você pode ver problemas de desempenho ou conexão. A MTU também deve ser definida de forma idêntica no switch virtual ESXi, na porta VMkernel e também nas portas físicas ou grupos de interface de cada nó ONTAP.
+* O NetApp recomenda apenas desativar o controle de fluxo de rede nas portas de rede do cluster dentro de um cluster ONTAP. O NetApp não faz outras recomendações sobre as práticas recomendadas para as portas de rede restantes usadas para tráfego de dados. Você deve ativá-lo ou desativá-lo conforme necessário.  https://www.netapp.com/pdf.html?item=/media/16885-tr-4182pdf.pdf["TR-4182"^]Consulte para obter mais informações sobre o controlo de fluxo.
+* Quando os storages ESXi e ONTAP estão conetados a redes de armazenamento Ethernet, a NetApp recomenda configurar as portas Ethernet às quais esses sistemas se conetam como portas de borda de protocolo de árvore de expansão rápida (RSTP) ou usando o recurso Cisco PortFast. A NetApp recomenda ativar o recurso de tronco de porta de árvore de expansão rápida em ambientes que usam o recurso Cisco PortFast e que têm entroncamento de VLAN 802,1Q habilitado para o servidor ESXi ou para os storages ONTAP.
+* A NetApp recomenda as seguintes práticas recomendadas para agregação de links:
++
+** Use switches que suportam agregação de links de portas em dois chassis de switch separados usando uma abordagem de grupo de agregação de links de vários gabinetes, como o Virtual PortChannel (VPC) da Cisco.
+** Desative o LACP para portas de switch conetadas ao ESXi a menos que você esteja usando dvSwitches 5,1 ou posterior com o LACP configurado.
+** Use o LACP para criar agregados de link para sistemas de storage ONTAP com grupos de interface multimodo dinâmico com hash IP.
+** Use uma política de agrupamento de hash IP no ESXi.
+
+
+
+
+A tabela a seguir fornece um resumo dos itens de configuração de rede e indica onde as configurações são aplicadas.
+
+|===
+| Item | ESXi | Interrutor | Nó | SVM 
+
+
+| Endereço IP | VMkernel | Não** | Não** | Sim 
+
+
+| Agregação de links | Switch virtual | Sim | Sim | Não* 
+
+
+| VLAN | Grupos de portas VMkernel e VM | Sim | Sim | Não* 
+
+
+| Controle de fluxo | NIC | Sim | Sim | Não* 
+
+
+| Spanning tree | Não | Sim | Não | Não 
+
+
+| MTU (para quadros jumbo) | Switch virtual e porta VMkernel (9000) | Sim (definido para máx.) | Sim (9000) | Não* 
+
+
+| Grupos de failover | Não | Não | Sim (criar) | Sim (selecione) 
+|===
+*Os LIFs SVM se conetam a portas, grupos de interfaces ou interfaces VLAN que têm VLAN, MTU e outras configurações. No entanto, as configurações não são gerenciadas no nível da SVM.
+
+**Esses dispositivos têm endereços IP próprios para gerenciamento, mas esses endereços não são usados no contexto da rede de armazenamento ESXi.
+
+
+
+== SAN (FC, FCoE, NVMe/FC, iSCSI), RDM
+
+No vSphere, há três maneiras de usar LUNs de armazenamento em bloco:
+
+* Com datastores VMFS
+* Com mapeamento de dispositivo bruto (RDM)
+* Como um LUN acessado e controlado por um iniciador de software de um sistema operacional convidado VM
+
+
+O VMFS é um sistema de arquivos em cluster de alto desempenho que fornece datastores que são pools de armazenamento compartilhado. Os armazenamentos de dados VMFS podem ser configurados com LUNs acessados por meio de namespaces FC, iSCSI, FCoE ou NVMe acessados pelo protocolo NVMe/FC. O VMFS permite que LUNs tradicionais sejam acessados simultaneamente por cada servidor ESX em um cluster. O tamanho máximo de LUN do ONTAP é geralmente 16TB; portanto, um armazenamento de dados VMFS 5 de tamanho máximo de 64TB GB (veja a primeira tabela nesta seção) é criado usando quatro LUNs 16TB (todos os sistemas de storage SAN suportam o tamanho máximo de LUN VMFS de 64TB GB). Como a arquitetura LUN do ONTAP não tem pequenas profundidades de fila individuais, os armazenamentos de dados VMFS no ONTAP podem ser dimensionados para um grau maior do que com arquiteturas de array tradicionais de uma maneira relativamente simples.
+
+O vSphere inclui suporte integrado para vários caminhos para dispositivos de armazenamento, conhecido como NMP (NMP). O NMP pode detetar o tipo de storage para sistemas de storage compatíveis e configurar automaticamente a pilha NMP para suportar os recursos do sistema de storage em uso.
+
+Tanto o NMP quanto o ONTAP suportam o Acesso lógico assimétrico (ALUA) para negociar caminhos otimizados e não otimizados. No ONTAP, um caminho otimizado para ALUA segue um caminho de dados direto, usando uma porta de destino no nó que hospeda o LUN que está sendo acessado. O ALUA é ativado por padrão no vSphere e no ONTAP. O NMP reconhece o cluster ONTAP como ALUA e usa o plug-in do tipo storage array ALUA (`VMW_SATP_ALUA`) e seleciona o plug-in de seleção de caminho round-robin (`VMW_PSP_RR`).
+
+O ESXi 6 suporta até 256 LUNs e até 1.024 caminhos totais para LUNs. Quaisquer LUNs ou caminhos além desses limites não são vistos pelo ESXi. Assumindo o número máximo de LUNs, o limite de caminho permite quatro caminhos por LUN. Em um cluster ONTAP maior, é possível alcançar o limite de caminho antes do limite de LUN. Para lidar com essa limitação, o ONTAP oferece suporte ao mapa de LUN seletivo (SLM) na versão 8,3 e posterior.
+
+O SLM limita os nós que anunciam caminhos para um determinado LUN. É uma prática recomendada do NetApp ter pelo menos um LIF por nó por SVM e usar o SLM para limitar os caminhos anunciados para o nó que hospeda o LUN e seu parceiro de HA. Embora existam outros caminhos, eles não são anunciados por padrão. É possível modificar os caminhos anunciados com os argumentos adicionar e remover nó de relatório dentro do SLM. Observe que os LUNs criados em versões anteriores ao 8,3 anunciam todos os caminhos e precisam ser modificados para anunciar apenas os caminhos para o par de HA de hospedagem. Para obter mais informações sobre o SLM, consulte a seção 5,9 do https://www.netapp.com/pdf.html?item=/media/10680-tr4080pdf.pdf["TR-4080"^]. O método anterior de portsets também pode ser usado para reduzir ainda mais os caminhos disponíveis para um LUN. Os Portsets ajudam reduzindo o número de caminhos visíveis através dos quais os iniciadores em um iggroup podem ver LUNs.
+
+* O SLM está ativado por predefinição. A menos que você esteja usando portsets, nenhuma configuração adicional é necessária.
+* Para LUNs criadas antes do Data ONTAP 8.3, aplique manualmente o SLM executando o `lun mapping remove-reporting-nodes` comando para remover os nós de relatórios de LUN e restringir o acesso LUN ao nó proprietário de LUN e ao seu parceiro de HA.
+
+
+Os protocolos de bloqueio (iSCSI, FC e FCoE) acessam LUNs usando IDs de LUN e números de série, juntamente com nomes exclusivos. FC e FCoE usam nomes mundiais (WWNNs e WWPNs) e iSCSI usa nomes qualificados iSCSI (IQNs). O caminho para LUNs dentro do armazenamento não tem sentido para os protocolos de bloco e não é apresentado em nenhum lugar do protocolo. Portanto, um volume que contém apenas LUNs não precisa ser montado internamente, e um caminho de junção não é necessário para volumes que contêm LUNs usados em datastores. O subsistema NVMe no ONTAP funciona da mesma forma.
+
+Outras práticas recomendadas a considerar:
+
+* Certifique-se de que é criada uma interface lógica (LIF) para cada SVM em cada nó no cluster do ONTAP para obter disponibilidade e mobilidade máximas. A prática recomendada de SAN ONTAP é usar duas portas físicas e LIFs por nó, uma para cada malha. O ALUA é usado para analisar caminhos e identificar caminhos otimizados ativos (diretos) versus caminhos não otimizados ativos. O ALUA é usado para FC, FCoE e iSCSI.
+* Para redes iSCSI, use várias interfaces de rede VMkernel em sub-redes de rede diferentes com agrupamento NIC quando vários switches virtuais estiverem presentes. Você também pode usar várias NICs físicas conetadas a vários switches físicos para fornecer HA e maior taxa de transferência. A figura a seguir fornece um exemplo de conectividade multipath. No ONTAP, use um grupo de interface de modo único com vários links para diferentes switches ou LACP com grupos de interface multimodo para alta disponibilidade e benefícios de agregação de links.
+* Se o CHAP (Challenge-Handshake Authentication Protocol) for usado no ESXi para autenticação de destino, ele também deve ser configurado no ONTAP usando a CLI (`vserver iscsi security create`) ou com o Gerenciador de sistema (edite a segurança do iniciador em armazenamento > SVMs > Configurações da SVM > Protocolos > iSCSI).
+* Use as ferramentas do ONTAP para o VMware vSphere para criar e gerenciar LUNs e grupos de pessoas. O plug-in determina automaticamente as WWPNs de servidores e cria grupos apropriados. Ele também configura LUNs de acordo com as melhores práticas e os mapeia para os grupos corretos.
+* Use RDMs com cuidado porque eles podem ser mais difíceis de gerenciar e também usam caminhos, que são limitados como descrito anteriormente. Os LUNs ONTAP suportam ambos https://kb.vmware.com/s/article/2009226["modo de compatibilidade física e virtual"^] os RDMs.
+* Para saber mais sobre como usar o NVMe/FC com o vSphere 7,0, consulte este https://docs.netapp.com/us-en/ontap-sanhost/nvme_esxi_7.html["Guia de configuração de host ONTAP NVMe/FC"^] e http://www.netapp.com/us/media/tr-4684.pdf["TR-4684"^]o . A figura a seguir mostra a conetividade multipath de um host vSphere a um LUN ONTAP.
+
+
+image:vsphere_ontap_image2.png["Conetividade multipathing"]
+
+
+
+== NFS
+
+O vSphere permite que os clientes usem arrays NFS de classe empresarial para fornecer acesso simultâneo a datastores para todos os nós em um cluster ESXi. Como mencionado na seção datastore, há alguns benefícios de visibilidade de eficiência de uso e facilidade de uso ao usar o NFS com vSphere.
+
+As práticas recomendadas a seguir são recomendadas ao usar o ONTAP NFS com vSphere:
+
+* Use uma única interface lógica (LIF) para cada SVM em cada nó no cluster do ONTAP. As recomendações anteriores de um LIF por datastore não são mais necessárias. Embora o acesso direto (LIF e datastore no mesmo nó) seja o melhor, não se preocupe com o acesso indireto porque o efeito de desempenho geralmente é mínimo (microssegundos).
+* Todas as versões do VMware vSphere com suporte no momento podem usar o NFS v3 e o v4,1. O suporte oficial para nconnect foi adicionado à atualização 2 do vSphere 8,0 para NFS v3. Para o NFS v4,1, o vSphere continua a oferecer suporte ao entroncamento de sessão, autenticação Kerberos e autenticação Kerberos com integridade. É importante notar que o entroncamento de sessão requer o ONTAP 9.14,1 ou uma versão posterior. Você pode saber mais sobre o recurso nconnect e como ele melhora o desempenho em link:https://docs.netapp.com/us-en/netapp-solutions/virtualization/vmware-vsphere8-nfsv3-nconnect.html["NFSv3 nLigue o recurso ao NetApp e VMware"].
+
+
+Vale a pena notar que NFSv3 e NFSv4,1 usam diferentes mecanismos de bloqueio. O NFSv3 usa o bloqueio do lado do cliente, enquanto o NFSv4,1 usa o bloqueio do lado do servidor. Embora um volume ONTAP possa ser exportado através de ambos os protocolos, o ESXi pode montar apenas um datastore através de um protocolo. No entanto, isso não significa que outros hosts ESXi não possam montar o mesmo datastore através de uma versão diferente. Para evitar quaisquer problemas, é essencial especificar a versão do protocolo a ser usada durante a montagem, garantindo que todos os hosts usem a mesma versão e, portanto, o mesmo estilo de bloqueio. É essencial evitar misturar versões NFS entre hosts. Se possível, use perfis de host para verificar a conformidade. ** Como não há conversão automática de datastore entre NFSv3 e NFSv4,1, crie um novo datastore NFSv4,1 e use o Storage vMotion para migrar VMs para o novo datastore. ** Por favor, consulte as notas da tabela de interoperabilidade NFS v4,1 no link:https://mysupport.netapp.com/matrix/["Ferramenta Matriz de interoperabilidade NetApp"^] para obter os níveis de patch ESXi específicos necessários para suporte. * As políticas de exportação NFS são usadas para controlar o acesso pelos hosts vSphere. Você pode usar uma diretiva com vários volumes (datastores). Com o NFSv3, o ESXi usa o estilo de segurança sys (UNIX) e requer a opção de montagem raiz para executar VMs. No ONTAP, essa opção é chamada de superusuário e, quando a opção superusuário é usada, não é necessário especificar o ID de usuário anônimo. Observe que regras de política de exportação com valores diferentes `-anon` e `-allow-suid` podem causar problemas de descoberta de SVM com as ferramentas do ONTAP. Aqui está uma política de exemplo: ** Protocolo de Acesso: nfs3 ** especificação de correspondência do Cliente: 192.168.42.21 ** regra de Acesso RO: Sys ** regra de Acesso RW: Sys ** UID anônimo ** superusuário: Sys * se o plug-in NetApp NFS para VMware VAAI for usado, o protocolo deve ser definido como `nfs` quando a regra de política de exportação for criada ou modificada. O protocolo NFSv4 é necessário para que a descarga de cópia VAAI funcione, e especificar o protocolo como `nfs` inclui automaticamente as versões NFSv3 e NFSv4. * Os volumes do armazenamento de dados NFS são juntados do volume raiz do SVM; portanto, o ESXi também deve ter acesso ao volume raiz para navegar e montar volumes do armazenamento de dados. A política de exportação para o volume raiz e para quaisquer outros volumes em que a junção do volume do datastore esteja aninhada, deve incluir uma regra ou regras para os servidores ESXi concedendo acesso somente leitura. Aqui está uma política de exemplo para o volume raiz, também usando o plug-in VAAI: ** Protocolo de acesso: nfs (que inclui nfs3 e nfs4) ** especificação de correspondência do cliente: 192.168.42.21 ** regra de acesso RO: Sys ** regra de acesso RW: Nunca (melhor segurança para o volume raiz) ** UID anônimo ** superusuário: Sys (também necessário para o volume raiz com VAAI) * Use ferramentas ONTAP para o provisionamento de armazenamento de dados VMware (as melhores práticas de armazenamento de dados do VMware) ** para o vSphere simplifica automaticamente as práticas de armazenamento de dados do VMware: ** Para o provisionamento de dados VMware ONTAP). ** Ao criar datastores para clusters VMware com o plug-in, selecione o cluster em vez de um único servidor ESX. Essa opção o aciona para montar automaticamente o datastore em todos os hosts do cluster. ** Use a função de montagem de plug-in para aplicar datastores existentes a novos servidores. ** Quando não estiver usando as ferramentas do ONTAP para VMware vSphere, use uma única política de exportação para todos os servidores ou para cada cluster de servidores onde é necessário controle de acesso adicional. * Embora o ONTAP ofereça uma estrutura de namespace de volume flexível para organizar volumes em uma árvore usando junções, essa abordagem não tem valor para o vSphere. Ele cria um diretório para cada VM na raiz do datastore, independentemente da hierarquia do namespace do storage. Assim, a prática recomendada é simplesmente montar o caminho de junção para volumes para vSphere no volume raiz do SVM, que é como as ferramentas do ONTAP para VMware vSphere provisionam datastores. Não ter caminhos de junção aninhados também significa que nenhum volume é dependente de qualquer volume que não seja o volume raiz e que tirar um volume off-line ou destruí-lo, mesmo intencionalmente, não afeta o caminho para outros volumes. * Um tamanho de bloco de 4K é bom para partições NTFS em datastores NFS. A figura a seguir mostra a conectividade de um host vSphere para um datastore ONTAP NFS.
+
+image:vsphere_ontap_image3.png["Conectividade de um host vSphere para um datastore ONTAP NFS"]
+
+A tabela a seguir lista as versões de NFS e os recursos compatíveis.
+
+|===
+| Recursos do vSphere | NFSv3 | NFSv4.1 
+
+
+| VMotion e Storage vMotion | Sim | Sim 
+
+
+| Alta disponibilidade | Sim | Sim 
+
+
+| Tolerância de falhas | Sim | Sim 
+
+
+| DRS | Sim | Sim 
+
+
+| Perfis de host | Sim | Sim 
+
+
+| Armazenamento DRS | Sim | Não 
+
+
+| Controle de e/S de storage | Sim | Não 
+
+
+| SRM | Sim | Não 
+
+
+| Volumes virtuais | Sim | Não 
+
+
+| Aceleração de hardware (VAAI) | Sim | Sim 
+
+
+| Autenticação Kerberos | Não | Sim (aprimorado com o vSphere 6,5 e posterior para oferecer suporte a AES, krb5i) 
+
+
+| Suporte multipathing | Não | Sim (ONTAP 9.14,1) 
+|===
+
+
+== Ligação direta em rede
+
+Às vezes, os administradores de storage preferem simplificar suas infraestruturas removendo switches de rede da configuração. Isso pode ser suportado em alguns cenários.
+
+
+
+=== ISCSI e NVMe/TCP
+
+Um host usando iSCSI ou NVMe/TCP pode ser conetado diretamente a um sistema de storage e operar normalmente. A razão é pathing. Conexões diretas a dois controladores de storage diferentes resultam em dois caminhos independentes para o fluxo de dados. A perda de caminho, porta ou controlador não impede que o outro caminho seja usado.
+
+
+
+=== NFS
+
+O armazenamento NFS com conexão direta pode ser usado, mas com uma limitação significativa - o failover não funcionará sem um esforço significativo de script, o que seria da responsabilidade do cliente.
+
+O motivo pelo qual o failover sem interrupções é complicado com o storage NFS com conexão direta é o roteamento que ocorre no sistema operacional local. Por exemplo, suponha que um host tenha um endereço IP de 192.168.1.1/24 e esteja conetado diretamente a um controlador ONTAP com um endereço IP de 192.168.1.50/24. Durante o failover, esse endereço 192.168.1.50 pode fazer failover para a outra controladora e estará disponível para o host, mas como o host deteta sua presença? O endereço 192.168.1.1 original ainda existe na NIC host que não se coneta mais a um sistema operacional. O tráfego destinado a 192.168.1.50 continuaria a ser enviado para uma porta de rede inoperável.
+
+A segunda NIC do SO poderia ser configurada como 19 2.168.1.2 e seria capaz de se comunicar com o endereço 192.168.1.50 com falha, mas as tabelas de roteamento local teriam um padrão de usar um endereço *e apenas um* para se comunicar com a sub-rede 192.168.1.0/24. Um sysadmin poderia criar uma estrutura de script que detetaria uma conexão de rede com falha e alteraria as tabelas de roteamento local ou colocaria interfaces para cima e para baixo. O procedimento exato dependeria do SO em uso.
+
+Na prática, os clientes da NetApp têm NFS com conexão direta, mas normalmente apenas para workloads em que as pausas de e/S durante failovers são aceitáveis. Quando os suportes rígidos são usados, não deve haver nenhum erro de e/S durante essas pausas. O IO deve travar até que os serviços sejam restaurados, seja por um failback ou intervenção manual para mover endereços IP entre NICs no host.
+
+
+
+=== FC Direct Connect
+
+Não é possível conectar diretamente um host a um sistema de storage ONTAP usando o protocolo FC. A razão é o uso de NPIV. A WWN que identifica uma porta ONTAP FC para a rede FC usa um tipo de virtualização chamado NPIV. Qualquer dispositivo conetado a um sistema ONTAP deve ser capaz de reconhecer um NPIV WWN. Não há fornecedores atuais de HBA que ofereçam um HBA que possa ser instalado em um host que possa suportar um destino NPIV.

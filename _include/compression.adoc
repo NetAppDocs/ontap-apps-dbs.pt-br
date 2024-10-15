@@ -1,0 +1,37 @@
+= Compactação
+:allow-uri-read: 
+
+
+
+
+== Compactação
+
+Antes da disponibilidade de sistemas de storage all-flash, a compactação baseada em array era de valor limitado porque a maioria dos workloads com uso intenso de e/S exigia um número muito grande de fusos para fornecer desempenho aceitável. Os sistemas de armazenamento invariavelmente continham muito mais capacidade do que o necessário como um efeito colateral do grande número de unidades. A situação mudou com o aumento do armazenamento de estado sólido. Não há mais a necessidade de superprovisionamento vastamente de unidades puramente para obter um bom desempenho. O espaço da unidade em um sistema de armazenamento pode ser correspondente às necessidades reais de capacidade.
+
+A maior funcionalidade de IOPS das solid-State drives (SSDs) quase sempre produz economias de custo em comparação com as unidades giratórias, mas a compactação pode gerar mais economias ao aumentar a capacidade efetiva da Mídia de estado sólido.
+
+Existem várias maneiras de compactar dados. Muitos bancos de dados incluem suas próprias capacidades de compressão, mas isso raramente é observado em ambientes de clientes. A razão é geralmente a penalidade de desempenho para uma *mudança* para dados compatados, além disso, com alguns aplicativos, há altos custos de licenciamento para compactação no nível do banco de dados. Finalmente, há as consequências gerais de desempenho para as operações do banco de dados. Faz pouco sentido pagar um alto custo de licença por CPU para uma CPU que executa compactação de dados e descompressão em vez de trabalho real de banco de dados. Uma opção melhor é descarregar o trabalho de compressão para o sistema de storage.
+
+
+
+=== Compressão adaptável
+
+A compactação adaptável foi totalmente testada com workloads empresariais sem efeito observado no desempenho, mesmo em um ambiente all-flash em que a latência é medida em microssegundos. Alguns clientes até relataram um aumento de desempenho com o uso de compactação porque os dados permanecem compatados no cache, aumentando efetivamente a quantidade de cache disponível em um controlador.
+
+O ONTAP gerencia blocos físicos em 4KB unidades. A compactação adaptável usa um tamanho de bloco de compressão padrão de 8KB, o que significa que os dados são compatados em unidades 8KB. Isso corresponde ao tamanho do bloco 8KB mais frequentemente usado por bancos de dados relacionais. Os algoritmos de compressão tornam-se mais eficientes à medida que mais dados são compatados como uma única unidade. Um tamanho de bloco de compressão 32KB seria mais eficiente em termos de espaço do que uma unidade de bloco de compressão 8KB. Isso significa que a compactação adaptável usando o tamanho padrão de bloco 8KB leva a taxas de eficiência ligeiramente menores, mas também há um benefício significativo para o uso de um tamanho menor de bloco de compressão. As cargas de trabalho de banco de dados incluem uma grande quantidade de atividade de substituição. Substituir um 8KB de um bloco de dados comprimido 32KB requer a leitura de todo o 32KB de dados lógicos, descomprimindo-o, atualizando a região 8KB necessária, recomprimindo e gravando o 32KB inteiro de volta às unidades. Esta é uma operação muito cara para um sistema de storage e é o motivo pelo qual alguns storage arrays concorrentes baseados em tamanhos de bloco de compressão maiores também incorrer em uma penalidade de desempenho significativa nos workloads de banco de dados.
+
+
+NOTE: O tamanho do bloco usado pela compressão adaptável pode ser aumentado até 32KBMB. Isso pode melhorar a eficiência do storage e deve ser considerado para arquivos inativos, como logs de transações e arquivos de backup, quando uma quantidade substancial de tais dados é armazenada no array. Em algumas situações, os bancos de dados ativos que usam um tamanho de bloco 16KB ou 32KB também podem se beneficiar do aumento do tamanho de bloco da compactação adaptável a corresponder. Consulte um representante da NetApp ou do parceiro para obter orientação sobre se isso é apropriado para sua carga de trabalho.
+
+
+CAUTION: Tamanhos de blocos de compactação maiores que 8KBMB não devem ser usados juntamente com a deduplicação em destinos de backup de streaming. A razão é que pequenas alterações nos dados de backup afetam a janela de compressão 32KB. Se a janela mudar, os dados compatados resultantes diferem em todo o arquivo. A deduplicação ocorre após a compactação, o que significa que o mecanismo de deduplicação vê cada backup compactado de forma diferente. Se a deduplicação de backups de streaming for necessária, somente a compactação adaptável de bloco 8KB deve ser usada. A compactação adaptável é preferível, porque funciona em um tamanho de bloco menor e não prejudica a eficiência da deduplicação. Por razões semelhantes, a compactação no lado do host também interfere na eficiência da deduplicação.
+
+
+
+=== Alinhamento da compressão
+
+A compactação adaptável em um ambiente de banco de dados requer alguma consideração do alinhamento do bloco de compressão. Fazer isso é apenas uma preocupação para os dados que estão sujeitos a substituições aleatórias de blocos muito específicos. Essa abordagem é semelhante em conceito ao alinhamento geral do sistema de arquivos, onde o início de um sistema de arquivos deve ser alinhado a um limite de dispositivo 4K e o tamanho de bloco de um sistema de arquivos deve ser um múltiplo de 4K.
+
+Por exemplo, uma gravação 8KBD em um arquivo é compactada somente se ele se alinhar com um limite 8KBD dentro do próprio sistema de arquivos. Este ponto significa que ele deve cair no primeiro 8KB do arquivo, o segundo 8KB do arquivo, e assim por diante. A maneira mais simples de garantir o alinhamento correto é usar o tipo de LUN correto, qualquer partição criada deve ter um deslocamento desde o início do dispositivo que é um múltiplo de 8K, e usar um tamanho de bloco de sistema de arquivos que é um múltiplo do tamanho do bloco de banco de dados.
+
+Dados como backups ou logs de transações são operações sequencialmente escritas que abrangem vários blocos, todos eles compatados. Portanto, não há necessidade de considerar o alinhamento. O único padrão de e/S de preocupação é as substituições aleatórias de arquivos.

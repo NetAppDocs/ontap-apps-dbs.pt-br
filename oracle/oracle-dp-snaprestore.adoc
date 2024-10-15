@@ -1,0 +1,56 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dp-snaprestore.html 
+keywords: ontap, snaprestore 
+summary: Recuperação rápida de banco de dados Oracle com o SnapRestore 
+---
+= Recuperação rápida de banco de dados Oracle com o SnapRestore
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+A restauração rápida de dados no ONTAP a partir de um snapshot é fornecida pela tecnologia NetApp SnapRestore.
+
+Quando um conjunto de dados essencial não está disponível, as operações de negócios essenciais estão inativas. As fitas podem quebrar, e até mesmo as restaurações de backups baseados em disco podem ser lentas para serem transferidas pela rede. O SnapRestore evita esses problemas fornecendo restauração quase instantânea de conjuntos de dados. Mesmo os bancos de dados em escala de petabyte podem ser completamente restaurados com apenas alguns minutos de esforço.
+
+Existem duas formas de SnapRestore - baseado em arquivo/LUN e baseado em volume.
+
+* Arquivos individuais ou LUNs podem ser restaurados em segundos, seja um arquivo 2TB LUN ou 4KB.
+* O volume de arquivos ou LUNs pode ser restaurado em segundos, seja 10GB ou 100TB TB de dados.
+
+
+Um "contentor de arquivos ou LUNs" normalmente se referiria a um FlexVol volume. Por exemplo, você pode ter 10 LUNs que compõem um grupo de discos LVM em um único volume ou um volume pode armazenar os diretórios base NFS de usuários do 1000. Em vez de executar uma operação de restauração para cada arquivo individual ou LUN, você pode restaurar todo o volume como uma única operação. Esse processo também funciona com contêineres com escalabilidade horizontal que incluem vários volumes, como um FlexGroup ou um Grupo de consistência do ONTAP.
+
+O motivo pelo qual o SnapRestore funciona tão rápido e eficientemente é devido à natureza de um snapshot, que é essencialmente uma visualização paralela somente leitura do conteúdo de um volume em um determinado momento. Os blocos ativos são os blocos reais que podem ser alterados, enquanto o snapshot é uma visualização somente leitura no estado dos blocos que constituem os arquivos e LUNs no momento em que o snapshot foi criado.
+
+O ONTAP só permite acesso somente leitura a dados instantâneos, mas os dados podem ser reativados com o SnapRestore. O instantâneo é reativado como uma visualização de leitura e gravação dos dados, retornando os dados ao seu estado anterior. O SnapRestore pode operar no volume ou no nível do arquivo. A tecnologia é essencialmente a mesma com algumas pequenas diferenças de comportamento.
+
+
+
+== Volume SnapRestore
+
+O SnapRestore baseado em volume retorna todo o volume de dados para um estado anterior. Essa operação não requer movimentação de dados, o que significa que o processo de restauração é essencialmente instantâneo, embora a operação de API ou CLI possa levar alguns segundos para ser processada. Restaurar 1GB TB de dados não é mais complicado ou demorado do que restaurar 1PB TB de dados. Essa funcionalidade é a principal razão pela qual muitos clientes empresariais migram para os sistemas de storage da ONTAP. Ele fornece um rto medido em segundos, até mesmo para os maiores conjuntos de dados.
+
+Uma desvantagem para o SnapRestore baseado em volume é causada pelo fato de que as alterações dentro de um volume são cumulativas ao longo do tempo. Portanto, cada snapshot e os dados de arquivo ativos dependem das alterações que levam a esse ponto. Reverter um volume para um estado anterior significa descartar todas as alterações subsequentes que foram feitas aos dados. O que é menos óbvio, no entanto, é que isso inclui instantâneos criados posteriormente. Isso nem sempre é desejável.
+
+Por exemplo, um SLA de retenção de dados pode especificar 30 dias de backups noturnos. Restaurar um conjunto de dados para um instantâneo criado há cinco dias com o volume SnapRestore descartaria todos os snapshots criados nos cinco dias anteriores, violando o SLA.
+
+Existem várias opções disponíveis para resolver esta limitação:
+
+. Os dados podem ser copiados de um snapshot anterior, em vez de executar um SnapRestore de todo o volume. Esse método funciona melhor com conjuntos de dados menores.
+. Um snapshot pode ser clonado em vez de restaurado. A limitação a essa abordagem é que o snapshot de origem é uma dependência do clone. Portanto, ele não pode ser excluído a menos que o clone também seja excluído ou seja dividido em um volume independente.
+. Uso de SnapRestore baseado em arquivos.
+
+
+
+
+== File SnapRestore (ficheiro)
+
+O SnapRestore baseado em arquivo é um processo de restauração mais granular baseado em snapshot. Em vez de reverter o estado de um volume inteiro, o estado de um arquivo individual ou LUN é revertido. Não é necessário eliminar instantâneos, nem esta operação cria qualquer dependência de um instantâneo anterior. O ficheiro ou LUN fica imediatamente disponível no volume ativo.
+
+Nenhuma movimentação de dados é necessária durante uma restauração do SnapRestore de um arquivo ou LUN. No entanto, algumas atualizações internas de metadados são necessárias para refletir o fato de que os blocos subjacentes em um arquivo ou LUN agora existem em um snapshot e no volume ativo. Não deve haver efeito no desempenho, mas esse processo bloqueia a criação de snapshots até que ele esteja concluído. A taxa de processamento é de aproximadamente 5Gbps (18TBMB/hora) com base no tamanho total dos arquivos restaurados.

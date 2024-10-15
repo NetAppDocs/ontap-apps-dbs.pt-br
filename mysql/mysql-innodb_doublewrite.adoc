@@ -1,0 +1,19 @@
+---
+sidebar: sidebar 
+permalink: mysql/mysql-innodb_doublewrite.html 
+keywords: MySQL,MariaDB,innodb_doublewrite 
+summary: MySQL e innodb_doublewrite 
+---
+= innodb_doublewrite
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+ `innodb_doublewrite`Quando está ativado (o padrão), o InnoDB armazena todos os dados duas vezes: Primeiro para o buffer de gravação dupla e depois para os arquivos de dados reais.
+
+Você pode desativar esse parâmetro com `--skip-innodb_doublewrite` para benchmarks ou quando estiver mais preocupado com o desempenho superior do que com a integridade de dados ou possíveis falhas. InnoDB usa uma técnica de flush de arquivo chamada double-write. Antes de gravar páginas nos arquivos de dados, o InnoDB as grava em uma área contígua chamada buffer de gravação dupla. Depois que a gravação e o flush para o buffer de gravação dupla estiverem completos, o InnoDB grava as páginas em suas posições apropriadas no arquivo de dados. Se o sistema operacional ou um processo mysqld falhar durante uma gravação de página, o InnoDB poderá encontrar uma boa cópia da página do buffer de gravação dupla durante a recuperação de falhas.
+
+
+TIP: *A NetApp recomenda* a desativação do buffer de gravação dupla. O ONTAP NVRAM serve a mesma função. O buffer duplo danificará desnecessariamente o desempenho.

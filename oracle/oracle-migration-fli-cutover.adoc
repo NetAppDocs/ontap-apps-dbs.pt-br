@@ -1,0 +1,357 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-migration-fli-cutover.html 
+keywords: migration, oracle, FLI 
+summary: Migração Oracle com FLI - transição 
+---
+= Migração Oracle com FLI - transição
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Alguma interrupção durante uma importação LUN estrangeira é inevitável devido à necessidade de alterar a configuração da rede FC. No entanto, a interrupção não precisa durar muito mais do que o tempo necessário para reiniciar o ambiente de banco de dados e atualizar o zoneamento FC para alternar a conetividade FC do host do LUN externo para o ONTAP.
+
+Este processo pode ser resumido da seguinte forma:
+
+. Quiesce toda a atividade LUN nos LUNs externos.
+. Redirecione as conexões FC do host para o novo sistema ONTAP.
+. Acione o processo de importação.
+. Redescubra os LUNs.
+. Reinicie o banco de dados.
+
+
+Não é necessário esperar que o processo de migração seja concluído. Assim que a migração para um determinado LUN começar, ele estará disponível no ONTAP e poderá servir dados enquanto o processo de cópia de dados continuar. Todas as leituras são passadas para o LUN estrangeiro, e todas as gravações são escritas de forma síncrona em ambos os arrays. A operação de cópia é muito rápida e a sobrecarga de redirecionar o tráfego FC é mínima, portanto, qualquer impactos no desempenho deve ser transitório e mínimo. Se houver problema, você pode atrasar a reinicialização do ambiente até que o processo de migração seja concluído e as relações de importação tenham sido excluídas.
+
+
+
+== Encerre a base de dados
+
+O primeiro passo para silenciar o ambiente neste exemplo é desligar o banco de dados.
+
+....
+[oracle@host1 bin]$ . oraenv
+ORACLE_SID = [oracle] ? FLIDB
+The Oracle base remains unchanged with value /orabin
+[oracle@host1 bin]$ sqlplus / as sysdba
+SQL*Plus: Release 12.1.0.2.0
+Copyright (c) 1982, 2014, Oracle.  All rights reserved.
+Connected to:
+Oracle Database 12c Enterprise Edition Release 12.1.0.2.0 - 64bit Production
+With the Partitioning, Automatic Storage Management, OLAP, Advanced Analytics
+and Real Application Testing options
+SQL> shutdown immediate;
+Database closed.
+Database dismounted.
+ORACLE instance shut down.
+SQL>
+....
+
+
+== Encerre os serviços da grade
+
+Um dos sistemas de arquivos baseados em SAN que está sendo migrado também inclui os serviços Oracle ASM. A supressão dos LUNs subjacentes requer a desmontagem dos sistemas de arquivos, o que, por sua vez, significa parar todos os processos com arquivos abertos neste sistema de arquivos.
+
+....
+[oracle@host1 bin]$ ./crsctl stop has -f
+CRS-2791: Starting shutdown of Oracle High Availability Services-managed resources on 'host1'
+CRS-2673: Attempting to stop 'ora.evmd' on 'host1'
+CRS-2673: Attempting to stop 'ora.DATA.dg' on 'host1'
+CRS-2673: Attempting to stop 'ora.LISTENER.lsnr' on 'host1'
+CRS-2677: Stop of 'ora.DATA.dg' on 'host1' succeeded
+CRS-2673: Attempting to stop 'ora.asm' on 'host1'
+CRS-2677: Stop of 'ora.LISTENER.lsnr' on 'host1' succeeded
+CRS-2677: Stop of 'ora.evmd' on 'host1' succeeded
+CRS-2677: Stop of 'ora.asm' on 'host1' succeeded
+CRS-2673: Attempting to stop 'ora.cssd' on 'host1'
+CRS-2677: Stop of 'ora.cssd' on 'host1' succeeded
+CRS-2793: Shutdown of Oracle High Availability Services-managed resources on 'host1' has completed
+CRS-4133: Oracle High Availability Services has been stopped.
+[oracle@host1 bin]$
+....
+
+
+== Desmontar sistemas de arquivos
+
+Se todos os processos forem desligados, a operação umount será bem-sucedida. Se a permissão for negada, deve haver um processo com um bloqueio no sistema de arquivos. O `fuser` comando pode ajudar a identificar esses processos.
+
+....
+[root@host1 ~]# umount /orabin
+[root@host1 ~]# umount /backups
+....
+
+
+== Desativar grupos de volume
+
+Depois de todos os sistemas de arquivos em um determinado grupo de volume serem desmontados, o grupo de volume pode ser desativado.
+
+....
+[root@host1 ~]# vgchange --activate n sanvg
+  0 logical volume(s) in volume group "sanvg" now active
+[root@host1 ~]#
+....
+
+
+== Alterações na rede FC
+
+As zonas FC agora podem ser atualizadas para remover todo o acesso do host ao array externo e estabelecer acesso ao ONTAP.
+
+
+
+== Inicie o processo de importação
+
+Para iniciar os processos de importação de LUN, execute o `lun import start` comando.
+
+....
+Cluster01::lun import*> lun import start -vserver vserver1 -path /vol/new_asm/LUN0
+Cluster01::lun import*> lun import start -vserver vserver1 -path /vol/new_asm/LUN1
+...
+Cluster01::lun import*> lun import start -vserver vserver1 -path /vol/new_lvm/LUN8
+Cluster01::lun import*> lun import start -vserver vserver1 -path /vol/new_lvm/LUN9
+Cluster01::lun import*>
+....
+
+
+== Monitorar o progresso da importação
+
+A operação de importação pode ser monitorada com o `lun import show` comando. Como mostrado abaixo, a importação de todos os LUNs 20 está em andamento, o que significa que os dados agora estão acessíveis por meio do ONTAP, mesmo que a operação de cópia de dados ainda progrida.
+
+....
+Cluster01::lun import*> lun import show -fields path,percent-complete
+vserver   foreign-disk path              percent-complete
+--------- ------------ ----------------- ----------------
+vserver1  800DT$HuVWB/ /vol/new_asm/LUN4 5
+vserver1  800DT$HuVWBW /vol/new_asm/LUN0 5
+vserver1  800DT$HuVWBX /vol/new_asm/LUN1 6
+vserver1  800DT$HuVWBY /vol/new_asm/LUN2 6
+vserver1  800DT$HuVWBZ /vol/new_asm/LUN3 5
+vserver1  800DT$HuVWBa /vol/new_asm/LUN5 4
+vserver1  800DT$HuVWBb /vol/new_asm/LUN6 4
+vserver1  800DT$HuVWBc /vol/new_asm/LUN7 4
+vserver1  800DT$HuVWBd /vol/new_asm/LUN8 4
+vserver1  800DT$HuVWBe /vol/new_asm/LUN9 4
+vserver1  800DT$HuVWBf /vol/new_lvm/LUN0 5
+vserver1  800DT$HuVWBg /vol/new_lvm/LUN1 4
+vserver1  800DT$HuVWBh /vol/new_lvm/LUN2 4
+vserver1  800DT$HuVWBi /vol/new_lvm/LUN3 3
+vserver1  800DT$HuVWBj /vol/new_lvm/LUN4 3
+vserver1  800DT$HuVWBk /vol/new_lvm/LUN5 3
+vserver1  800DT$HuVWBl /vol/new_lvm/LUN6 4
+vserver1  800DT$HuVWBm /vol/new_lvm/LUN7 3
+vserver1  800DT$HuVWBn /vol/new_lvm/LUN8 2
+vserver1  800DT$HuVWBo /vol/new_lvm/LUN9 2
+20 entries were displayed.
+....
+Se você precisar de um processo off-line, atrasar a redescoberta ou a reinicialização dos serviços até que o `lun import show` comando indique que toda a migração foi bem-sucedida e concluída. Em seguida, você pode concluir o processo de migração conforme descrito em link:oracle-migration-fli-completion.html["Importação LUN estrangeiro - conclusão"].
+
+Se precisar de uma migração online, continue a redescobrir os LUNs na sua nova casa e a abrir os serviços.
+
+
+
+== Verifique se há alterações no dispositivo SCSI
+
+Na maioria dos casos, a opção mais simples para redescobrir novos LUNs é reiniciar o host. Isso remove automaticamente dispositivos obsoletos antigos, descobre corretamente todos os novos LUNs e cria dispositivos associados, como dispositivos multipathing. O exemplo aqui mostra um processo totalmente online para fins de demonstração.
+
+Cuidado: Antes de reiniciar um host, certifique-se de que todas as entradas `/etc/fstab` nessa referência migradas dos recursos SAN sejam comentadas. Se isso não for feito e houver problemas com o acesso LUN, o sistema operacional pode não inicializar. Esta situação não danifica os dados. No entanto, pode ser muito inconveniente inicializar no modo de recuperação ou em um modo semelhante e corrigir o `/etc/fstab` para que o sistema operacional possa ser inicializado para habilitar a solução de problemas.
+
+Os LUNs na versão do Linux usada neste exemplo podem ser reconfigurados com o `rescan-scsi-bus.sh` comando. Se o comando for bem-sucedido, cada caminho LUN deverá aparecer na saída. A saída pode ser difícil de interpretar, mas, se o zoneamento e a configuração do igrop estavam corretos, muitos LUNs devem aparecer que incluem uma `NETAPP` string de fornecedor.
+
+....
+[root@host1 /]# rescan-scsi-bus.sh
+Scanning SCSI subsystem for new devices
+Scanning host 0 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs
+ Scanning for device 0 2 0 0 ...
+OLD: Host: scsi0 Channel: 02 Id: 00 Lun: 00
+      Vendor: LSI      Model: RAID SAS 6G 0/1  Rev: 2.13
+      Type:   Direct-Access                    ANSI SCSI revision: 05
+Scanning host 1 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs
+ Scanning for device 1 0 0 0 ...
+OLD: Host: scsi1 Channel: 00 Id: 00 Lun: 00
+      Vendor: Optiarc  Model: DVD RW AD-7760H  Rev: 1.41
+      Type:   CD-ROM                           ANSI SCSI revision: 05
+Scanning host 2 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs
+Scanning host 3 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs
+Scanning host 4 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs
+Scanning host 5 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs
+Scanning host 6 for  SCSI target IDs  0 1 2 3 4 5 6 7, all LUNs
+Scanning host 7 for  all SCSI target IDs, all LUNs
+ Scanning for device 7 0 0 10 ...
+OLD: Host: scsi7 Channel: 00 Id: 00 Lun: 10
+      Vendor: NETAPP   Model: LUN C-Mode       Rev: 8300
+      Type:   Direct-Access                    ANSI SCSI revision: 05
+ Scanning for device 7 0 0 11 ...
+OLD: Host: scsi7 Channel: 00 Id: 00 Lun: 11
+      Vendor: NETAPP   Model: LUN C-Mode       Rev: 8300
+      Type:   Direct-Access                    ANSI SCSI revision: 05
+ Scanning for device 7 0 0 12 ...
+...
+OLD: Host: scsi9 Channel: 00 Id: 01 Lun: 18
+      Vendor: NETAPP   Model: LUN C-Mode       Rev: 8300
+      Type:   Direct-Access                    ANSI SCSI revision: 05
+ Scanning for device 9 0 1 19 ...
+OLD: Host: scsi9 Channel: 00 Id: 01 Lun: 19
+      Vendor: NETAPP   Model: LUN C-Mode       Rev: 8300
+      Type:   Direct-Access                    ANSI SCSI revision: 05
+0 new or changed device(s) found.
+0 remapped or resized device(s) found.
+0 device(s) removed.
+....
+
+
+== Verifique se existem dispositivos multipath
+
+O processo de descoberta LUN também aciona a recriação de dispositivos multipath, mas o driver de multipathing Linux é conhecido por ter problemas ocasionais. A saída de `multipath - ll` deve ser verificada para verificar se a saída parece como esperado. Por exemplo, a saída abaixo mostra os dispositivos multipath associados a uma `NETAPP` cadeia de carateres de fornecedor. Cada dispositivo tem quatro caminhos, com dois em uma prioridade de 50 e dois em uma prioridade de 10. Embora a saída exata possa variar com diferentes versões do Linux, essa saída parece como esperado.
+
+
+NOTE: Consulte a documentação dos utilitários do host para a versão do Linux que você usa para verificar se as `/etc/multipath.conf` configurações estão corretas.
+
+....
+[root@host1 /]# multipath -ll
+3600a098038303558735d493762504b36 dm-5 NETAPP  ,LUN C-Mode
+size=10G features='4 queue_if_no_path pg_init_retries 50 retain_attached_hw_handle' hwhandler='1 alua' wp=rw
+|-+- policy='service-time 0' prio=50 status=active
+| |- 7:0:1:4  sdat 66:208 active ready running
+| `- 9:0:1:4  sdbn 68:16  active ready running
+`-+- policy='service-time 0' prio=10 status=enabled
+  |- 7:0:0:4  sdf  8:80   active ready running
+  `- 9:0:0:4  sdz  65:144 active ready running
+3600a098038303558735d493762504b2d dm-10 NETAPP  ,LUN C-Mode
+size=10G features='4 queue_if_no_path pg_init_retries 50 retain_attached_hw_handle' hwhandler='1 alua' wp=rw
+|-+- policy='service-time 0' prio=50 status=active
+| |- 7:0:1:8  sdax 67:16  active ready running
+| `- 9:0:1:8  sdbr 68:80  active ready running
+`-+- policy='service-time 0' prio=10 status=enabled
+  |- 7:0:0:8  sdj  8:144  active ready running
+  `- 9:0:0:8  sdad 65:208 active ready running
+...
+3600a098038303558735d493762504b37 dm-8 NETAPP  ,LUN C-Mode
+size=10G features='4 queue_if_no_path pg_init_retries 50 retain_attached_hw_handle' hwhandler='1 alua' wp=rw
+|-+- policy='service-time 0' prio=50 status=active
+| |- 7:0:1:5  sdau 66:224 active ready running
+| `- 9:0:1:5  sdbo 68:32  active ready running
+`-+- policy='service-time 0' prio=10 status=enabled
+  |- 7:0:0:5  sdg  8:96   active ready running
+  `- 9:0:0:5  sdaa 65:160 active ready running
+3600a098038303558735d493762504b4b dm-22 NETAPP  ,LUN C-Mode
+size=10G features='4 queue_if_no_path pg_init_retries 50 retain_attached_hw_handle' hwhandler='1 alua' wp=rw
+|-+- policy='service-time 0' prio=50 status=active
+| |- 7:0:1:19 sdbi 67:192 active ready running
+| `- 9:0:1:19 sdcc 69:0   active ready running
+`-+- policy='service-time 0' prio=10 status=enabled
+  |- 7:0:0:19 sdu  65:64  active ready running
+  `- 9:0:0:19 sdao 66:128 active ready running
+....
+
+
+== Reative o grupo de volumes LVM
+
+Se os LUNs LVM tiverem sido detetados corretamente, o `vgchange --activate y` comando deverá ser bem-sucedido. Este é um bom exemplo do valor de um gerenciador de volume lógico. Uma alteração na WWN de um LUN ou mesmo de um número de série não é importante porque os metadados do grupo de volume são gravados no próprio LUN.
+
+O sistema operacional digitalizou os LUNs e descobriu uma pequena quantidade de dados gravados no LUN que os identifica como um volume físico pertencente ao `sanvg volumegroup`. Em seguida, ele construiu todos os dispositivos necessários. Tudo o que é necessário é reativar o grupo de volume.
+
+....
+[root@host1 /]# vgchange --activate y sanvg
+  Found duplicate PV fpCzdLTuKfy2xDZjai1NliJh3TjLUBiT: using /dev/mapper/3600a098038303558735d493762504b46 not /dev/sdp
+  Using duplicate PV /dev/mapper/3600a098038303558735d493762504b46 from subsystem DM, ignoring /dev/sdp
+  2 logical volume(s) in volume group "sanvg" now active
+....
+
+
+== Remontagem dos sistemas de arquivos
+
+Depois que o grupo de volume é reativado, os sistemas de arquivos podem ser montados com todos os dados originais intactos. Como discutido anteriormente, os sistemas de arquivos estão totalmente operacionais, mesmo que a replicação de dados ainda esteja ativa no grupo de volta.
+
+....
+[root@host1 /]# mount /orabin
+[root@host1 /]# mount /backups
+[root@host1 /]# df -k
+Filesystem                       1K-blocks      Used Available Use% Mounted on
+/dev/mapper/rhel-root             52403200   8837100  43566100  17% /
+devtmpfs                          65882776         0  65882776   0% /dev
+tmpfs                              6291456        84   6291372   1% /dev/shm
+tmpfs                             65898668      9884  65888784   1% /run
+tmpfs                             65898668         0  65898668   0% /sys/fs/cgroup
+/dev/sda1                           505580    224828    280752  45% /boot
+fas8060-nfs-public:/install      199229440 119368256  79861184  60% /install
+fas8040-nfs-routable:/snapomatic   9961472     30528   9930944   1% /snapomatic
+tmpfs                             13179736        16  13179720   1% /run/user/42
+tmpfs                             13179736         0  13179736   0% /run/user/0
+/dev/mapper/sanvg-lvorabin        20961280  12357456   8603824  59% /orabin
+/dev/mapper/sanvg-lvbackups       73364480  62947536  10416944  86% /backups
+....
+
+
+== Redigitalização para dispositivos ASM
+
+Os dispositivos ASMlib devem ter sido redescobertos quando os dispositivos SCSI foram reconfigurados. A redescoberta pode ser verificada on-line reiniciando o ASMlib e, em seguida, digitalizando os discos.
+
+
+NOTE: Esta etapa só é relevante para configurações ASM onde ASMlib é usado.
+
+Atenção: Onde o ASMlib não é usado, os `/dev/mapper` dispositivos devem ter sido recriados automaticamente. No entanto, as permissões podem não estar corretas. Você deve definir permissões especiais nos dispositivos subjacentes para ASM na ausência de ASMlib. Isso geralmente é feito através de entradas especiais nas `/etc/multipath.conf` regras ou `udev`, ou possivelmente em ambos os conjuntos de regras. Esses arquivos podem precisar ser atualizados para refletir alterações no ambiente em termos de WWNs ou números de série para garantir que os dispositivos ASM ainda tenham as permissões corretas.
+
+Neste exemplo, reiniciar o ASMlib e procurar discos mostra os mesmos LUNs ASM 10 do ambiente original.
+
+....
+[root@host1 /]# oracleasm exit
+Unmounting ASMlib driver filesystem: /dev/oracleasm
+Unloading module "oracleasm": oracleasm
+[root@host1 /]# oracleasm init
+Loading module "oracleasm": oracleasm
+Configuring "oracleasm" to use device physical block size
+Mounting ASMlib driver filesystem: /dev/oracleasm
+[root@host1 /]# oracleasm scandisks
+Reloading disk partitions: done
+Cleaning any stale ASM disks...
+Scanning system for ASM disks...
+Instantiating disk "ASM0"
+Instantiating disk "ASM1"
+Instantiating disk "ASM2"
+Instantiating disk "ASM3"
+Instantiating disk "ASM4"
+Instantiating disk "ASM5"
+Instantiating disk "ASM6"
+Instantiating disk "ASM7"
+Instantiating disk "ASM8"
+Instantiating disk "ASM9"
+....
+
+
+== Reinicie os serviços de grade
+
+Agora que os dispositivos LVM e ASM estão online e disponíveis, os serviços de grade podem ser reiniciados.
+
+....
+[root@host1 /]# cd /orabin/product/12.1.0/grid/bin
+[root@host1 bin]# ./crsctl start has
+....
+
+
+== Reinicie a base de dados
+
+Depois que os serviços de grade tiverem sido reiniciados, o banco de dados pode ser criado. Pode ser necessário esperar alguns minutos para que os serviços ASM fiquem totalmente disponíveis antes de tentar iniciar o banco de dados.
+
+....
+[root@host1 bin]# su - oracle
+[oracle@host1 ~]$ . oraenv
+ORACLE_SID = [oracle] ? FLIDB
+The Oracle base has been set to /orabin
+[oracle@host1 ~]$ sqlplus / as sysdba
+SQL*Plus: Release 12.1.0.2.0
+Copyright (c) 1982, 2014, Oracle.  All rights reserved.
+Connected to an idle instance.
+SQL> startup
+ORACLE instance started.
+Total System Global Area 3221225472 bytes
+Fixed Size                  4502416 bytes
+Variable Size            1207962736 bytes
+Database Buffers         1996488704 bytes
+Redo Buffers               12271616 bytes
+Database mounted.
+Database opened.
+SQL>
+....

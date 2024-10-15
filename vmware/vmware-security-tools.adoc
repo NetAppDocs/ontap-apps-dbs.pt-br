@@ -1,0 +1,105 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-security-tools.html 
+keywords: wp-7353, wp7353, 7353, security, vmware, vsphere, Tools 
+summary: Este documento discute a segurança do produto para as ferramentas do ONTAP para VMware vSphere. 
+---
+= Ferramentas do ONTAP para VMware vSphere
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+A engenharia de software com as ferramentas ONTAP para VMware vSphere emprega as seguintes atividades de desenvolvimento seguro:
+
+* *Modelagem de ameaças.* O objetivo da modelagem de ameaças é descobrir falhas de segurança em um recurso, componente ou produto no início do ciclo de vida do desenvolvimento de software. Um modelo de ameaça é uma representação estruturada de todas as informações que afetam a segurança de um aplicativo. Em essência, é uma visão da aplicação e do seu ambiente através da lente da segurança.
+* *Teste Dinâmico de Segurança de aplicativos (DAST).* Essa tecnologia foi projetada para detetar condições vulneráveis em aplicativos em seu estado de execução. O DAST testa as interfaces HTTP e HTML expostas de aplicações web-enable.
+* *Moeda de código de terceiros.* Como parte do desenvolvimento de software com software de código aberto (OSS), você deve resolver vulnerabilidades de segurança que podem estar associadas a qualquer OSS incorporado em seu produto. Este é um esforço contínuo porque uma nova versão do OSS pode ter uma vulnerabilidade descoberta recentemente relatada a qualquer momento.
+* *Verificação de vulnerabilidades.* O objetivo da verificação de vulnerabilidades é detetar vulnerabilidades de segurança comuns e conhecidas nos produtos NetApp antes de serem lançadas aos clientes.
+* * Teste de penetração.* O teste de penetração é o processo de avaliação de um sistema, aplicativo da Web ou rede para encontrar vulnerabilidades de segurança que possam ser exploradas por um invasor. Os testes de penetração (testes de caneta) na NetApp são conduzidos por um grupo de empresas terceirizadas aprovadas e confiáveis. Seu escopo de teste inclui o lançamento de ataques contra um aplicativo ou software semelhante a intrusos hostis ou hackers usando métodos ou ferramentas de exploração sofisticados.
+
+
+
+
+== Recursos de segurança do produto
+
+As ferramentas do ONTAP para VMware vSphere incluem os seguintes recursos de segurança em cada versão.
+
+* * Login banner.* O SSH é desativado por padrão e só permite logins únicos se ativado a partir do console da VM. O banner de login a seguir é exibido depois que o usuário insere um nome de usuário no prompt de login:
++
+*AVISO:* o acesso não autorizado a este sistema é proibido e será processado por lei. Ao acessar este sistema, você concorda que suas ações podem ser monitoradas se houver suspeita de uso não autorizado.
+
++
+Depois que o usuário concluir o login através do canal SSH, o seguinte texto é exibido:
+
+
+
+....
+Linux vsc1 4.19.0-12-amd64 #1 SMP Debian 4.19.152-1 (2020-10-18) x86_64
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+....
+* *Controle de acesso baseado em função (RBAC).* Dois tipos de controles RBAC estão associados às ferramentas do ONTAP:
++
+** Privileges nativo do vCenter Server
+** Privileges específico do plug-in do vCenter. Para obter detalhes, https://docs.netapp.com/vapp-98/topic/com.netapp.doc.vsc-dsg/GUID-4DCAD72F-34C9-4345-A7AB-A118F4DB9D4D.html["este link"^] consulte .
+
+
+* *Canais de comunicação criptografados.* Toda a comunicação externa acontece por HTTPS usando a versão 1,2 do TLS.
+* * Exposição mínima do porto.* Apenas as portas necessárias estão abertas no firewall.
++
+A tabela a seguir descreve os detalhes da porta aberta.
+
+
+
+|===
+| N.o da porta TCP v4/V6 | Direção | Função 
+
+
+| 8143 | de entrada | Conexões HTTPS para API REST 
+
+
+| 8043 | de entrada | Conexões HTTPS 
+
+
+| 9060 | de entrada | Conexões HTTPS usadas para SOAP em conexões https esta porta deve ser aberta para permitir que um cliente se conete ao servidor API de ferramentas ONTAP. 
+
+
+| 22 | de entrada | SSH (Desativado por padrão) 
+
+
+| 9080 | de entrada | Conexões HTTPS - VP e SRA - conexões internas somente de loopback 
+
+
+| 9083 | de entrada | Conexões HTTPS - VP e SRA usados para SOAP em conexões https 
+
+
+| 1162 | de entrada | Pacotes de intercetação SNMP VP 
+
+
+| 1527 | apenas interno | Porta de banco de dados Derby, apenas entre este computador e ele mesmo, conexões externas não aceitas -- somente conexões internas 
+
+
+| 443 | bidirecional | Usado para conexões com clusters ONTAP 
+|===
+* *Suporte para certificados assinados pela autoridade de certificação (CA).* As ferramentas do ONTAP para VMware vSphere oferecem suporte a certificados assinados pela CA. Consulte este https://kb.netapp.com/Advice_and_Troubleshooting/Data_Storage_Software/VSC_and_VASA_Provider/Virtual_Storage_Console%3A_Implementing_CA_signed_certificates["artigo da kb"^] documento para obter mais informações.
+* *Registo de auditoria.* Os pacotes de suporte podem ser baixados e são extremamente detalhados. As ferramentas do ONTAP Registram todas as atividades de login e logout do usuário em um arquivo de log separado. As chamadas de API VASA são registradas em um log de auditoria VASA dedicado (local cxf.log).
+* *Políticas de senha.* As seguintes políticas de senha são seguidas:
++
+** As senhas não são registradas em nenhum arquivo de log.
+** As senhas não são comunicadas em texto simples.
+** As senhas são configuradas durante o próprio processo de instalação.
+** O histórico de senhas é um parâmetro configurável.
+** A idade mínima da senha é definida para 24 horas.
+** O preenchimento automático dos campos de senha está desativado.
+** As ferramentas do ONTAP criptografam todas as informações de credenciais armazenadas usando hash SHA256.
+
+
+

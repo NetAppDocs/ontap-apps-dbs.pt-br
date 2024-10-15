@@ -1,0 +1,24 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-host-config-windows.html 
+keywords: oracle, database, ontap, windows 
+summary: Bancos de dados Oracle com Microsoft Windows 
+---
+= Bancos de dados Oracle com Microsoft Windows
+:allow-uri-read: 
+
+
+[role="lead"]
+Tópicos de configuração para banco de dados Oracle no Microsoft Windows com ONTAP.
+
+
+
+== NFS
+
+A Oracle suporta o uso do Microsoft Windows com o cliente NFS direto. Esse recurso oferece um caminho para os benefícios de gerenciamento do NFS, incluindo a capacidade de exibir arquivos entre ambientes, redimensionar volumes dinamicamente e utilizar um protocolo IP menos caro. Consulte a documentação oficial da Oracle para obter informações sobre como instalar e configurar um banco de dados no Microsoft Windows usando DNFS. Não existem boas práticas especiais.
+
+
+
+== SAN
+
+Para uma ótima eficiência de compressão, certifique-se de que o sistema de ficheiros NTFS utilize uma unidade de alocação de 8K GB ou maior. O uso de uma unidade de alocação 4K, que geralmente é o padrão, afeta negativamente a eficiência da compressão.

@@ -1,0 +1,9 @@
+---
+sidebar: sidebar 
+permalink: vmware/vsphere_admin_storage_efficiencies.html 
+redirect: ontap-apps-dbs/vmware/vmware-vsphere-datastores-top.html 
+---
+= 
+:allow-uri-read: 
+
+

@@ -1,0 +1,26 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-example-luns.html 
+keywords: epic,cache,iris 
+summary: Implantação de exemplo épica no ONTAP - LUNs 
+---
+= Implantação de exemplo épica no ONTAP - LUNs
+:allow-uri-read: 
+
+
+[role="lead"]
+>>> marcador de posição para frase ou parágrafo descritivo
+
+Criar LUN
+
+Para criar um LUN: https://docs.netapp.com/us-en/ontap-cli-9141//lun-create.html[]
+
+Adicione volumes ao CG
+
+Para criar ou modificar grupos de consistência: https://docs.netapp.com/us-en/ontap/smbc/smbc_admin_add_and_remove_volumes_in_consistency_groups.html[]
+
+LUN de mapa
+
+Para mapear o LUN: https://docs.netapp.com/us-en/ontap-cli-9141//lun-mapping-create.html[]
+
+Dependendo da versão do ONTAP, a configuração padrão para reserva fracional no volume pode ser de 100%. Esta configuração deve ser definida como 0.

@@ -1,0 +1,35 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-otv-hardening-login-banner.html 
+keywords: VMware, Data protection, security, OTV, Hardening, ONTAP Tools 
+summary: Guia de fortalecimento da segurança para ferramentas do ONTAP para VMware vSphere, banner de login. 
+---
+= Banner de login
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O banner de login a seguir é exibido depois que o usuário insere um nome de usuário no prompt de login. Observe que o SSH está desativado por padrão e só permite logins únicos quando ativado a partir do console da VM.
+
+....
+WARNING: Unauthorized access to this system is forbidden and will be
+prosecuted by law. By accessing this system, you agree that your actions
+may be monitored if unauthorized usage is suspected.
+....
+Depois que o usuário concluir o login através do canal SSH, o seguinte texto é exibido:
+
+ Linux UnifiedVSC 5.10.0-21-amd64 #1 SMP Debian 5.10.162-1 (2023-01-21) x86_64
+....
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+....
+....
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+....

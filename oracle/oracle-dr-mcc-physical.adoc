@@ -1,0 +1,85 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dr-mcc-physical.html 
+keywords: metrocluster, MCC, MCC-IP 
+summary: Arquitetura física do MetroCluster e bancos de dados Oracle 
+---
+= Arquitetura física do MetroCluster e bancos de dados Oracle
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Entender como os bancos de dados Oracle operam em um ambiente MetroCluster requer alguma explicação do design físico de um sistema MetroCluster.
+
+
+NOTE: Esta documentação substitui o relatório técnico publicado anteriormente _TR-4592: Oracle no MetroCluster._
+
+
+
+== O MetroCluster pode ser usado em 3 configurações diferentes
+
+* Pares HA com conetividade IP
+* Pares DE HA com conectividade FC
+* Controladora única com conectividade FC
+
+
+
+NOTE: O termo 'conetividade' refere-se à conexão de cluster usada para replicação entre sites. Não se refere aos protocolos de host. Todos os protocolos do lado do host são suportados como de costume em uma configuração MetroCluster, independentemente do tipo de conexão usada para comunicação entre clusters.
+
+
+
+== IP MetroCluster
+
+A configuração MetroCluster IP de par de HA usa dois ou quatro nós por local. Essa opção de configuração aumenta a complexidade e os custos em relação à opção de dois nós, mas oferece um benefício importante: A redundância intrasite. Uma simples falha do controlador não requer acesso aos dados na WAN. O acesso aos dados permanece local por meio do controlador local alternativo.
+
+A maioria dos clientes está escolhendo a conetividade IP porque os requisitos de infraestrutura são mais simples. No passado, a conetividade entre locais de alta velocidade era geralmente mais fácil de provisionar usando switches FC e fibra escura, mas hoje em dia os circuitos IP de baixa latência e alta velocidade estão mais prontamente disponíveis.
+
+A arquitetura também é mais simples porque as únicas conexões entre locais são para os controladores. No Metroclusters FC SAN conetados, um controlador grava diretamente nas unidades no local oposto e, portanto, requer conexões, switches e bridges SAN adicionais. Em contraste, um controlador em uma configuração IP grava nas unidades opostas através do controlador.
+
+Para obter informações adicionais, consulte a documentação oficial do ONTAP e https://www.netapp.com/pdf.html?item=/media/13481-tr4689.pdf["Arquitetura e design da solução IP da MetroCluster"^].
+
+image:mccip.png["Erro: Imagem gráfica em falta"]
+
+
+
+== MetroCluster conectados a FC de par HA SAN
+
+A configuração de MetroCluster FC de par de HA usa dois ou quatro nós por local. Essa opção de configuração aumenta a complexidade e os custos em relação à opção de dois nós, mas oferece um benefício importante: A redundância intrasite. Uma simples falha do controlador não requer acesso aos dados na WAN. O acesso aos dados permanece local por meio do controlador local alternativo.
+
+image:mcc-4-node.png["Erro: Imagem gráfica em falta"]
+
+Algumas infraestruturas multisite não foram desenvolvidas para operações ativas-ativas, mas são usadas mais como local principal e local de recuperação de desastres. Nesta situação, uma opção MetroCluster de par de HA é geralmente preferível pelas seguintes razões:
+
+* Embora um cluster de dois nós MetroCluster seja um sistema de HA, a falha inesperada de uma controladora ou a manutenção planejada exige que os serviços de dados fiquem online no local oposto. Se a conetividade de rede entre locais não puder suportar a largura de banda necessária, o desempenho é afetado. A única opção seria também falhar sobre os vários sistemas operacionais host e serviços associados ao site alternativo. O cluster de MetroCluster de par de HA elimina esse problema porque a perda de uma controladora resulta em failover simples no mesmo local.
+* Algumas topologias de rede não são projetadas para acesso entre sites, mas usam sub-redes diferentes ou SANs FC isoladas. Nesses casos, o cluster MetroCluster de dois nós não funciona mais como um sistema de HA porque o controlador alternativo não pode fornecer dados aos servidores no local oposto. A opção MetroCluster de par de HA é necessária para fornecer redundância completa.
+* Se uma infraestrutura de dois locais for vista como uma única infraestrutura altamente disponível, a configuração de dois nós do MetroCluster será adequada. No entanto, se o sistema precisar funcionar por um longo período de tempo após a falha do local, é preferível usar um par de HA porque ele continua fornecendo HA em um único local.
+
+
+
+
+== MetroCluster com conexão SAN FC de dois nós
+
+A configuração do MetroCluster de dois nós usa apenas um nó por local. Esse design é mais simples do que a opção de par de HA, pois há menos componentes para configurar e manter. Ele também reduziu as demandas de infraestrutura em termos de cabeamento e switch FC. Finalmente, reduz custos.
+
+image:mcc-2-node.png["Erro: Imagem gráfica em falta"]
+
+O impactos óbvio desse projeto é que a falha do controlador em um único local significa que os dados estão disponíveis no local oposto. Esta restrição não é necessariamente um problema. Muitas empresas têm operações de data center multisite com redes estendidas, de alta velocidade e baixa latência, que funcionam essencialmente como uma única infraestrutura. Nesses casos, a versão de dois nós do MetroCluster é a configuração preferida. Sistemas de dois nós são usados atualmente em escala de petabyte por vários provedores de serviços.
+
+
+
+== Recursos de resiliência do MetroCluster
+
+Não há pontos únicos de falha em uma solução MetroCluster:
+
+* Cada controladora tem dois caminhos independentes para os compartimentos de unidades no local.
+* Cada controladora tem dois caminhos independentes para o shelves de unidades no local remoto.
+* Cada controlador tem dois caminhos independentes para os controladores no local oposto.
+* Na configuração de par de HA, cada controladora tem dois caminhos para seu parceiro local.
+
+
+Em resumo, qualquer componente na configuração pode ser removido sem comprometer a capacidade do MetroCluster de fornecer dados. A única diferença em termos de resiliência entre as duas opções é que a versão do par de HA ainda é um sistema de storage de HA geral após uma falha do local.

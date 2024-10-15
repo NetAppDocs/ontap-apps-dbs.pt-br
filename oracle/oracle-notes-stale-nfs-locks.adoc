@@ -1,0 +1,47 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-notes-stale-nfs-locks.html 
+keywords: oracle, database, ontap, stale, nfs, locks 
+summary: Banco de dados Oracle e bloqueios obsoletos NFSv3 
+---
+= Stale NFSv3 Locks e bancos de dados Oracle
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Se um servidor de banco de dados Oracle falhar, ele pode ter problemas com bloqueios NFS obsoletos ao reiniciar. Este problema é evitável prestando atenção cuidadosa à configuração da resolução de nomes no servidor.
+
+Este problema surge porque criar um bloqueio e limpar um bloqueio usam dois métodos ligeiramente diferentes de resolução de nomes. Dois processos estão envolvidos, o Network Lock Manager (NLM) e o cliente NFS. O NLM usa `uname n` para determinar o nome do host, enquanto o `rpc.statd` processo usa `gethostbyname()`o . Esses nomes de host devem corresponder para que o sistema operacional limpe corretamente os bloqueios obsoletos. Por exemplo, o host pode estar procurando bloqueios de propriedade `dbserver5` do , mas os bloqueios foram registrados pelo host como `dbserver5.mydomain.org`. Se `gethostbyname()` não retornar o mesmo valor que `uname –a`, o processo de liberação do bloqueio não foi bem-sucedido.
+
+O script de exemplo a seguir verifica se a resolução do nome é totalmente consistente:
+
+....
+#! /usr/bin/perl
+$uname=`uname -n`;
+chomp($uname);
+($name, $aliases, $addrtype, $length, @addrs) = gethostbyname $uname;
+print "uname -n yields: $uname\n";
+print "gethostbyname yields: $name\n";
+....
+Se `gethostbyname` não corresponder `uname`, é provável que os bloqueios obsoletos. Por exemplo, este resultado revela um problema potencial:
+
+....
+uname -n yields: dbserver5
+gethostbyname yields: dbserver5.mydomain.org
+....
+A solução é geralmente encontrada alterando a ordem em que os hosts aparecem em `/etc/hosts`. por exemplo, suponha que o arquivo hosts inclua esta entrada:
+
+....
+10.156.110.201  dbserver5.mydomain.org dbserver5 loghost
+....
+Para resolver esse problema, altere a ordem em que o nome de domínio totalmente qualificado e o nome de host curto aparecem:
+
+....
+10.156.110.201  dbserver5 dbserver5.mydomain.org loghost
+....
+`gethostbyname()` agora retorna o nome de host curto `dbserver5`, que corresponde à saída `uname` do . Assim, os bloqueios são apagados automaticamente após uma falha do servidor.

@@ -1,0 +1,26 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-arch-8node.html 
+keywords: epic,cache,iris 
+summary: Arquitetura épica de oito nós 
+---
+= Arquitetura épica de oito nós
+:allow-uri-read: 
+
+
+[role="lead"]
+As figuras abaixo mostram a arquitetura de oito nós com escalabilidade horizontal. Novamente, você pode começar com quatro nós e escalar para seis nós e continuar a escalar para oito nós ou mais. Essa arquitetura oferece o melhor equilíbrio de performance e capacidade entre os seis nós em produção.
+
+Os ambientes de teste são clonados do Report em vez da produção nesse projeto. Isso descarrega os ambientes de teste e as verificações de integridade da produção.
+
+
+
+== Arquitetura de oito nós
+
+image:epic-8node.png["Arquitetura épica de 4 nós"]
+
+
+
+== Posicionamento do workload de oito nós
+
+image:epic-8node-design.png["Disposição épica de 8 nós"]

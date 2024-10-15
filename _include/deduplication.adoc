@@ -1,0 +1,17 @@
+= Deduplicação
+:allow-uri-read: 
+
+
+
+
+== Deduplicação
+
+A deduplicação é a remoção de tamanhos de bloco duplicados de um conjunto de dados. Por exemplo, se o mesmo bloco 4KB existisse em 10 arquivos diferentes, a deduplicação redirecionaria esse bloco 4KB dentro de todos os arquivos 10 para o mesmo bloco físico 4KB. O resultado seria uma melhoria de 10:1 na eficiência para esses dados.
+
+Dados como LUNs de inicialização convidado da VMware geralmente deduplicam muito bem porque consistem em várias cópias dos mesmos arquivos do sistema operacional. A eficiência de 100:1 e maior foi observada.
+
+Alguns dados não contêm dados duplicados. Por exemplo, um bloco Oracle contém um cabeçalho que é globalmente exclusivo para o banco de dados e um trailer que é quase único. Como resultado, a deduplicação de um banco de dados Oracle raramente oferece mais de 1% de economia. A deduplicação com bancos de dados MS SQL é um pouco melhor, mas metadados exclusivos no nível de bloco ainda são uma limitação.
+
+Economia de espaço de até 15% em bancos de dados com 16KB e grandes blocos foram observadas em alguns casos. O 4KB inicial de cada bloco contém o cabeçalho globalmente exclusivo, e o último bloco de 4KB contém o trailer quase único. Os blocos internos são candidatos à deduplicação, embora na prática isso seja quase inteiramente atribuído à deduplicação de dados zerados.
+
+Muitos arrays concorrentes afirmam a capacidade de deduplicar bancos de dados com base na presunção de que um banco de dados é copiado várias vezes. A esse respeito, a deduplicação NetApp também pode ser usada, mas o ONTAP oferece uma opção melhor: A tecnologia NetApp FlexClone. O resultado final é o mesmo; várias cópias de um banco de dados que compartilham a maioria dos blocos físicos subjacentes são criadas. Usar o FlexClone é muito mais eficiente do que ter tempo para copiar arquivos de banco de dados e, em seguida, deduplicá-los. É, na verdade, não duplicação em vez de deduplicação, porque uma duplicata nunca é criada em primeiro lugar.

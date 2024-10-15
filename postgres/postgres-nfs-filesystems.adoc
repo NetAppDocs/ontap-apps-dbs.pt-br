@@ -1,0 +1,86 @@
+---
+sidebar: sidebar 
+permalink: postgres/postgres-nfs-filesystems.html 
+keywords: PostgreSQL,database,postgres 
+summary: Bancos de dados PostgreSQL NFS com ONTAP 
+---
+= Bancos de dados PostgreSQL com sistemas de arquivos NFS
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Os bancos de dados PostgreSQL podem ser hospedados em sistemas de arquivos NFSv3 ou NFSv4. A melhor opção depende de fatores fora do banco de dados.
+
+Por exemplo, o comportamento de bloqueio NFSv4D pode ser preferível em determinados ambientes em cluster. (link:../oracle/oracle-notes-stale-nfs-locks.html["aqui"]Consulte para obter detalhes adicionais)
+
+A funcionalidade do banco de dados deve estar próxima da mesma, incluindo o desempenho. O único requisito é o uso da `hard` opção de montagem. Isso é necessário para garantir que os tempos limite flexíveis não produzam erros de e/S irrecuperáveis.
+
+Se NFSv4 for escolhido como um protocolo, a NetApp recomenda o uso de NFSv4,1. Há algumas melhorias funcionais no protocolo NFSv4 em NFSv4,1 que aumentam a resiliência em relação a NFSv4,0.
+
+Use as seguintes opções de montagem para cargas de trabalho gerais de banco de dados:
+
+....
+rw,hard,nointr,bg,vers=[3|4],proto=tcp,rsize=65536,wsize=65536
+....
+Se for esperado uma e/S sequencial grande, os tamanhos de transferência NFS podem ser aumentados conforme descrito na seção a seguir.
+
+
+
+== Tamanhos de transferência NFS
+
+Por padrão, o ONTAP limita os tamanhos de e/S de NFS a 64K.
+
+A e/S aleatória com a maioria dos aplicativos e bancos de dados usa um tamanho de bloco muito menor que está bem abaixo do máximo 64K. A e/S de bloco grande geralmente é paralelizada, portanto o máximo de 64K GB também não é uma limitação para obter largura de banda máxima.
+
+Existem algumas cargas de trabalho em que o máximo 64K cria uma limitação. Em particular, operações de um único processo, como operação de backup ou recuperação ou uma verificação de tabela completa de banco de dados, são executadas de forma mais rápida e eficiente se o banco de dados puder executar menos, mas maiores I/os. O tamanho ideal de manuseio de e/S para ONTAP é 256K.
+
+O tamanho máximo de transferência para um determinado SVM do ONTAP pode ser alterado da seguinte forma:
+
+....
+Cluster01::> set advanced
+Warning: These advanced commands are potentially dangerous; use them only when directed to do so by NetApp personnel.
+Do you want to continue? {y|n}: y
+Cluster01::*> nfs server modify -vserver vserver1 -tcp-max-xfer-size 262144
+Cluster01::*>
+....
+|===
+| Cuidado 
+
+
+| Nunca diminua o tamanho máximo de transferência permitido no ONTAP abaixo do valor de rsize/wsize dos sistemas de arquivos NFS atualmente instalados. Isso pode criar pendências ou até mesmo corrupção de dados com alguns sistemas operacionais. Por exemplo, se os clientes NFS estiverem atualmente definidos em um rsize/wsize de 65536, o tamanho máximo de transferência do ONTAP poderá ser ajustado entre 65536 e 1048576 sem efeito porque os próprios clientes são limitados. Reduzir o tamanho máximo de transferência abaixo de 65536 pode danificar a disponibilidade ou os dados. 
+|===
+Uma vez que o tamanho da transferência é aumentado no nível ONTAP, as seguintes opções de montagem seriam usadas:
+
+....
+rw,hard,nointr,bg,vers=[3|4],proto=tcp,rsize=262144,wsize=262144
+....
+
+
+== NFSv3 Tabelas de slot TCP
+
+Se NFSv3 for usado com Linux, é fundamental definir corretamente as tabelas de slot TCP.
+
+As tabelas de slot TCP são equivalentes a NFSv3 mm de profundidade de fila do adaptador de barramento do host (HBA). Essas tabelas controlam o número de operações NFS que podem ficar pendentes de uma só vez. O valor padrão é geralmente 16, o que é muito baixo para um desempenho ideal. O problema oposto ocorre em kernels Linux mais recentes, que podem aumentar automaticamente o limite da tabela de slots TCP para um nível que satura o servidor NFS com solicitações.
+
+Para um desempenho ideal e para evitar problemas de desempenho, ajuste os parâmetros do kernel que controlam as tabelas de slots TCP.
+
+Executar o `sysctl -a | grep tcp.*.slot_table` comando e respeitar os seguintes parâmetros:
+
+....
+# sysctl -a | grep tcp.*.slot_table
+sunrpc.tcp_max_slot_table_entries = 128
+sunrpc.tcp_slot_table_entries = 128
+....
+Todos os sistemas Linux devem incluir `sunrpc.tcp_slot_table_entries`, mas apenas alguns incluem `sunrpc.tcp_max_slot_table_entries`. Ambos devem ser definidos para 128.
+
+|===
+| Cuidado 
+
+
+| A falha em definir esses parâmetros pode ter efeitos significativos no desempenho. Em alguns casos, o desempenho é limitado porque o sistema operacional linux não está emitindo e/S suficiente Em outros casos, as latências de e/S aumentam à medida que o sistema operacional linux tenta emitir mais e/S do que pode ser reparado. 
+|===

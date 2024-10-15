@@ -1,0 +1,9 @@
+---
+sidebar: sidebar 
+permalink: mssql/mssql-workloads.html 
+redirect: ontap-apps-dbs/mssql/mssql-overview.html 
+---
+= 
+:allow-uri-read: 
+
+

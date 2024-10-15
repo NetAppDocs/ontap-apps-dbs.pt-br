@@ -1,0 +1,43 @@
+---
+sidebar: sidebar 
+permalink: mssql/mssql-overview.html 
+keywords: MSSQL,SQL Server,TR-4590, SnapCenter, ONTAP 
+summary: Microsoft SQL Server no ONTAP 
+---
+= Microsoft SQL Server no ONTAP
+:allow-uri-read: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O ONTAP oferece uma solução de desempenho e segurança de nível empresarial para seus bancos de dados Microsoft SQL Server, além de fornecer ferramentas de classe mundial para gerenciar seu ambiente.
+
+
+NOTE: Esta documentação substitui o relatório técnico publicado anteriormente _TR-4590: Guia de práticas recomendadas para Microsoft SQL Server com ONTAP_
+
+NetApp assume que o leitor tem conhecimento prático do seguinte:
+
+* ONTAP
+* Arquitetura e administração do Microsoft SQL Server
+* Software de backup SnapCenter, incluindo os seguintes componentes:
+* NetApp SnapCenter como software de backup, que inclui:
++
+** Plug-in do SnapCenter para Microsoft Windows
+** Plug-in do SnapCenter para SQL Server
+
+
+
+
+O escopo desta seção de práticas recomendadas está limitado ao design técnico com base nos princípios e padrões preferenciais recomendados pela NetApp para a infraestrutura de storage. A implementação de ponta a ponta está fora do escopo.
+
+Para obter informações sobre compatibilidade entre os produtos NetApp, consulte link:https://mysupport.netapp.com/matrix/["Ferramenta de Matriz de interoperabilidade NetApp (IMT)"^].
+
+
+
+== Cargas de trabalho do Microsoft SQL Server
+
+Antes de implantar o SQL Server, você deve entender os requisitos de carga de trabalho dos aplicativos suportados pelas instâncias de banco de dados do SQL Server. Cada aplicativo tem requisitos diferentes de capacidade, desempenho e disponibilidade, e, portanto, cada banco de dados deve ser projetado para oferecer suporte ideal a esses requisitos. Muitas organizações classificam os bancos de dados em várias camadas de gerenciamento, usando os requisitos da aplicação para definir SLAs. As cargas de trabalho do SQL Server são frequentemente categorizadas como descrito abaixo:
+
+* OLTP, que geralmente são os bancos de dados mais críticos de uma organização. Esses bancos de dados geralmente apoiam aplicativos voltados para o cliente e são considerados essenciais para as operações principais da empresa. Os bancos de dados OLTP de missão crítica e as aplicações com suporte geralmente têm SLAs que exigem alta performance, são sensíveis à degradação da performance e exigem disponibilidade máxima. Eles também podem ser candidatos para clusters de failover sempre em ou grupos de disponibilidade sempre em disponibilidade. A mistura de e/S nesses tipos de bancos de dados é geralmente caraterizada por 75% a 90% de leitura aleatória e 25% a 10% de gravação.
+* Bancos de dados do sistema de suporte à decisão (DSS), às vezes chamados de data warehouses. Esses bancos de dados são essenciais para muitas organizações que dependem de análises para seus negócios. Esses bancos de dados são sensíveis à utilização da CPU e operações de leitura do disco quando as consultas estão sendo executadas. Em muitas organizações, os bancos de dados DSS são os mais críticos durante o mês, trimestre e fim do ano Em geral, esse workload tem uma combinação de I/o de leitura de quase 100% e a taxa de transferência de e/S geralmente é mais importante do que o IOPS.
+

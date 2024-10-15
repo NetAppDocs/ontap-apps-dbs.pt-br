@@ -1,0 +1,37 @@
+= Apenas Snapshot
+:allow-uri-read: 
+
+
+
+
+== Apenas Snapshot
+
+O `snapshot-only` `tiering-policy` aplica-se apenas a blocos que não são partilhados com o sistema de ficheiros ativo. Essencialmente, isso resulta em camadas de backups de bancos de dados. Os blocos se tornam candidatos à disposição em camadas depois que um snapshot é criado e o bloco é substituído, resultando em um bloco que existe apenas no snapshot. O atraso antes de um `snapshot-only` bloco ser considerado frio é controlado pela `tiering-minimum-cooling-days` definição do volume. A gama a partir de ONTAP 9.8 é de 2 a 183 dias.
+
+Muitos conjuntos de dados têm taxas de alteração baixas, o que resulta em economias mínimas com essa política. Por exemplo, um banco de dados típico observado no ONTAP tem uma taxa de alteração inferior a 5% por semana. Os logs de arquivo de banco de dados podem ocupar um espaço extenso, mas eles geralmente continuam a existir no sistema de arquivos ativo e, portanto, não seriam candidatos para a disposição em camadas sob esta política.
+
+
+
+== Auto
+
+A `auto` política de disposição em camadas estende a disposição em camadas para blocos específicos de snapshot e blocos no sistema de arquivos ativo. O atraso antes de um bloco ser considerado frio é controlado pela `tiering-minimum-cooling-days` definição do volume. A gama a partir de ONTAP 9.8 é de 2 a 183 dias.
+
+Essa abordagem permite opções de disposição em categorias que não estão disponíveis na `snapshot-only` política. Por exemplo, uma política de proteção de dados pode exigir 90 dias de retenção de determinados arquivos de log. Definir um período de resfriamento de 3 dias resulta em todos os arquivos de log com mais de 3 dias para serem dispostos na camada de desempenho. Essa ação libera espaço substancial na categoria de performance e ainda permite que você visualize e gerencie todos os 90 dias de dados.
+
+
+
+== Nenhum
+
+A `none` política de disposição em categorias impede que blocos adicionais sejam dispostos em camadas na camada de storage, mas todos os dados ainda na camada de capacidade permanecem na camada de capacidade até que sejam lidos. Se o bloco for então lido, ele será puxado para trás e colocado no nível de desempenho.
+
+O principal motivo para usar a `none` política de disposição em camadas é impedir que blocos sejam dispostos em camadas, mas pode se tornar útil alterar as políticas ao longo do tempo. Por exemplo, digamos que um conjunto de dados específico seja amplamente categorizado na camada de capacidade, mas surge uma necessidade inesperada de recursos completos de performance. A política pode ser alterada para impedir qualquer disposição em camadas adicional e para confirmar que todos os blocos de leitura de volta à medida que a IO aumenta permanecem na categoria de performance.
+
+
+
+== Tudo
+
+A `all` política de disposição em categorias substitui a `backup` política a partir do ONTAP 9.6.  `backup`A política aplicada somente a volumes de proteção de dados, o que significa um destino do SnapMirror ou do NetApp SnapVault. A `all` política funciona da mesma forma, mas não se restringe a volumes de proteção de dados.
+
+Com essa política, os blocos são imediatamente considerados frios e elegíveis para serem dispostos na camada de capacidade imediatamente.
+
+Essa política é especialmente apropriada para backups de longo prazo. Ele também pode ser usado como uma forma de Gerenciamento de armazenamento hierárquico (HSM). No passado, o HSM era comumente usado para categorizar os blocos de dados de um arquivo em fita, mantendo o próprio arquivo visível no sistema de arquivos. Um volume FabricPool com a `all` política permite armazenar arquivos em um ambiente visível e gerenciável, mas não consome praticamente espaço na camada de storage local.

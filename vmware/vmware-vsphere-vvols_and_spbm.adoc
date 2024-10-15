@@ -1,0 +1,24 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-vsphere-vvols_and_spbm.html 
+keywords: vSphere, vVols, virtual volumes, SPBM, storage police based management, ONTAP 
+summary: Esta página descreve as práticas recomendadas para a implementação de uma solução de storage ONTAP em um ambiente VMware vSphere. 
+---
+= Volumes virtuais (vVols) e gerenciamento baseado em políticas de storage (SPBM)
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O NetApp foi um dos primeiros parceiros de design da VMware no desenvolvimento do vSphere Virtual volumes (vVols), fornecendo informações arquitetônicas e suporte antecipado para vVols e VMware vSphere APIs for Storage Awareness (VASA). Essa abordagem não só trouxe gerenciamento de armazenamento granular de VM para o VMFS, mas também suportou a automação do provisionamento de armazenamento por meio do Storage Policy Based Management (SPBM).
+
+O SPBM fornece uma estrutura que serve como uma camada de abstração entre os serviços de armazenamento disponíveis para o seu ambiente de virtualização e os elementos de armazenamento provisionados por meio de políticas. Com essa abordagem, os arquitetos de storage podem projetar pools de storage com recursos diferentes que podem ser facilmente consumidos pelos administradores de VM. Os administradores podem então combinar os requisitos de carga de trabalho da máquina virtual com os pools de armazenamento provisionados, permitindo o controle granular de várias configurações em um nível por VM ou disco virtual.
+
+A ONTAP é líder do setor de storage em escala vVols, oferecendo suporte a centenas de milhares de vVols em um único cluster. Já os fornecedores de array empresarial e flash array menores oferecem suporte a apenas milhares de vols por array. O NetApp também está impulsionando a evolução do gerenciamento granular de VM com futuros recursos para suporte ao vVols 3,0.
+
+
+NOTE: Para obter mais informações sobre o VMware vSphere Virtual volumes, SPBM e ONTAP, link:vmware-vvols-overview.html["TR-4400: VMware vSphere Virtual volumes com ONTAP"^]consulte .

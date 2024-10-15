@@ -1,0 +1,25 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-tiering-whole-file.html 
+keywords: tiering, fabricpool 
+summary: Disposição em camadas do FabricPool de arquivo completo do banco de dados Oracle 
+---
+= Disposição em camadas do FabricPool de arquivo completo do banco de dados Oracle
+:allow-uri-read: 
+
+
+[role="lead"]
+Embora a disposição em camadas do FabricPool opere no nível de bloco, em alguns casos, ela pode ser usada para fornecer a disposição em camadas no nível do arquivo.
+
+Muitos conjuntos de dados de aplicações são organizados por data, e esses dados geralmente têm cada vez menos probabilidade de serem acessados à medida que envelhecem. Por exemplo, um banco pode ter um repositório de arquivos PDF que contém cinco anos de declarações de clientes, mas apenas os últimos meses estão ativos. O FabricPool pode ser usado para realocar arquivos de dados mais antigos para o nível de capacidade. Um período de resfriamento de 14 dias garantiria que os 14 dias mais recentes de arquivos PDF permaneçam no nível de desempenho. Além disso, os arquivos que são lidos pelo menos a cada 14 dias permanecerão ativos e, portanto, permanecerão no nível de desempenho.
+
+
+
+== Políticas
+
+Para implementar uma abordagem de disposição em camadas baseada em arquivos, você precisa ter arquivos gravados e não modificados posteriormente. A `tiering-minimum-cooling-days` política deve ser definida suficientemente alta para que os arquivos que você possa precisar permaneçam no nível de desempenho. Por exemplo, um conjunto de dados para o qual os 60 dias de dados mais recentes são necessários com garantias de desempenho ideais, definindo `tiering-minimum-cooling-days` o período como 60. Resultados semelhantes também podem ser alcançados com base nos padrões de acesso ao arquivo. Por exemplo, se os 90 dias mais recentes de dados forem necessários e o aplicativo estiver acessando esse período de 90 dias de dados, os dados permanecerão na categoria de performance. Ao definir `tiering-minimum-cooling-days` o período como 2, você obtém a disposição imediata de categorias após os dados ficarem menos ativos.
+
+ `auto`A política é necessária para impulsionar a disposição em camadas desses blocos, porque somente a `auto` política afeta os blocos que estão no sistema de arquivos ativo.
+
+
+NOTE: Qualquer tipo de acesso aos dados repõe os dados do mapa de calor. A verificação de vírus, a indexação e até mesmo a atividade de backup que lê os arquivos de origem impedem a categorização porque o limite necessário `tiering-minimum-cooling-days` nunca é atingido.

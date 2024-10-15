@@ -1,0 +1,65 @@
+---
+indexpage:
+  title: ONTAP e aplicações empresariais
+  summary: O ONTAP é a base para o gerenciamento e a proteção de dados em muitas tecnologias
+    de banco de dados e aplicações empresariais. As páginas a seguir fornecem orientação
+    sobre as práticas recomendadas e os procedimentos de implementação para aplicativos
+    e infraestrutura empresariais e ONTAP.
+  keywords: VMware, vSphere, Oracle, SAP, HANA, SAP HANA, MSSQL, SQL Server, Postgres,
+    postgresql, mysql, mariadb, Hyper-V
+  lead: O ONTAP é a base para o gerenciamento e a proteção de dados em muitas tecnologias
+    de banco de dados e aplicações empresariais. As páginas a seguir fornecem orientação
+    sobre as práticas recomendadas e os procedimentos de implementação para aplicativos
+    e infraestrutura empresariais e ONTAP.
+  tiles:
+  - title: Microsoft Hyper-V
+    links:
+    - title: Diretrizes de implantação e práticas recomendadas de storage
+      url: "/microsoft/win_overview.html"
+  - title: Microsoft SQL Server
+    links:
+    - title: Microsoft SQL Server no ONTAP
+      url: "/mssql/mssql-overview.html"
+    - title: Considerações sobre o armazenamento do Microsoft SQL Server
+      url: "/mssql/mssql-storage-considerations.html"
+    - title: Proteção de dados do Microsoft SQL Server
+      url: "/mssql/mssql-data-protection.html"
+    - title: Recuperação de desastres do Microsoft SQL Server
+      url: "/mssql/mssql-disaster-recovery.html"
+  - title: Bancos de dados de código aberto
+    links:
+    - title: MariaDB e MySQL no ONTAP
+      url: "/mysql/mysql-overview.html"
+    - title: PostgreSQL no ONTAP
+      url: "/postgres/postgres-overview.html"
+  - title: Banco de dados Oracle
+    links:
+    - title: Oracle no ONTAP
+      url: "/oracle/oracle-overview.html"
+    - title: Proteção de dados Oracle
+      url: "/oracle/oracle-dp-overview.html"
+    - title: Recuperação de desastres Oracle
+      url: "/oracle/oracle-dr-overview.html"
+    - title: Migração Oracle
+      url: "/oracle/oracle-migration-overview.html"
+  - title: SAP HANA
+    links:
+    - title: Soluções SAP
+      url: https://docs.netapp.com/us-en/netapp-solutions-sap/index.html
+    - title: SAP HANA com AFF e FC
+      url: https://docs.netapp.com/us-en/netapp-solutions-sap/bp/saphana_aff_fc_introduction.html
+    - title: SAP HANA com AFF e NFS
+      url: https://docs.netapp.com/us-en/netapp-solutions-sap/bp/saphana_aff_nfs_introduction.html
+  - title: VMware
+    links:
+    - title: VMware vSphere com ONTAP
+      url: "/vmware/vmware-vsphere-overview.html"
+    - title: Guia de fortalecimento da segurança para as ferramentas do ONTAP para
+        VMware vSphere
+      url: "/vmware/vmware-otv-hardening-overview.html"
+    - title: Volumes virtuais (vVols) com ONTAP
+      url: "/vmware/vmware-vvols-overview.html"
+    - title: VMware Site Recovery Manager com ONTAP
+      url: "/vmware/vmware-srm-overview.html"
+    - title: Cluster de armazenamento Metro do VMware vSphere com o ONTAP
+      url: "/vmware/vmware_vmsc_overview.html"

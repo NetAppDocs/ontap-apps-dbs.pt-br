@@ -1,0 +1,35 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-migration-datafile-move.html 
+keywords: migration, oracle, move datafile 
+summary: Migração de datafiles Oracle individuais 
+---
+= Migração de arquivos de dados Oracle
+:allow-uri-read: 
+
+
+[role="lead"]
+Datafiles Oracle individuais podem ser movidos com um único comando.
+
+Por exemplo, o comando a seguir move o arquivo de dados IOPST.dbf do sistema de arquivos para o sistema de `/oradata3` arquivos `/oradata2` .
+
+....
+SQL> alter database move datafile  '/oradata2/NTAP/IOPS002.dbf' to '/oradata3/NTAP/IOPS002.dbf';
+Database altered.
+....
+Mover um arquivo de dados com esse método pode ser lento, mas normalmente não deve produzir e/S suficiente para interferir com as cargas de trabalho diárias do banco de dados. Em contraste, a migração via rebalanceamento do ASM pode ser executada muito mais rápido, mas à custa de diminuir a velocidade do banco de dados geral enquanto os dados estão sendo movidos.
+
+O tempo necessário para mover arquivos de dados pode ser facilmente medido criando um arquivo de dados de teste e, em seguida, movendo-o. O tempo decorrido para a operação é gravado nos dados da sessão:
+
+....
+SQL> set linesize 300;
+SQL> select elapsed_seconds||':'||message from v$session_longops;
+ELAPSED_SECONDS||':'||MESSAGE
+-----------------------------------------------------------------------------------------
+351:Online data file move: data file 8: 22548578304 out of 22548578304 bytes done
+SQL> select bytes / 1024 / 1024 /1024 as GB from dba_data_files where FILE_ID = 8;
+        GB
+----------
+        21
+....
+Neste exemplo, o arquivo que foi movido foi o arquivo de dados 8, que era de 21GB MB de tamanho e exigiu cerca de 6 minutos para migrar. O tempo necessário obviamente depende dos recursos do sistema de storage, da rede de armazenamento e da atividade geral do banco de dados que ocorre no momento da migração.

@@ -1,0 +1,71 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dp-online-backup.html 
+keywords: oracle, data protection, hot backup 
+summary: Recuperação e backups baseados em snapshot do banco de dados Oracle 
+---
+= Backups online de bancos de dados Oracle
+:allow-uri-read: 
+
+
+[role="lead"]
+Dois conjuntos de dados são necessários para proteger e recuperar um banco de dados Oracle no modo de backup. Note que esta não é a única opção de backup Oracle, mas é a mais comum.
+
+* Um instantâneo dos arquivos de dados no modo de backup
+* Os logs de arquivo criados enquanto os datafiles estavam no modo de backup
+
+
+Se a recuperação completa, incluindo todas as transações confirmadas, é necessário um terceiro item:
+
+* Um conjunto de registos de refazer atuais
+
+
+Existem várias maneiras de impulsionar a recuperação de um backup on-line. Muitos clientes restauram snapshots usando a CLI do ONTAP e, em seguida, usando o Oracle RMAN ou sqlplus para concluir a recuperação. Isso é especialmente comum com grandes ambientes de produção em que a probabilidade e a frequência de restaurações de banco de dados são extremamente baixas e qualquer procedimento de restauração é Tratado por um DBA qualificado. Para automação completa, soluções como o NetApp SnapCenter incluem um plug-in Oracle com interfaces gráficas e de linha de comando.
+
+Alguns clientes de grande escala adotaram uma abordagem mais simples, configurando scripts básicos nos hosts para colocar os bancos de dados no modo de backup em um momento específico, em preparação para um snapshot agendado. Por exemplo, programe o comando `alter database begin backup` às 23:58, `alter database end backup` às 00:02 e, em seguida, programe instantâneos diretamente no sistema de armazenamento à meia-noite. O resultado é uma estratégia de backup simples e altamente dimensionável que não requer software ou licenças externos.
+
+
+
+== Layout de dados
+
+O layout mais simples é isolar datafiles em um ou mais volumes dedicados. Eles devem ser não contaminados por qualquer outro tipo de arquivo. Isso é para garantir que os volumes de arquivo de dados possam ser restaurados rapidamente através de uma operação SnapRestore sem destruir um log refazer importante, controlfile ou log de arquivo.
+
+A SAN tem requisitos semelhantes para isolamento de arquivos de dados dentro de volumes dedicados. Com um sistema operacional como o Microsoft Windows, um único volume pode conter vários LUNs de arquivo de dados, cada um com um sistema de arquivos NTFS. Com outros sistemas operacionais, geralmente há um gerenciador de volumes lógico. Por exemplo, com o Oracle ASM, a opção mais simples seria limitar os LUNs de um grupo de discos ASM a um único volume que pode ser feito backup e restaurado como uma unidade. Se forem necessários volumes adicionais por motivos de gerenciamento de performance ou capacidade, a criação de um grupo de discos adicional no novo volume resultará em um gerenciamento mais simples.
+
+Se essas diretrizes forem seguidas, os snapshots poderão ser agendados diretamente no sistema de storage sem a necessidade de realizar um snapshot de grupo de consistência. A razão é que os backups Oracle não exigem que os datafiles sejam copiados ao mesmo tempo. O procedimento de backup on-line foi projetado para permitir que os arquivos de dados continuem sendo atualizados, pois são transmitidos lentamente para a fita ao longo de horas.
+
+Uma complicação surge em situações como o uso de um grupo de discos ASM que é distribuído entre volumes. Nesses casos, um cg-snapshot deve ser executado para garantir que os metadados ASM sejam consistentes em todos os volumes constituintes.
+
+*Atenção:* Verifique se o ASM `spfile` e `passwd` os arquivos não estão no grupo de discos que hospeda os arquivos de dados. Isso interfere na capacidade de restaurar seletivamente datafiles e apenas datafiles.
+
+
+
+== Procedimento de recuperação local – NFS
+
+Este procedimento pode ser conduzido manualmente ou através de uma aplicação como o SnapCenter. O procedimento básico é o seguinte:
+
+. Encerre o banco de dados.
+. Recupere o(s) volume(s) de arquivo de dados para o instantâneo imediatamente antes do ponto de restauração desejado.
+. Reproduza registos de arquivo até ao ponto pretendido.
+. Repita os logs atuais de refazer se a recuperação completa for desejada.
+
+
+Este procedimento pressupõe que os registos de arquivo desejados ainda estão presentes no sistema de ficheiros ativo. Se não estiverem, os logs do arquivo devem ser restaurados ou rman/sqlplus podem ser direcionados para os dados no diretório instantâneo.
+
+Além disso, para bancos de dados menores, os arquivos de dados podem ser recuperados por um usuário final diretamente `.snapshot` do diretório sem a ajuda de ferramentas de automação ou administradores de armazenamento para executar um `snaprestore` comando.
+
+
+
+== Procedimento de recuperação local – SAN
+
+Este procedimento pode ser conduzido manualmente ou através de uma aplicação como o SnapCenter. O procedimento básico é o seguinte:
+
+. Encerre o banco de dados.
+. Quiesce o(s) grupo(s) de discos que hospedam os arquivos de dados. O procedimento varia consoante o gestor de volume lógico escolhido. Com ASM, o processo requer a desmontagem do grupo de discos. Com o Linux, os sistemas de arquivos devem ser desmontados e os volumes lógicos e grupos de volumes devem ser desativados. O objetivo é parar todas as atualizações no grupo de volume alvo a serem restauradas.
+. Restaure os grupos de discos de arquivo de dados para o instantâneo imediatamente antes do ponto de restauração desejado.
+. Reative os grupos de discos recentemente restaurados.
+. Reproduza registos de arquivo até ao ponto pretendido.
+. Repita todos os logs de refazer se a recuperação completa for desejada.
+
+
+Este procedimento pressupõe que os registos de arquivo desejados ainda estão presentes no sistema de ficheiros ativo. Se não estiverem, os registos de arquivo devem ser restaurados colocando os LUNs de registo de arquivo offline e executando uma restauração. Este também é um exemplo no qual dividir os logs de arquivo em volumes dedicados é útil. Se os logs de arquivo compartilharem um grupo de volumes com os logs de refazer, os logs de refazer devem ser copiados em outro lugar antes da restauração do conjunto geral de LUNs. Esta etapa impede a perda dessas transações finais registradas.

@@ -1,0 +1,135 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dp-data-integrity.html 
+keywords: checksums, data integrity 
+summary: Somas de verificação e integridade do banco de dados Oracle 
+---
+= Somas de verificação e integridade do banco de dados Oracle
+:allow-uri-read: 
+
+
+[role="lead"]
+O ONTAP e seus protocolos compatíveis incluem vários recursos que protegem a integridade do banco de dados Oracle, incluindo dados em repouso e dados transmitidos pela rede de rede.
+
+A proteção de dados lógicos no ONTAP consiste em três requisitos principais:
+
+* Os dados devem estar protegidos contra corrupção de dados.
+* Os dados devem estar protegidos contra falha da unidade.
+* As alterações nos dados devem ser protegidas contra perda.
+
+
+Essas três necessidades são discutidas nas seções a seguir.
+
+
+
+== Corrupção de rede: Somas de verificação
+
+O nível mais básico de proteção de dados é a soma de verificação, que é um código especial de deteção de erros armazenado junto com os dados. A corrupção de dados durante a transmissão da rede é detetada com o uso de uma soma de verificação e, em alguns casos, várias somas de verificação.
+
+Por exemplo, um quadro FC inclui uma forma de checksum chamada de verificação de redundância cíclica (CRC) para garantir que a carga útil não esteja corrompida em trânsito. O transmissor envia os dados e o CRC dos dados. O recetor de um quadro FC recalcula o CRC dos dados recebidos para garantir que ele corresponda ao CRC transmitido. Se o CRC recém-calculado não corresponder ao CRC anexado ao quadro, os dados estarão corrompidos e o quadro FC será descartado ou rejeitado. Uma operação de e/S iSCSI inclui somas de verificação nas camadas TCP/IP e Ethernet e, para proteção adicional, também pode incluir proteção CRC opcional na camada SCSI. Qualquer corrupção de bits no fio é detetada pela camada TCP ou camada IP, o que resulta na retransmissão do pacote. Assim como no FC, erros no CRC SCSI resultam em uma rejeição ou rejeição da operação.
+
+
+
+== Drive corruption: Somas de verificação
+
+As somas de verificação também são usadas para verificar a integridade dos dados armazenados nas unidades. Os blocos de dados gravados nas unidades são armazenados com uma função de checksum que produz um número imprevisível vinculado aos dados originais. Quando os dados são lidos a partir da unidade, a soma de verificação é recalculada e comparada com a soma de verificação armazenada. Se não corresponder, os dados ficaram corrompidos e devem ser recuperados pela camada RAID.
+
+
+
+== Corrupção de dados: Gravações perdidas
+
+Um dos tipos mais difíceis de detetar é uma gravação perdida ou extraviada. Quando uma escrita é reconhecida, ela deve ser escrita para a Mídia no local correto. A corrupção de dados no local é relativamente fácil de detetar usando uma soma de verificação simples armazenada com os dados. No entanto, se a gravação é simplesmente perdida, então a versão anterior dos dados ainda pode existir e a soma de verificação estaria correta. Se a gravação for colocada no local físico errado, a soma de verificação associada seria mais uma vez válida para os dados armazenados, mesmo que a gravação tenha destruído outros dados.
+
+A solução para este desafio é a seguinte:
+
+* Uma operação de gravação deve incluir metadados que indicam o local onde a gravação deve ser encontrada.
+* Uma operação de gravação deve incluir algum tipo de identificador de versão.
+
+
+Quando o ONTAP grava um bloco, ele inclui dados sobre a localização do bloco. Se uma leitura subsequente identificar um bloco, mas os metadados indicarem que ele pertence ao local 123 quando foi encontrado no local 456, então a gravação foi extraviada.
+
+Detetar uma escrita totalmente perdida é mais difícil. A explicação é muito complicada, mas essencialmente o ONTAP está armazenando metadados de uma forma que uma operação de gravação resulta em atualizações para dois locais diferentes nas unidades. Se uma gravação for perdida, uma leitura posterior dos dados e metadados associados mostrará duas identidades de versão diferentes. Isso indica que a gravação não foi concluída pela unidade.
+
+A corrupção de gravação perdida e extraviada é extremamente rara, mas, à medida que as unidades continuam a crescer e os conjuntos de dados aumentam a escala de exabytes, o risco aumenta. A detecção de gravações perdidas deve ser incluída em qualquer sistema de storage que suporte workloads de banco de dados.
+
+
+
+== Falhas de unidade: RAID, RAID DP e RAID-teC
+
+Se um bloco de dados em uma unidade for descoberto como corrompido ou toda a unidade falhar e estiver totalmente indisponível, os dados devem ser reconstituídos. Isso é feito no ONTAP usando unidades de paridade. Os dados são distribuídos em várias unidades de dados e, em seguida, os dados de paridade são gerados. Este é armazenado separadamente dos dados originais.
+
+O ONTAP usou originalmente o RAID 4, que usa uma única unidade de paridade para cada grupo de unidades de dados. O resultado foi que qualquer unidade do grupo poderia falhar sem resultar em perda de dados. Se a unidade de paridade falhar, nenhum dado será danificado e uma nova unidade de paridade poderá ser construída. Se uma única unidade de dados falhar, as unidades restantes poderão ser usadas com a unidade de paridade para regenerar os dados em falta.
+
+Quando as unidades eram pequenas, a chance estatística de duas unidades falharem simultaneamente foi insignificante. À medida que as capacidades da unidade crescem, também tem o tempo necessário para reconstruir os dados após uma falha de unidade. Isso aumentou a janela na qual uma segunda falha da unidade resultaria em perda de dados. Além disso, o processo de reconstrução cria muitas e/S adicionais nas unidades sobreviventes. À medida que as unidades envelhecem, o risco de carga adicional que leva a uma segunda falha da unidade também aumenta. Finalmente, mesmo que o risco de perda de dados não tenha aumentado com o uso continuado do RAID 4, as consequências da perda de dados se tornariam mais graves. Quanto mais dados forem perdidos no caso de uma falha do grupo RAID, mais tempo levaria para recuperar os dados, estendendo a interrupção dos negócios.
+
+Esses problemas levaram a NetApp a desenvolver a tecnologia NetApp RAID DP, uma variante do RAID 6. Essa solução inclui duas unidades de paridade, o que significa que todas as duas unidades em um grupo RAID podem falhar sem criar perda de dados. As unidades continuaram a crescer em tamanho, o que levou a NetApp a desenvolver a tecnologia NetApp RAID-teC, que introduz uma terceira unidade de paridade.
+
+Algumas práticas recomendadas de banco de dados históricos recomendam o uso do RAID-10, também conhecido como espelhamento distribuído. Isso oferece menos proteção de dados do que até mesmo o RAID DP porque há vários cenários de falha de dois discos, enquanto que no RAID DP não há nenhum.
+
+Há também algumas práticas recomendadas de banco de dados históricos que indicam que RAID-10 é preferível às opções RAID-4/5/6 devido a problemas de desempenho. Essas recomendações às vezes se referem a uma penalidade de RAID. Embora essas recomendações geralmente estejam corretas, elas não são aplicáveis às implementações de RAID no ONTAP. O problema de desempenho está relacionado com a regeneração de paridade. Com as implementações tradicionais de RAID, o processamento das gravações aleatórias de rotina executadas por um banco de dados requer várias leituras de disco para regenerar os dados de paridade e concluir a gravação. A penalidade é definida como o IOPS de leitura adicional necessário para executar operações de gravação.
+
+O ONTAP não incorre em uma penalidade de RAID porque as gravações são encenadas na memória em que a paridade é gerada e, em seguida, gravadas no disco como um único stripe RAID. Não são necessárias leituras para concluir a operação de gravação.
+
+Em resumo, quando comparado ao RAID 10, o RAID DP e o RAID-teC oferecem muito mais capacidade utilizável, melhor proteção contra falha de unidade e nenhum sacrifício de performance.
+
+
+
+== Proteção contra falhas de hardware: NVRAM
+
+Qualquer storage array que atenda a um workload de banco de dados precisa atender às operações de gravação o mais rápido possível. Além disso, uma operação de gravação deve ser protegida contra perda de um evento inesperado, como uma falha de energia. Isso significa que qualquer operação de gravação deve ser armazenada com segurança em pelo menos dois locais.
+
+Os sistemas AFF e FAS contam com a NVRAM para atender a esses requisitos. O processo de escrita funciona da seguinte forma:
+
+. Os dados de gravação de entrada são armazenados na RAM.
+. As alterações que devem ser feitas nos dados no disco são registradas no NVRAM no nó local e no nó parceiro. O NVRAM não é um cache de gravação; em vez disso, é um diário semelhante a um log de refazer de banco de dados. Em condições normais, não é lido. Ele é usado apenas para recuperação, como após uma falha de energia durante o processamento de e/S.
+. A gravação é então reconhecida para o host.
+
+
+O processo de gravação nesta fase é concluído do ponto de vista da aplicação, e os dados são protegidos contra perda porque são armazenados em dois locais diferentes. Eventualmente, as alterações são gravadas no disco, mas esse processo está fora da banda do ponto de vista do aplicativo, porque ocorre depois que a gravação é reconhecida e, portanto, não afeta a latência. Este processo é mais uma vez semelhante ao log de banco de dados. Uma alteração ao banco de dados é registrada nos logs de refazer o mais rápido possível, e a alteração é então reconhecida como comprometida. As atualizações para os datafiles ocorrem muito mais tarde e não afetam diretamente a velocidade de processamento.
+
+No caso de uma falha do controlador, o controlador do parceiro assume a propriedade dos discos necessários e replica os dados registados no NVRAM para recuperar quaisquer operações de e/S que estivessem em trânsito quando a falha ocorreu.
+
+
+
+== Proteção contra falhas de hardware: NVFAIL
+
+Como discutido anteriormente, uma gravação não é reconhecida até que ela tenha sido registrada no NVRAM local e no NVRAM em pelo menos um outro controlador. Essa abordagem garante que uma falha de hardware ou falha de energia não resulte na perda de e/S em trânsito Se o NVRAM local falhar ou a conectividade com o parceiro de HA falhar, esses dados em trânsito não serão mais espelhados.
+
+Se o NVRAM local relatar um erro, o nó será encerrado. Esse desligamento resulta em failover para uma controladora de parceiro de HA. Nenhum dado é perdido porque o controlador que sofre a falha não reconheceu a operação de gravação.
+
+O ONTAP não permite um failover quando os dados estão fora de sincronia, a menos que o failover seja forçado. Forçar uma alteração de condições desta forma reconhece que os dados podem ser deixados para trás no controlador original e que a perda de dados é aceitável.
+
+Os bancos de dados são especialmente vulneráveis à corrupção se um failover for forçado porque os bancos de dados mantêm grandes caches internos de dados no disco. Se ocorrer um failover forçado, as alterações anteriormente confirmadas serão efetivamente descartadas. O conteúdo da matriz de armazenamento salta efetivamente para trás no tempo, e o estado do cache do banco de dados não reflete mais o estado dos dados no disco.
+
+Para proteger os dados contra essa situação, o ONTAP permite que os volumes sejam configurados para proteção especial contra falhas do NVRAM. Quando acionado, esse mecanismo de proteção resulta em um volume entrando em um estado chamado NVFAIL. Esse estado resulta em erros de e/S que causam o desligamento de um aplicativo para que eles não usem dados obsoletos. Os dados não devem ser perdidos porque qualquer gravação reconhecida deve estar presente no storage array.
+
+As próximas etapas usuais são para que um administrador desligue totalmente os hosts antes de colocar manualmente os LUNs e volumes novamente on-line. Embora essas etapas possam envolver algum trabalho, essa abordagem é a maneira mais segura de garantir a integridade dos dados. Nem todos os dados exigem essa proteção, e é por isso que o comportamento do NVFAIL pode ser configurado volume a volume.
+
+
+
+== Proteção contra falhas no local e no compartimento: SyncMirror e plexos
+
+O SyncMirror é uma tecnologia de espelhamento que aprimora, mas não substitui, o RAID DP ou o RAID-teC. Ele espelha o conteúdo de dois grupos RAID independentes. A configuração lógica é a seguinte:
+
+* As unidades são configuradas em dois pools com base no local. Um pool é composto por todas as unidades no local A, e o segundo pool é composto por todas as unidades no local B..
+* Um pool comum de armazenamento, conhecido como agregado, é criado com base em conjuntos espelhados de grupos RAID. Um número igual de unidades é extraído de cada local. Por exemplo, um agregado SyncMirror de 20 unidades seria composto por 10 unidades do local A e 10 unidades do local B..
+* Cada conjunto de unidades em um determinado local é configurado automaticamente como um ou mais grupos RAID-DP ou RAID-teC totalmente redundantes, independentemente do uso do espelhamento. Isso fornece proteção contínua de dados, mesmo após a perda de um site.
+
+
+image:syncmirror.png["Erro: Imagem gráfica em falta"]
+
+A figura acima ilustra um exemplo de configuração do SyncMirror. Um agregado de 24 unidades foi criado na controladora com 12 unidades de um compartimento alocado no local A e 12 unidades de um compartimento alocado no local B. as unidades foram agrupadas em dois grupos RAID espelhados. RAID Group 0 inclui um Plex de 6 unidades no local Um espelhado para um Plex de 6 unidades no local B. da mesma forma, RAID Group 1 inclui um Plex de 6 unidades no local Um espelhado para um Plex de 6 unidades no local B.
+
+O SyncMirror normalmente é usado para fornecer espelhamento remoto com sistemas MetroCluster, com uma cópia dos dados em cada local. Ocasionalmente, ele tem sido usado para fornecer um nível extra de redundância em um único sistema. Em particular, ele fornece redundância em nível de prateleira. Um compartimento de unidades já contém fontes de alimentação duplas e controladores e é, no geral, pouco mais do que chapas metálicas, mas em alguns casos, a proteção extra pode ser garantida. Por exemplo, um cliente da NetApp implantou o SyncMirror para uma plataforma móvel de análise em tempo real usada durante testes automotivos. O sistema foi separado em dois racks físicos fornecidos por alimentações de energia independentes de sistemas UPS independentes.
+
+Veja os checksums
+
+O tópico de checksums é de particular interesse para DBAs que estão acostumados a usar backups de streaming Oracle RMAN migram para backups baseados em snapshot. Um recurso do RMAN é que ele executa verificações de integridade durante operações de backup. Embora esse recurso tenha algum valor, seu principal benefício é para um banco de dados que não é usado em um storage array moderno. Quando as unidades físicas são usadas para um banco de dados Oracle, é quase certo que a corrupção eventualmente ocorre à medida que as unidades envelhecem, um problema que é resolvido por somas de verificação baseadas em array em arrays de armazenamento reais.
+
+Com um storage array real, a integridade de dados é protegida pelo uso de somas de verificação em vários níveis. Se os dados estiverem corrompidos em uma rede baseada em IP, a camada TCP (Transmission Control Protocol) rejeita os dados do pacote e solicita a retransmissão. O protocolo FC inclui somas de verificação, assim como os dados SCSI encapsulados. Depois que ele está no array, o ONTAP tem proteção RAID e checksum. A corrupção pode ocorrer, mas, como na maioria dos arrays corporativos, ela é detetada e corrigida. Normalmente, uma unidade inteira falha, solicitando uma reconstrução RAID e a integridade do banco de dados não é afetada. Com menos frequência, o ONTAP deteta um erro na soma de verificação, o que significa que os dados na unidade estão danificados. Em seguida, a unidade falha e uma reconstrução RAID começa. Mais uma vez, a integridade dos dados não é afetada.
+
+A arquitetura Oracle datafile e refazer log também foi projetada para fornecer o mais alto nível possível de integridade de dados, mesmo em circunstâncias extremas. No nível mais básico, os blocos Oracle incluem checksum e verificações lógicas básicas com quase todas as I/O. Se o Oracle não travou ou uma tablespace off-line, então os dados estão intactos. O grau de verificação da integridade dos dados é ajustável, e o Oracle também pode ser configurado para confirmar gravações. Como resultado, quase todos os cenários de falha e falha podem ser recuperados e, no caso extremamente raro de uma situação irrecuperável, a corrupção é imediatamente detetada.
+
+A maioria dos clientes NetApp que usam bancos de dados Oracle descontinuam o uso de RMAN e outros produtos de backup após a migração para backups baseados em snapshot. Ainda existem opções nas quais o RMAN pode ser usado para executar a recuperação em nível de bloco com o SnapCenter. No entanto, no dia a dia, o RMAN, o NetBackup e outros produtos só são usados ocasionalmente para criar cópias de arquivamento mensais ou trimestrais.
+
+Alguns clientes optam por executar `dbv` periodicamente para realizar verificações de integridade em seus bancos de dados existentes. NetApp desencoraja essa prática porque cria carga de e/S desnecessária. Como discutido acima, se o banco de dados não estava enfrentando problemas anteriormente, a chance de `dbv` detetar um problema é perto de zero, e este utilitário cria uma carga de e/S sequencial muito alta na rede e no sistema de armazenamento. A menos que haja razão para acreditar que existe corrupção, como a exposição a um bug conhecido da Oracle, não há razão para ser executado `dbv`.

@@ -1,0 +1,36 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-srm-vvol-troubleshooting.html 
+keywords: vmware, site, recovery manager, vsrm, hybrid, cloud, srm, vvols, replication 
+summary: A replicação do vVols com o VASA oferece funcionalidade única em comparação com o SRA e os armazenamentos de dados tradicionais. 
+---
+= Solução de problemas do SRM ao usar a replicação vVols
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O fluxo de trabalho dentro do SRM é significativamente diferente ao usar a replicação vVols do que é usado com SRA e datastores tradicionais. Por exemplo, não há conceito de gerenciador de array. Como tal, `discoverarrays` e `discoverdevices` comandos nunca são vistos.
+
+Ao solucionar problemas, é benéfico entender os novos fluxos de trabalho, listados abaixo:
+
+. QueryReplicationPeer: Descobre os acordos de replicação entre dois domínios de falha.
+. QueryFaultDomain: Descobre a hierarquia do domínio de falha.
+. QueryReplicationGroup: Descobre os grupos de replicação presentes nos domínios de origem ou destino.
+. SyncReplicationGroup: Sincroniza os dados entre origem e destino.
+. QueryPointInTimeReplica: Descobre as réplicas de ponto no tempo em um destino.
+. TestFailoverReplicationGroupStart: Inicia o failover de teste.
+. TestFailoverReplicationGroupStop: Termina o failover de teste.
+. PromoteReplicationGroup: Promove um grupo atualmente em teste para produção.
+. PrepareFailoverReplicationGroup: Prepara-se para uma recuperação de desastres.
+. FailoverReplicationGroup: Executa recuperação de desastres.
+. ReverseReplicateGroup: Inicia a replicação reversa.
+. QueryMatchingContainer: Localiza contentores (junto com hosts ou grupos de replicação) que podem satisfazer uma solicitação de provisionamento com uma determinada política.
+. QueryResourceMetadata: Descobre os metadados de todos os recursos do provedor VASA, a utilização de recursos pode ser retornada como uma resposta para a função queryMatchingContainer.
+
+
+O erro mais comum visto ao configurar a replicação do vVols é uma falha ao descobrir as relações do SnapMirror. Isso ocorre porque os volumes e as relações SnapMirror são criadas fora do escopo das Ferramentas do ONTAP. Portanto, é uma prática recomendada sempre garantir que sua relação com o SnapMirror esteja totalmente inicializada e que você tenha executado uma redescoberta nas Ferramentas do ONTAP em ambos os sites antes de tentar criar um armazenamento de dados vVols replicado.

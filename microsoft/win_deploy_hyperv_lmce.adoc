@@ -1,0 +1,40 @@
+---
+sidebar: sidebar 
+permalink: microsoft/win_deploy_hyperv_lmce.html 
+keywords: Windows,Hyper-V,VHDX,VM,Virtual 
+summary: Este apêndice descreve a implantação da migração ao vivo em um ambiente em cluster. 
+---
+= Implante a migração ao vivo do Hyper-V em um ambiente em cluster
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Este apêndice descreve a implantação da migração ao vivo em um ambiente em cluster.
+
+
+
+== Pré-requisitos
+
+Para implantar a migração em tempo real, você precisa ter servidores Hyper-V configurados em um cluster de failover com armazenamento compartilhado. Reveja link:win_deploy_hyperv.html["Implantar o Hyper-V Cluster"] para obter mais detalhes.
+
+
+
+== Implantação
+
+Para usar a migração em tempo real em um ambiente em cluster, execute as seguintes etapas:
+
+. No Gerenciador de Cluster de failover, selecione e expanda o cluster. Se o cluster não estiver visível, clique em Gerenciador de Cluster de failover, clique em conetar ao cluster e forneça o nome do cluster.
+. Clique em funções, que lista todas as VMs disponíveis em um cluster.
+. Clique com o botão direito do rato na VM e clique em mover. Isso fornece três opções:
++
+** *Migração ao vivo.* Você pode selecionar um nó manualmente ou permitir que o cluster selecione o melhor nó. Na migração em tempo real, o cluster copia a memória usada pela VM do nó atual para outro nó. Portanto, quando a VM é migrada para outro nó, as informações de memória e estado necessárias pela VM já estão em vigor para a VM. Esse método de migração é quase instantâneo, mas apenas uma VM pode ser migrada ao vivo de cada vez.
+** *Migração rápida.* Você pode selecionar um nó manualmente ou permitir que o cluster selecione o melhor nó. Na migração rápida, o cluster copia a memória usada por uma VM para um disco no armazenamento. Portanto, quando a VM é migrada para outro nó, as informações de memória e estado necessárias pela VM podem ser lidas rapidamente do disco pelo outro nó. Com a migração rápida, várias VMs podem ser migradas simultaneamente.
+** * Migração de armazenamento de máquina virtual.* Este método usa o assistente mover armazenamento de máquina virtual. Com este assistente, você pode selecionar o disco da VM juntamente com outros arquivos a serem movidos para outro local, que pode ser um CSV ou um compartilhamento SMB.
+
+
+

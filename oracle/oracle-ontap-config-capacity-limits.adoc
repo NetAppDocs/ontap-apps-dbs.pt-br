@@ -1,0 +1,37 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-ontap-config-capacity-limits.html 
+keywords: capacity 
+summary: Bancos de dados e ONTAP capacidade de armazenamento e espaço livre 
+---
+= Bancos de dados Oracle e gerenciamento de capacidade de storage
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Gerenciar um banco de dados ou outra aplicação empresarial com storage empresarial previsível, gerenciável e de alta performance exige espaço livre nas unidades para gerenciamento de dados e metadados. A quantidade de espaço livre necessária depende do tipo de unidade usada e dos processos de negócios.
+
+O espaço livre é definido como qualquer espaço que não é usado para dados reais e inclui espaço não alocado no próprio agregado e espaço não utilizado dentro dos volumes constituintes. O thin Provisioning também deve ser considerado. Por exemplo, um volume pode conter um LUN de 1TB, dos quais apenas 50% são utilizados por dados reais. Em um ambiente thin Provisioning, isso parece estar consumindo 500GBMB de espaço corretamente. No entanto, em um ambiente totalmente provisionado, a capacidade total de 1TB TB parece estar em uso. O 500GB de espaço não alocado está oculto. Este espaço não é utilizado pelos dados reais e, portanto, deve ser incluído no cálculo do espaço livre total.
+
+As recomendações da NetApp para sistemas de storage usados para aplicações empresariais são as seguintes:
+
+
+
+== Agregados SSD, incluindo sistemas AFF
+
+
+TIP: *A NetApp recomenda* um mínimo de 10% de espaço livre. Isso inclui todo o espaço não utilizado, incluindo espaço livre dentro do agregado ou de um volume e qualquer espaço livre alocado devido ao uso de provisionamento completo, mas não é usado por dados reais. O espaço lógico não é importante, a questão é quanto espaço físico livre real está disponível para armazenamento de dados.
+
+A recomendação de 10% de espaço livre é muito conservadora. Agregados SSD podem dar suporte a workloads em níveis ainda mais altos de utilização sem afetar a performance. No entanto, à medida que a utilização do agregado aumenta, o risco de ficar sem espaço também aumenta se a utilização não for monitorada com cuidado. Além disso, ao executar um sistema com 99% de capacidade pode não incorrer em uma penalidade de desempenho, mas provavelmente incorreria em esforço de gerenciamento tentando impedi-lo de preencher completamente enquanto hardware adicional é solicitado, e pode levar algum tempo para adquirir e instalar unidades adicionais.
+
+
+
+== Agregados de HDD, incluindo agregados Flash Pool
+
+
+TIP: *A NetApp recomenda* um mínimo de 15% de espaço livre quando as unidades giratórias são usadas. Isso inclui todo o espaço não utilizado, incluindo espaço livre dentro do agregado ou de um volume e qualquer espaço livre alocado devido ao uso de provisionamento completo, mas não é usado por dados reais. O desempenho será impactado à medida que o espaço livre se aproxima de 10%.

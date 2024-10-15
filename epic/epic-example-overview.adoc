@@ -1,0 +1,61 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-example-overview.html 
+keywords: epic,cache,iris 
+summary: Implantação de exemplo épica no ONTAP 
+---
+= Implantação de exemplo épica no ONTAP
+:allow-uri-read: 
+
+
+[role="lead"]
+Esta seção leva você por uma configuração avançada completa de um cluster do ONTAP, provisionamento e apresentação de storage para um servidor da Epic.
+
+Com o objetivo de capturar detalhes e para facilitar a documentação, a linha de comando é usada. Se a GUI for preferida, você pode provisionar todas as configurações no System Manager.
+
+Historicamente, a configuração inicial em massa para projetos maiores geralmente é mais rápida usando os comandos listados Tabela 1, especialmente se você concatenar os comandos em uma Planilha. Esta lista de comandos também serve como excelente documentação de compilação.
+
+Outra opção de provisionamento é usar os scripts de automação do dia 0 e do dia 1 usando o Ansible. O NetApp tem centenas de playbooks existentes do Ansible disponíveis para download, incluindo a coleção do Ansible-Galaxy através do comando NetApp.ONTAP de instalação da coleção Ansible-Galaxy.
+
+A GUI também funciona muito bem com um simples LUN de página única e provisionamento compartilhado. A GUI é melhor usada para operações ao adicionar, modificar ou excluir armazenamento. Qualquer opção está bem se você aplicar as configurações de armazenamento de práticas recomendadas na Tabela 1.
+
+A configuração completa do cluster e o provisionamento de storage/host não devem levar mais de uma hora quando encenado.
+
+* Configurações de armazenamento de boas práticas*
+
+[cols="1,1"]
+|===
+
+
+| Definição | Valor 
+
+
+| Agregado | Provisionamento automático padrão, um agregado ADP por nó com RAID DEP 
+
+
+| SVM | Dois SVMs ao usar o multiprocol (Block SVM e SMB/NFS SVM). Use a convenção de nomenclatura Epic e de protocolo. Use o estilo de segurança adequado 
+
+
+| Garantia de espaço de volume | nenhum 
+
+
+| Política do Snapshot de volume | nenhum 
+
+
+| Dimensionamento automático de volume | crescer 
+
+
+| Dimensionamento automático máximo do volume | 2T ou 2 X tamanho LUN 
+
+
+| Volume snapshot Autodelete | ativado 
+
+
+| Tamanho do volume | 1,5 x tamanho de LUN 
+
+
+| Layout do volume | Distribuído mesmo entre controladores 
+
+
+| tipo de grupo | Quando usado com servidores físicos, o VMware digita quando usado com o ESX. 
+|===

@@ -1,0 +1,122 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-ontap-config-efficiency.html 
+keywords: oracle, efficiency, compression, compaction, deduplication 
+summary: Bancos de dados Oracle e eficiência de storage 
+---
+= Bancos de dados Oracle e recursos de eficiência do ONTAP
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Os recursos de eficiência de espaço do ONTAP são otimizados para bancos de dados Oracle. Em quase todos os casos, a melhor abordagem é deixar os padrões em vigor com todos os recursos de eficiência habilitados.
+
+Os recursos de eficiência de espaço, como compressão, compactação e deduplicação, foram projetados para aumentar a quantidade de dados lógicos compatíveis com uma determinada quantidade de storage físico. O resultado são custos mais baixos e sobrecarga de gerenciamento.
+
+Em um alto nível, a compressão é um processo matemático pelo qual padrões nos dados são detetados e codificados de uma forma que reduz os requisitos de espaço. Em contraste, a deduplicação deteta blocos repetidos reais de dados e remove as cópias externas. A compactação permite que vários blocos lógicos de dados compartilhem o mesmo bloco físico na Mídia.
+
+
+NOTE: Veja as seções abaixo sobre provisionamento de thin para uma explicação da interação entre eficiência de armazenamento e reserva fracionária.
+
+
+
+== Compactação
+
+Antes da disponibilidade de sistemas de storage all-flash, a compactação baseada em array era de valor limitado porque a maioria dos workloads com uso intenso de e/S exigia um número muito grande de fusos para fornecer desempenho aceitável. Os sistemas de armazenamento invariavelmente continham muito mais capacidade do que o necessário como um efeito colateral do grande número de unidades. A situação mudou com o aumento do armazenamento de estado sólido. Não há mais a necessidade de superprovisionamento vastamente de unidades puramente para obter um bom desempenho. O espaço da unidade em um sistema de armazenamento pode ser correspondente às necessidades reais de capacidade.
+
+A maior funcionalidade de IOPS das solid-State drives (SSDs) quase sempre produz economias de custo em comparação com as unidades giratórias, mas a compactação pode gerar mais economias ao aumentar a capacidade efetiva da Mídia de estado sólido.
+
+Existem várias maneiras de compactar dados. Muitos bancos de dados incluem suas próprias capacidades de compressão, mas isso raramente é observado em ambientes de clientes. A razão é geralmente a penalidade de desempenho para uma *mudança* para dados compatados, além disso, com alguns aplicativos, há altos custos de licenciamento para compactação no nível do banco de dados. Finalmente, há as consequências gerais de desempenho para as operações do banco de dados. Faz pouco sentido pagar um alto custo de licença por CPU para uma CPU que executa compactação de dados e descompressão em vez de trabalho real de banco de dados. Uma opção melhor é descarregar o trabalho de compressão para o sistema de storage.
+
+
+
+=== Compressão adaptável
+
+A compactação adaptável foi totalmente testada com workloads empresariais sem efeito observado no desempenho, mesmo em um ambiente all-flash em que a latência é medida em microssegundos. Alguns clientes até relataram um aumento de desempenho com o uso de compactação porque os dados permanecem compatados no cache, aumentando efetivamente a quantidade de cache disponível em um controlador.
+
+O ONTAP gerencia blocos físicos em 4KB unidades. A compactação adaptável usa um tamanho de bloco de compressão padrão de 8KB, o que significa que os dados são compatados em unidades 8KB. Isso corresponde ao tamanho do bloco 8KB mais frequentemente usado por bancos de dados relacionais. Os algoritmos de compressão tornam-se mais eficientes à medida que mais dados são compatados como uma única unidade. Um tamanho de bloco de compressão 32KB seria mais eficiente em termos de espaço do que uma unidade de bloco de compressão 8KB. Isso significa que a compactação adaptável usando o tamanho padrão de bloco 8KB leva a taxas de eficiência ligeiramente menores, mas também há um benefício significativo para o uso de um tamanho menor de bloco de compressão. As cargas de trabalho de banco de dados incluem uma grande quantidade de atividade de substituição. Substituir um 8KB de um bloco de dados comprimido 32KB requer a leitura de todo o 32KB de dados lógicos, descomprimindo-o, atualizando a região 8KB necessária, recomprimindo e gravando o 32KB inteiro de volta às unidades. Esta é uma operação muito cara para um sistema de storage e é o motivo pelo qual alguns storage arrays concorrentes baseados em tamanhos de bloco de compressão maiores também incorrer em uma penalidade de desempenho significativa nos workloads de banco de dados.
+
+
+NOTE: O tamanho do bloco usado pela compressão adaptável pode ser aumentado até 32KBMB. Isso pode melhorar a eficiência do storage e deve ser considerado para arquivos inativos, como logs de transações e arquivos de backup, quando uma quantidade substancial de tais dados é armazenada no array. Em algumas situações, os bancos de dados ativos que usam um tamanho de bloco 16KB ou 32KB também podem se beneficiar do aumento do tamanho de bloco da compactação adaptável a corresponder. Consulte um representante da NetApp ou do parceiro para obter orientação sobre se isso é apropriado para sua carga de trabalho.
+
+
+CAUTION: Tamanhos de blocos de compactação maiores que 8KBMB não devem ser usados juntamente com a deduplicação em destinos de backup de streaming. A razão é que pequenas alterações nos dados de backup afetam a janela de compressão 32KB. Se a janela mudar, os dados compatados resultantes diferem em todo o arquivo. A deduplicação ocorre após a compactação, o que significa que o mecanismo de deduplicação vê cada backup compactado de forma diferente. Se a deduplicação de backups de streaming for necessária, somente a compactação adaptável de bloco 8KB deve ser usada. A compactação adaptável é preferível, porque funciona em um tamanho de bloco menor e não prejudica a eficiência da deduplicação. Por razões semelhantes, a compactação no lado do host também interfere na eficiência da deduplicação.
+
+
+
+=== Alinhamento da compressão
+
+A compactação adaptável em um ambiente de banco de dados requer alguma consideração do alinhamento do bloco de compressão. Fazer isso é apenas uma preocupação para os dados que estão sujeitos a substituições aleatórias de blocos muito específicos. Essa abordagem é semelhante em conceito ao alinhamento geral do sistema de arquivos, onde o início de um sistema de arquivos deve ser alinhado a um limite de dispositivo 4K e o tamanho de bloco de um sistema de arquivos deve ser um múltiplo de 4K.
+
+Por exemplo, uma gravação 8KBD em um arquivo é compactada somente se ele se alinhar com um limite 8KBD dentro do próprio sistema de arquivos. Este ponto significa que ele deve cair no primeiro 8KB do arquivo, o segundo 8KB do arquivo, e assim por diante. A maneira mais simples de garantir o alinhamento correto é usar o tipo de LUN correto, qualquer partição criada deve ter um deslocamento desde o início do dispositivo que é um múltiplo de 8K, e usar um tamanho de bloco de sistema de arquivos que é um múltiplo do tamanho do bloco de banco de dados.
+
+Dados como backups ou logs de transações são operações sequencialmente escritas que abrangem vários blocos, todos eles compatados. Portanto, não há necessidade de considerar o alinhamento. O único padrão de e/S de preocupação é as substituições aleatórias de arquivos.
+
+
+
+== Compactação de dados
+
+A compactação de dados é uma tecnologia que melhora a eficiência da compressão. Como dito anteriormente, a compactação adaptável por si só pode proporcionar, na melhor das hipóteses, economias de 2:1x porque está limitada a armazenar uma e/S de 8KBx em um bloco de 4KB WAFL. Os métodos de compressão com tamanhos de bloco maiores proporcionam melhor eficiência. No entanto, eles não são adequados para dados sujeitos a pequenas substituições de blocos. A descompressão de 32KB unidades de dados, a atualização de uma porção 8KB, a recompressão e a gravação de volta nas unidades cria sobrecarga.
+
+A compactação de dados funciona permitindo que vários blocos lógicos sejam armazenados em blocos físicos. Por exemplo, um banco de dados com dados altamente compressíveis, como texto ou blocos parcialmente completos, pode compactar de 8KB a 1KB. Sem compactação, 1KB PB de dados ainda ocupariam um bloco inteiro de 4KB TB. A compactação de dados in-line permite que 1KB TB de dados compatados sejam armazenados em apenas 1KB TB de espaço físico, juntamente com outros dados compatados. Não é uma tecnologia de compressão; é simplesmente uma maneira mais eficiente de alocar espaço nas unidades e, portanto, não deve criar qualquer efeito de desempenho detetável.
+
+O grau de poupança obtido varia. Os dados que já estão compatados ou criptografados geralmente não podem ser mais compatados e, portanto, esses conjuntos de dados não se beneficiam com a compactação. Em contraste, datafiles recém-inicializados que contêm pouco mais do que metadados de bloco e zeros compactam até 80:1.
+
+
+
+=== Eficiência de armazenamento sensível à temperatura
+
+A eficiência de armazenamento sensível à temperatura (TSSE) está disponível no ONTAP 9.8 e posterior. Ele depende de mapas de calor de acesso a blocos para identificar blocos acessados com pouca frequência e compactá-los com maior eficiência.
+
+
+
+== Deduplicação
+
+A deduplicação é a remoção de tamanhos de bloco duplicados de um conjunto de dados. Por exemplo, se o mesmo bloco 4KB existisse em 10 arquivos diferentes, a deduplicação redirecionaria esse bloco 4KB dentro de todos os arquivos 10 para o mesmo bloco físico 4KB. O resultado seria uma melhoria de 10:1 na eficiência para esses dados.
+
+Dados como LUNs de inicialização convidado da VMware geralmente deduplicam muito bem porque consistem em várias cópias dos mesmos arquivos do sistema operacional. A eficiência de 100:1 e maior foi observada.
+
+Alguns dados não contêm dados duplicados. Por exemplo, um bloco Oracle contém um cabeçalho que é globalmente exclusivo para o banco de dados e um trailer que é quase único. Como resultado, a deduplicação de um banco de dados Oracle raramente oferece mais de 1% de economia. A deduplicação com bancos de dados MS SQL é um pouco melhor, mas metadados exclusivos no nível de bloco ainda são uma limitação.
+
+Economia de espaço de até 15% em bancos de dados com 16KB e grandes blocos foram observadas em alguns casos. O 4KB inicial de cada bloco contém o cabeçalho globalmente exclusivo, e o último bloco de 4KB contém o trailer quase único. Os blocos internos são candidatos à deduplicação, embora na prática isso seja quase inteiramente atribuído à deduplicação de dados zerados.
+
+Muitos arrays concorrentes afirmam a capacidade de deduplicar bancos de dados com base na presunção de que um banco de dados é copiado várias vezes. A esse respeito, a deduplicação NetApp também pode ser usada, mas o ONTAP oferece uma opção melhor: A tecnologia NetApp FlexClone. O resultado final é o mesmo; várias cópias de um banco de dados que compartilham a maioria dos blocos físicos subjacentes são criadas. Usar o FlexClone é muito mais eficiente do que ter tempo para copiar arquivos de banco de dados e, em seguida, deduplicá-los. É, na verdade, não duplicação em vez de deduplicação, porque uma duplicata nunca é criada em primeiro lugar.
+
+
+
+== Eficiência e thin Provisioning
+
+Os recursos de eficiência são formas de thin Provisioning. Por exemplo, um LUN de 100GB GB ocupando um volume de 100GB TB pode ser compactado para 50GB TB. Ainda não há economias reais realizadas porque o volume ainda é 100GB. O volume deve primeiro ser reduzido em tamanho para que o espaço guardado possa ser utilizado noutro local do sistema. Se as alterações posteriores ao LUN 100GBD resultarem em menos compressíveis os dados, o LUN crescerá em tamanho e o volume poderá ser preenchido.
+
+O thin Provisioning é altamente recomendado porque pode simplificar o gerenciamento e fornecer melhorias substanciais na capacidade utilizável com economias de custo associadas. O motivo é simples: Os ambientes de banco de dados geralmente incluem muito espaço vazio, um grande número de volumes e LUNs e dados compressíveis. O provisionamento thick resulta na reserva de espaço no storage para volumes e LUNs, caso eles se tornem 100% cheios e contenham dados 100% não compactáveis. É pouco provável que isso ocorra. O thin Provisioning permite que esse espaço seja recuperado e usado em outros lugares e permite que o gerenciamento de capacidade seja baseado no próprio sistema de storage, em vez de muitos volumes e LUNs menores.
+
+Alguns clientes preferem usar o provisionamento thick, seja para cargas de trabalho específicas ou, geralmente, com base em práticas operacionais e de aquisição estabelecidas.
+
+*Atenção:* se um volume for provisionado de forma grossa, deve-se ter cuidado para desativar completamente todos os recursos de eficiência para esse volume, incluindo descompressão e remoção de desduplicação usando o `sis undo` comando. O volume não deve aparecer `volume efficiency show` na saída. Se isso acontecer, o volume ainda será parcialmente configurado para recursos de eficiência. Como resultado, as garantias de substituição funcionam de forma diferente, o que aumenta a chance de que a configuração seja ultrapassada fazendo com que o volume fique inesperadamente sem espaço, resultando em erros de e/S do banco de dados.
+
+
+
+== Práticas recomendadas de eficiência
+
+A NetApp recomenda o seguinte:
+
+
+
+=== Padrões do AFF
+
+Os volumes criados no ONTAP executados em um sistema all-flash AFF são thin Provisioning com todos os recursos de eficiência in-line habilitados. Embora os bancos de dados geralmente não se beneficiem da deduplicação e possam incluir dados não compressíveis, as configurações padrão são, no entanto, apropriadas para quase todas as cargas de trabalho. O ONTAP foi projetado para processar com eficiência todos os tipos de dados e padrões de e/S, resultando ou não em economia. Os padrões só devem ser alterados se os motivos forem totalmente compreendidos e houver um benefício para se desviar.
+
+
+
+=== Recomendações gerais
+
+* Se os volumes e/ou LUNs não forem provisionados de forma fina, você deve desativar todas as configurações de eficiência porque o uso desses recursos não oferece economia e a combinação de provisionamento espesso com eficiência de espaço habilitada pode causar comportamento inesperado, incluindo erros fora do espaço.
+* Se os dados não estiverem sujeitos a sobrescritas, como backups ou logs de transação de banco de dados, você poderá obter maior eficiência ativando o TSSE com um período de resfriamento baixo.
+* Alguns arquivos podem conter uma quantidade significativa de dados não compressíveis, por exemplo, quando a compactação já está ativada no nível de aplicativo de arquivos são criptografados. Se qualquer um desses cenários for verdadeiro, considere desativar a compactação para permitir uma operação mais eficiente em outros volumes que contenham dados compressíveis.
+* Não use a compactação e a deduplicação do 32KB com backups de bancos de dados. Consulte a secção <<Compressão adaptável>> para obter detalhes.
+

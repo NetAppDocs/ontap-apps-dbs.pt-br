@@ -1,0 +1,45 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dr-smas-mediator.html 
+keywords: MSSQL,SQL Server, SnapMirror active sync, SMBC, overview 
+summary: Oracle,SM-as,sincronização ativa,mediador 
+---
+= Oracle e o mediador ONTAP
+:allow-uri-read: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O mediador é necessário para automatizar o failover com segurança. Idealmente, ele seria colocado em um local 3rd independente, mas ainda pode funcionar para a maioria das necessidades se colocasse em um dos clusters que participam da replicação.
+
+O mediador não é realmente um tiebreaker, embora essa seja efetivamente a função que ele fornece. Ele não realiza nenhuma ação; em vez disso, fornece um canal de comunicação alternativo para comunicação de cluster para cluster.
+
+image:smas-mediator.png["Diagrama de sincronização ativa do SnapMirror com mediador"]
+
+O desafio nº 1 com failover automatizado é o problema de split-brain, e esse problema surge se os dois locais perderem a conetividade entre si. O que deve acontecer? Você não quer que dois sites diferentes se designem como as cópias sobreviventes dos dados, mas como um único site pode dizer a diferença entre a perda real do site oposto e a incapacidade de se comunicar com o site oposto?
+
+É aqui que o mediador entra na imagem. Se for colocado em um site 3rd e cada site tiver uma conexão de rede separada com esse site, então você terá um caminho adicional para cada site validar a integridade do outro. Olhe para a imagem acima novamente e considere os seguintes cenários.
+
+* O que acontece se o mediador falhar ou não estiver acessível a partir de um ou de ambos os sites?
++
+** Os dois clusters ainda podem se comunicar entre si pelo mesmo link usado para serviços de replicação.
+** Os dados ainda são servidos com proteção RPO igual a 0
+
+
+* O que acontece se o Site A falhar?
++
+** O local B verá ambos os canais de comunicação diminuírem.
+** O local B assumirá os serviços de dados, mas sem o espelhamento RPO igual a 0
+
+
+* O que acontece se o local B falhar?
++
+** O local A verá ambos os canais de comunicação diminuírem.
+** O local A assumirá os serviços de dados, mas sem o espelhamento do RPO igual a 0
+
+
+
+
+Há um outro cenário a considerar: Perda do link de replicação de dados. Se o link de replicação entre locais for perdido, o espelhamento RPO 0 obviamente será impossível. O que deve acontecer então?
+
+Isso é controlado pelo status do site preferido. Em uma relação SM-as, um dos locais é secundário ao outro. Isso não tem efeito nas operações normais, e todo o acesso aos dados é simétrico, mas se a replicação for interrompida, o empate terá que ser quebrado para retomar as operações. O resultado é que o local preferido continuará as operações sem espelhamento, e o local secundário interromperá o processamento de e/S até que a comunicação de replicação seja restaurada.

@@ -1,0 +1,133 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-srm-replication_topologies.html 
+keywords: vmware, site, recovery manager, vsrm, replication, technologies, snapmirror layouts, array manager, snapvault, qtress, fc, iscsi, supported 
+summary: Topologias de replicação usando o ONTAP com SnapMirror e VMware SRM. 
+---
+= Topologias de replicação
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+No ONTAP 9, os componentes físicos de um cluster são visíveis para os administradores de cluster, mas não são visíveis diretamente para os aplicativos e hosts que usam o cluster. Os componentes físicos fornecem um pool de recursos compartilhados a partir do qual os recursos lógicos do cluster são construídos. As aplicações e os hosts acessam dados somente por meio de SVMs que contêm volumes e LIFs.
+
+Cada SVM do NetApp é Tratado como um array no VMware vCenter Site Recovery Manager. O SRM é compatível com certos layouts de replicação de array a array (ou SVM para SVM).
+
+Uma única VM não pode possuir dados – Virtual Machine Disk (VMDK) ou RDM – em mais de um array SRM pelos seguintes motivos:
+
+* O SRM vê apenas o SVM, e não um controlador físico individual.
+* Um SVM pode controlar LUNs e volumes que abrangem vários nós em um cluster.
+
+
+|===
+| Prática recomendada 
+
+
+| Para determinar a capacidade de suporte, tenha em mente esta regra: Para proteger uma VM usando o SRM e o NetApp SRA, todas as partes da VM devem existir em apenas uma SVM. Esta regra aplica-se tanto no local protegido como no local de recuperação. 
+|===
+
+
+== Layouts SnapMirror suportados
+
+As figuras a seguir mostram os cenários de layout de relacionamento do SnapMirror que o SRM e o SRA suportam. Cada VM nos volumes replicados possui dados em apenas um array SRM (SVM) em cada local.
+
+image:vsrm-ontap9_image7.png["Layout da relação do SnapMirror"]
+
+image:vsrm-ontap9_image8.png["Layout da relação do SnapMirror"]
+
+image:vsrm-ontap9_image9.png["Layout da relação do SnapMirror"]
+
+image:vsrm-ontap9_image10.png["Layout da relação do SnapMirror"]
+
+
+
+== Layouts do Array Manager compatíveis
+
+Quando você usa a replicação baseada em array (ABR) no SRM, os grupos de proteção são isolados a um único par de array, como mostrado na captura de tela a seguir. Neste cenário, `SVM1` e `SVM2` são percorridos com `SVM3` e `SVM4` no local de recuperação. No entanto, você pode selecionar apenas um dos dois pares de matrizes ao criar um grupo de proteção.
+
+image:vsrm-ontap9_image11.png["pares de array"]
+
+
+
+== Esquemas não suportados
+
+Configurações não suportadas têm dados (VMDK ou RDM) em vários SVMs que são de propriedade de uma VM individual. Nos exemplos mostrados nas figuras a seguir, `VM1` não pode ser configurado para proteção com SRM `VM1` porque tem dados em dois SVMs.
+
+image:vsrm-ontap9_image12.png["Configurações não suportadas"]
+
+image:vsrm-ontap9_image13.png["Configurações não suportadas"]
+
+Qualquer relação de replicação na qual um volume de NetApp individual é replicado de uma SVM de origem para vários destinos no mesmo SVM ou em SVMs diferentes é chamada de fan-out do SnapMirror. Fan-out não é suportado com SRM. No exemplo mostrado na figura a seguir, `VM1` não pode ser configurado para proteção no SRM porque ele é replicado com o SnapMirror para dois locais diferentes.
+
+image:vsrm-ontap9_image14.png["Configurações não suportadas"]
+
+
+
+== Cascata de SnapMirror
+
+O SRM não oferece suporte a cascata de relacionamentos SnapMirror, nas quais um volume de origem é replicado para um volume de destino e esse volume de destino também é replicado com o SnapMirror para outro volume de destino. No cenário mostrado na figura a seguir, o SRM não pode ser usado para failover entre sites.
+
+image:vsrm-ontap9_image15.png["Cascata de relacionamentos SnapMirror"]
+
+
+
+== SnapMirror e SnapVault
+
+O software NetApp SnapVault permite o backup baseado em disco de dados empresariais entre sistemas de storage NetApp. O SnapVault e o SnapMirror podem coexistir no mesmo ambiente; no entanto, o SRM suporta o failover apenas das relações SnapMirror.
+
+
+NOTE: O NetApp SRA suporta o `mirror-vault` tipo de política.
+
+SnapVault foi reconstruído a partir do zero para ONTAP 8,2. Embora antigos usuários do Data ONTAP 7-Mode devam encontrar semelhanças, grandes melhorias foram feitas nesta versão do SnapVault. Um grande avanço é a capacidade de preservar eficiências de storage de dados primários durante transferências SnapVault.
+
+Uma mudança arquitetônica importante é que o in ONTAP 9 replica no nível de volume em vez de no nível de qtree, como é o caso do SnapVault 7-Mode SnapVault. Essa configuração significa que a origem de um relacionamento do SnapVault deve ser um volume e esse volume deve ser replicado para seu próprio volume no sistema secundário do SnapVault.
+
+Em um ambiente em que o SnapVault é usado, os snapshots nomeados especificamente são criados no sistema de storage primário. Dependendo da configuração implementada, os instantâneos nomeados podem ser criados no sistema principal por um agendamento do SnapVault ou por um aplicativo como o NetApp Active IQ Unified Manager. Os instantâneos nomeados que são criados no sistema primário são replicados para o destino SnapMirror e, a partir daí, são abobadados para o destino SnapVault.
+
+Um volume de origem pode ser criado em uma configuração em cascata na qual um volume é replicado para um destino SnapMirror no local de DR e, a partir daí, é abobadado para um destino SnapVault. Um volume de origem também pode ser criado em uma relação de fan-out em que um destino é um destino SnapMirror e o outro destino é um destino SnapVault. No entanto, o SRA não reconfigura automaticamente a relação do SnapVault para usar o volume de destino do SnapMirror como a origem do Vault quando ocorre failover ou reversão de replicação do SRM.
+
+Para obter as informações mais recentes sobre o SnapMirror e o SnapVault for ONTAP 9, consulte https://www.netapp.com/media/17229-tr4015.pdf?v=127202175503P["TR-4015 Guia de práticas recomendadas de configuração do SnapMirror para ONTAP 9."^]
+
+|===
+| Prática recomendada 
+
+
+| Se o SnapVault e o SRM forem usados no mesmo ambiente, a NetApp recomenda o uso de uma configuração em cascata SnapMirror to SnapVault na qual os backups do SnapVault normalmente são executados a partir do destino do SnapMirror no local de DR. Em caso de desastre, essa configuração torna o site primário inacessível. Manter o destino do SnapVault no local de recuperação permite que os backups do SnapVault sejam reconfigurados após o failover para que os backups do SnapVault possam continuar operando no local de recuperação. 
+|===
+Em um ambiente VMware, cada datastore tem um identificador exclusivo universal (UUID) e cada VM tem um ID de objeto gerenciado exclusivo (MOID). Essas IDs não são mantidas pelo SRM durante o failover ou failback. Como os UUIDs do datastore e os MOIDs de VM não são mantidos durante o failover pelo SRM, todos os aplicativos que dependem desses IDs devem ser reconfigurados após o failover do SRM. Um aplicativo de exemplo é o NetApp Active IQ Unified Manager, que coordena a replicação do SnapVault com o ambiente vSphere.
+
+A figura a seguir mostra uma configuração em cascata SnapMirror to SnapVault. Se o destino do SnapVault estiver no local de DR ou em um local terciário que não seja afetado por uma interrupção no local primário, o ambiente poderá ser reconfigurado para permitir que os backups continuem após o failover.
+
+image:vsrm-ontap9_image16.png["SnapMirror para SnapVault cascata"]
+
+A figura a seguir mostra a configuração depois que o SRM foi usado para reverter a replicação do SnapMirror de volta para o local principal. O ambiente também foi reconfigurado de modo que os backups do SnapVault estão ocorrendo a partir do que é agora a fonte SnapMirror. Esta configuração é uma configuração de fan-out do SnapMirror SnapVault.
+
+image:vsrm-ontap9_image17.png["SnapMirror para SnapVault cascata reversa"]
+
+Depois que o SRM executa o failback e uma segunda reversão das relações do SnapMirror, os dados de produção estão de volta ao local principal. Agora, esses dados estão protegidos da mesma maneira que antes do failover para o local de recuperação de desastres, por meio de backups SnapMirror e SnapVault.
+
+
+
+== Uso de Qtrees em ambientes do Site Recovery Manager
+
+Qtrees são diretórios especiais que permitem a aplicação de cotas de sistema de arquivos para nas. O ONTAP 9 permite a criação de qtrees, e qtrees podem existir em volumes replicados com o SnapMirror. No entanto, o SnapMirror não permite replicação de qtrees individuais ou replicação em nível de qtree. Toda a replicação do SnapMirror está apenas no nível do volume. Por esta razão, o NetApp não recomenda o uso de qtrees com SRM.
+
+
+
+== Ambientes FC e iSCSI mistos
+
+Com os protocolos SAN compatíveis (FC, FCoE e iSCSI), o ONTAP 9 fornece serviços LUN, ou seja, a capacidade de criar e mapear LUNs para hosts conectados. Como o cluster consiste em vários controladores, há vários caminhos lógicos gerenciados pela e/S multipath em qualquer LUN individual. O acesso de unidade lógica assimétrica (ALUA) é usado nos hosts para que o caminho otimizado para um LUN seja selecionado e seja ativado para transferência de dados. Se o caminho otimizado para qualquer LUN mudar (por exemplo, porque o volume que contém é movido), o ONTAP 9 reconhece e ajusta-se automaticamente para essa alteração sem interrupções. Se o caminho otimizado ficar indisponível, o ONTAP poderá alternar para qualquer outro caminho disponível sem interrupções.
+
+O VMware SRM e o NetApp SRA suportam o uso do protocolo FC em um local e do protocolo iSCSI no outro local. No entanto, ele não dá suporte a uma combinação de armazenamentos de dados anexados a FC e armazenamentos de dados anexados a iSCSI no mesmo host ESXi ou em hosts diferentes no mesmo cluster. Esta configuração não é suportada com o SRM porque, durante o failover SRM ou failover de teste, o SRM inclui todos os iniciadores FC e iSCSI nos hosts ESXi na solicitação.
+
+|===
+| Prática recomendada 
+
+
+| O SRM e o SRA oferecem suporte a protocolos FC e iSCSI mistos entre os locais protegidos e de recuperação. No entanto, cada local deve ser configurado com apenas um protocolo, FC ou iSCSI, e não com ambos os protocolos no mesmo local. Se houver um requisito para que os protocolos FC e iSCSI sejam configurados no mesmo local, o NetApp recomenda que alguns hosts usem iSCSI e outros hosts usem FC. O NetApp também recomenda, neste caso, que os mapeamentos de recursos do SRM sejam configurados para que as VMs sejam configuradas para failover em um grupo de hosts ou outro. 
+|===

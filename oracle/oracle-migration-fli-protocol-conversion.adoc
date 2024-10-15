@@ -1,0 +1,167 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-migration-fli-protocol-conversion.html 
+keywords: migration, oracle, FLI 
+summary: Migração Oracle com FLI - conversão de protocolo 
+---
+= Migração Oracle com FLI - conversão de protocolo
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Alterar o protocolo usado para acessar um LUN é um requisito comum.
+
+Em alguns casos, faz parte de uma estratégia geral para migrar dados para a nuvem. O TCP/IP é o protocolo da nuvem e a mudança de FC para iSCSI permite uma migração mais fácil para vários ambientes de nuvem. Em outros casos, o iSCSI pode ser desejável para aproveitar os custos reduzidos de uma SAN IP. Ocasionalmente, uma migração pode usar um protocolo diferente como medida temporária. Por exemplo, se um array estrangeiro e LUNs baseados em ONTAP não contiverem nos mesmos HBAs, você poderá usar LUNs iSCSI o suficiente para copiar dados do array antigo. Em seguida, você pode converter de volta para FC depois que os LUNs antigos forem removidos do sistema.
+
+O procedimento a seguir demonstra a conversão de FC para iSCSI, mas os princípios gerais se aplicam a uma conversão de iSCSI para FC reversa.
+
+
+
+== Instale o iniciador iSCSI
+
+A maioria dos sistemas operacionais inclui um iniciador iSCSI de software por padrão, mas se um não estiver incluído, ele pode ser facilmente instalado.
+
+....
+[root@host1 /]# yum install -y iscsi-initiator-utils
+Loaded plugins: langpacks, product-id, search-disabled-repos, subscription-
+              : manager
+Resolving Dependencies
+--> Running transaction check
+---> Package iscsi-initiator-utils.x86_64 0:6.2.0.873-32.el7 will be updated
+--> Processing Dependency: iscsi-initiator-utils = 6.2.0.873-32.el7 for package: iscsi-initiator-utils-iscsiuio-6.2.0.873-32.el7.x86_64
+---> Package iscsi-initiator-utils.x86_64 0:6.2.0.873-32.0.2.el7 will be an update
+--> Running transaction check
+---> Package iscsi-initiator-utils-iscsiuio.x86_64 0:6.2.0.873-32.el7 will be updated
+---> Package iscsi-initiator-utils-iscsiuio.x86_64 0:6.2.0.873-32.0.2.el7 will be an update
+--> Finished Dependency Resolution
+Dependencies Resolved
+=============================================================================
+ Package                        Arch   Version              Repository  Size
+=============================================================================
+Updating:
+ iscsi-initiator-utils          x86_64 6.2.0.873-32.0.2.el7 ol7_latest 416 k
+Updating for dependencies:
+ iscsi-initiator-utils-iscsiuio x86_64 6.2.0.873-32.0.2.el7 ol7_latest  84 k
+Transaction Summary
+=============================================================================
+Upgrade  1 Package (+1 Dependent package)
+Total download size: 501 k
+Downloading packages:
+No Presto metadata available for ol7_latest
+(1/2): iscsi-initiator-utils-6.2.0.873-32.0.2.el7.x86_6 | 416 kB   00:00
+(2/2): iscsi-initiator-utils-iscsiuio-6.2.0.873-32.0.2. |  84 kB   00:00
+-----------------------------------------------------------------------------
+Total                                           2.8 MB/s | 501 kB  00:00Cluster01
+Running transaction check
+Running transaction test
+Transaction test succeeded
+Running transaction
+  Updating   : iscsi-initiator-utils-iscsiuio-6.2.0.873-32.0.2.el7.x86   1/4
+  Updating   : iscsi-initiator-utils-6.2.0.873-32.0.2.el7.x86_64         2/4
+  Cleanup    : iscsi-initiator-utils-iscsiuio-6.2.0.873-32.el7.x86_64    3/4
+  Cleanup    : iscsi-initiator-utils-6.2.0.873-32.el7.x86_64             4/4
+rhel-7-server-eus-rpms/7Server/x86_64/productid       | 1.7 kB     00:00
+rhel-7-server-rpms/7Server/x86_64/productid           | 1.7 kB     00:00
+  Verifying  : iscsi-initiator-utils-6.2.0.873-32.0.2.el7.x86_64         1/4
+  Verifying  : iscsi-initiator-utils-iscsiuio-6.2.0.873-32.0.2.el7.x86   2/4
+  Verifying  : iscsi-initiator-utils-iscsiuio-6.2.0.873-32.el7.x86_64    3/4
+  Verifying  : iscsi-initiator-utils-6.2.0.873-32.el7.x86_64             4/4
+Updated:
+  iscsi-initiator-utils.x86_64 0:6.2.0.873-32.0.2.el7
+Dependency Updated:
+  iscsi-initiator-utils-iscsiuio.x86_64 0:6.2.0.873-32.0.2.el7
+Complete!
+[root@host1 /]#
+....
+
+
+== Identificar o nome do iniciador iSCSI
+
+Um nome exclusivo do iniciador iSCSI é gerado durante o processo de instalação. No Linux, ele está localizado no `/etc/iscsi/initiatorname.iscsi` arquivo. Esse nome é usado para identificar o host na SAN IP.
+
+....
+[root@host1 /]# cat /etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.1992-05.com.redhat:497bd66ca0
+....
+
+
+== Crie um novo grupo de iniciadores
+
+Um grupo de iniciadores (igroup) faz parte da arquitetura de mascaramento de LUN do ONTAP. Um LUN recém-criado não é acessível a menos que um host tenha acesso concedido pela primeira vez. Esta etapa é realizada criando um grupo que lista os nomes de iniciador iSCSI ou WWNs FC que exigem acesso.
+
+Neste exemplo, um grupo é criado que contém o iniciador iSCSI do host Linux.
+
+....
+Cluster01::*> igroup create -igroup linuxiscsi -protocol iscsi -ostype linux -initiator iqn.1994-05.com.redhat:497bd66ca0
+....
+
+
+== Encerrar o ambiente
+
+Antes de alterar o protocolo LUN, os LUNs devem estar totalmente quietos. Qualquer banco de dados em um dos LUNs sendo convertidos deve ser desligado, sistemas de arquivos devem ser desmontados e grupos de volumes devem ser desativados. Quando o ASM for usado, certifique-se de que o grupo de discos ASM esteja desmontado e desligue todos os serviços de grade.
+
+
+
+== Desmapear LUNs da rede FC
+
+Depois que os LUNs estiverem totalmente quietos, remova os mapeamentos do grupo FC original.
+
+....
+Cluster01::*> lun unmap -vserver vserver1 -path /vol/new_asm/LUN0 -igroup linuxhost
+Cluster01::*> lun unmap -vserver vserver1 -path /vol/new_asm/LUN1 -igroup linuxhost
+...
+Cluster01::*> lun unmap -vserver vserver1 -path /vol/new_lvm/LUN8 -igroup linuxhost
+Cluster01::*> lun unmap -vserver vserver1 -path /vol/new_lvm/LUN9 -igroup linuxhost
+....
+
+
+== Remapear LUNs para a rede IP
+
+Conceda acesso a cada LUN ao novo grupo de iniciadores baseado em iSCSI.
+
+....
+Cluster01::*> lun map -vserver vserver1 -path /vol/new_asm/LUN0 -igroup linuxiscsi
+Cluster01::*> lun map -vserver vserver1 -path /vol/new_asm/LUN1 -igroup linuxiscsi
+...
+Cluster01::*> lun map -vserver vserver1 -path /vol/new_lvm/LUN8 -igroup linuxiscsi
+Cluster01::*> lun map -vserver vserver1 -path /vol/new_lvm/LUN9 -igroup linuxiscsi
+Cluster01::*>
+....
+
+
+== Descubra iSCSI Targets
+
+Existem duas fases para a descoberta iSCSI. O primeiro é descobrir os alvos, o que não é o mesmo que descobrir um LUN. O `iscsiadm` comando mostrado abaixo sonda o grupo do portal especificado pelo `-p argument` e armazena uma lista de todos os endereços IP e portas que oferecem serviços iSCSI. Neste caso, existem quatro endereços IP que têm serviços iSCSI na porta padrão 3260.
+
+
+NOTE: Este comando pode levar vários minutos para ser concluído se algum dos endereços IP de destino não puder ser alcançado.
+
+....
+[root@host1 ~]# iscsiadm -m discovery -t st -p fas8060-iscsi-public1
+10.63.147.197:3260,1033 iqn.1992-08.com.netapp:sn.807615e9ef6111e5a5ae90e2ba5b9464:vs.3
+10.63.147.198:3260,1034 iqn.1992-08.com.netapp:sn.807615e9ef6111e5a5ae90e2ba5b9464:vs.3
+172.20.108.203:3260,1030 iqn.1992-08.com.netapp:sn.807615e9ef6111e5a5ae90e2ba5b9464:vs.3
+172.20.108.202:3260,1029 iqn.1992-08.com.netapp:sn.807615e9ef6111e5a5ae90e2ba5b9464:vs.3
+....
+
+
+== Descubra iSCSI LUNs
+
+Depois que os iSCSI Targets forem descobertos, reinicie o serviço iSCSI para descobrir os iSCSI LUNs disponíveis e criar dispositivos associados, como os dispositivos multipath ou ASMlib.
+
+....
+[root@host1 ~]# service iscsi restart
+Redirecting to /bin/systemctl restart  iscsi.service
+....
+
+
+== Reinicie o ambiente
+
+Reinicie o ambiente reativando grupos de volumes, remontando sistemas de arquivos, reiniciando serviços RAC e assim por diante. Como precaução, o NetApp recomenda que você reinicie o servidor após o processo de conversão estar concluído para ter certeza de que todos os arquivos de configuração estão corretos e todos os dispositivos obsoletos são removidos.
+
+Cuidado: Antes de reiniciar um host, certifique-se de que todas as entradas `/etc/fstab` nessa referência migradas dos recursos SAN sejam comentadas. Se esta etapa não for tomada e houver problemas com o acesso LUN, o resultado pode ser um sistema operacional que não inicializa. Este problema não danifica os dados. No entanto, pode ser muito inconveniente inicializar no modo de recuperação ou em um modo semelhante e corrigir `/etc/fstab` para que o sistema operacional possa ser inicializado para permitir que os esforços de solução de problemas comecem.

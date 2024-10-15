@@ -1,0 +1,19 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-config-files.html 
+keywords: epic,cache,iris 
+summary: Protocolos épicos e de arquivos 
+---
+= Protocolos épicos e de arquivos
+:allow-uri-read: 
+
+
+[role="lead"]
+A combinação de nas e SAN no mesmo array all-flash é compatível.
+
+[TIP]
+====
+*A NetApp recomenda* usar volumes FlexGroup para compartilhamentos nas, como WebBLOB (quando disponível).
+
+====
+WebBLOB é até 95% de dados inativos. Como opção, você pode liberar espaço em seu array all-flash, em categorias e backups e dados inativos no storage de objetos no local ou na nuvem, usando o link:https://docs.netapp.com/us-en/ontap/fabricpool/index.html["FabricPool"^]recurso do ONTAP. Tudo o que pode ser realizado sem qualquer efeito de desempenho percetível. FabricPool é um recurso incluído do ONTAP. Os clientes podem gerar um relatório de dados inativos (ou inativos) para analisar quanto benefício poderia ser obtido com a ativação do FabricPool. Você pode definir a idade dos dados para categorizar por meio da política. Com esse recurso, os clientes da Epic conseguiram economias significativas.

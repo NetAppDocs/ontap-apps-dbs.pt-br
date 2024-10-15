@@ -1,0 +1,55 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-tiering-retrieval-policies.html 
+keywords: tiering, FabricPool 
+summary: Bancos de dados Oracle e políticas de recuperação FabricPool 
+---
+= Bancos de dados Oracle e políticas de recuperação FabricPool
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+As políticas de disposição em camadas controlam quais blocos de banco de dados Oracle são dispostos da camada de performance para a camada de capacidade. As políticas de recuperação controlam o que acontece quando um bloco que foi categorizado é lido.
+
+
+
+== Padrão
+
+Todos os volumes do FabricPool são inicialmente definidos como `default`, o que significa que o comportamento é controlado pela política de recuperação de nuvem. "O comportamento exato depende da política de disposição em camadas usada.
+
+* `auto`– apenas recuperar dados lidos aleatoriamente
+* `snapshot-only`– recuperar todos os dados lidos sequencialmente ou aleatoriamente
+* `none`– recuperar todos os dados lidos sequencialmente ou aleatoriamente
+* `all`– não recupere dados do nível de capacidade
+
+
+
+
+== Na leitura
+
+A configuração `cloud-retrieval-policy` como On-read substitui o comportamento padrão para que uma leitura de qualquer dado em camadas resulte no retorno desses dados ao nível de desempenho.
+
+Por exemplo, um volume pode ter sido levemente usado por um longo tempo sob `auto` a política de disposição em camadas e a maioria dos blocos agora está dividida.
+
+Se uma mudança inesperada nas necessidades de negócios exigir que alguns dos dados sejam verificados repetidamente para preparar um determinado relatório, pode ser desejável alterar o `cloud-retrieval-policy` para para `on-read` para garantir que todos os dados lidos sejam devolvidos ao nível de desempenho, incluindo dados de leitura sequencial e aleatória. Isso melhoraria o desempenho de e/S sequenciais em relação ao volume.
+
+
+
+== Promover
+
+O comportamento da política promover depende da política de disposição em camadas. Se a política de disposição em categorias for `auto`, a configuração do `cloud-retrieval-policy `to `promote` recuperará todos os blocos da camada de capacidade na próxima verificação de disposição em categorias.
+
+Se a política de disposição em categorias for `snapshot-only`, os únicos blocos retornados serão os blocos associados ao sistema de arquivos ativo. Normalmente, isso não teria nenhum efeito porque os únicos blocos dispostos sob `snapshot-only` a política seriam blocos associados exclusivamente a snapshots. Não haveria blocos em camadas no sistema de arquivos ativo.
+
+No entanto, se os dados em um volume tiverem sido restaurados por uma operação de clone de arquivo ou SnapRestore de volume a partir de um snapshot, alguns dos blocos que foram dispostos em camadas por estarem associados apenas a snapshots podem agora ser exigidos pelo sistema de arquivos ativo. Pode ser desejável alterar temporariamente a `cloud-retrieval-policy` política para `promote` recuperar rapidamente todos os blocos necessários localmente.
+
+
+
+== Nunca
+
+Não recupere blocos da camada de capacidade.

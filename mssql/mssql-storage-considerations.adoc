@@ -1,0 +1,69 @@
+---
+sidebar: sidebar 
+permalink: mssql/mssql-storage-considerations.html 
+keywords: MSSQL,SQL Server, volumes, LUN, SnapCenter 
+summary: Consideração de armazenamento do Microsoft SQL Server 
+---
+= Considerações sobre o armazenamento do Microsoft SQL Server
+:allow-uri-read: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+A combinação de soluções de storage ONTAP e Microsoft SQL Server permite designs de storage de banco de dados de nível empresarial que podem atender aos requisitos de aplicativos mais exigentes dos dias de hoje.
+
+A otimização de uma solução SQL Server no ONTAP requer a compreensão do padrão e/S do SQL Server. Um layout de armazenamento bem projetado para um banco de dados do SQL Server deve suportar os requisitos de desempenho do SQL Server, além de fornecer o máximo de gerenciamento da infraestrutura como um todo. Um bom layout de storage também permite que a implantação inicial seja bem-sucedida e o ambiente cresça suavemente ao longo do tempo à medida que a empresa cresce.
+
+
+
+== Design de storage de dados
+
+Para bancos de dados do SQL Server que não usam o SnapCenter para executar backups, a Microsoft recomenda colocar os dados e arquivos de log em unidades separadas. Para aplicativos que simultaneamente atualizam e solicitam dados, o arquivo de log é intenso de gravação e o arquivo de dados (dependendo do aplicativo) é intenso de leitura/gravação. Para a recuperação de dados, o ficheiro de registo não é necessário. Portanto, as solicitações de dados podem ser satisfeitas a partir do arquivo de dados colocado em sua própria unidade.
+
+Ao criar um novo banco de dados, a Microsoft recomenda especificar unidades separadas para os dados e logs. Para mover arquivos após a criação do banco de dados, o banco de dados deve ser offline. Para obter mais recomendações da Microsoft, link:https://docs.microsoft.com/en-us/sql/relational-databases/policy-based-management/place-data-and-log-files-on-separate-drives?view=sql-server-ver15["Coloque dados e arquivos de log em unidades separadas"^]consulte .
+
+
+
+== Agregados
+
+Agregados são os contêineres de storage de nível mais baixo para configurações de storage NetApp. Alguma documentação legada existe na internet que recomenda separar o IO em diferentes conjuntos de unidades subjacentes. Isso não é recomendado com o ONTAP. A NetApp realizou vários testes de caraterização de carga de trabalho de e/S usando agregados compartilhados e dedicados com arquivos de dados e arquivos de log de transações separados. Os testes mostram que um agregado grande com mais grupos RAID e unidades otimiza e melhora o desempenho do armazenamento, além de ser mais fácil para os administradores gerenciarem por dois motivos:
+
+* Um agregado grande torna os recursos de e/S de todas as unidades disponíveis para todos os arquivos.
+* Um agregado grande permite o uso mais eficiente do espaço em disco.
+
+
+Para alta disponibilidade (HA), coloque a réplica síncrona secundária do SQL Server Always On Availability Group em uma máquina virtual de storage (SVM) separada no agregado. Para fins de recuperação de desastre, coloque a réplica assíncrona em um agregado que faça parte de um cluster de storage separado no local de DR, com conteúdo replicado pelo uso da tecnologia NetApp SnapMirror. A NetApp recomenda ter pelo menos 10% de espaço livre disponível em um agregado para obter um desempenho ideal de storage.
+
+
+
+== Volumes
+
+os volumes são criados e residem dentro de agregados. Este termo às vezes causa confusão porque um volume ONTAP não é um LUN. Um volume de ONTAP é um contêiner de gerenciamento para os dados. Um volume pode conter arquivos, LUNs ou até mesmo objetos S3D. Um volume não ocupa espaço, é usado apenas para o gerenciamento dos dados contidos.
+
+
+
+=== Considerações sobre design de volume
+
+Antes de criar um design de volume de banco de dados, é importante entender como o padrão e as caraterísticas de e/S do SQL Server variam dependendo da carga de trabalho e dos requisitos de backup e recuperação. Consulte as seguintes recomendações da NetApp para volumes flexíveis:
+
+* Evite compartilhar volumes entre hosts. Por exemplo, embora seja possível criar 2 LUNs em um único volume e compartilhar cada LUN com um host diferente, isso deve ser evitado porque pode complicar o gerenciamento.
+* Use pontos de montagem NTFS em vez de letras de unidade para superar a limitação de 26 unidades no Windows. Ao usar pontos de montagem de volume, é uma recomendação geral dar ao rótulo de volume o mesmo nome que o ponto de montagem.
+* Quando apropriado, configure uma política de dimensionamento automático de volume para ajudar a evitar condições fora do espaço. 17 Guia de melhores práticas para o Microsoft SQL Server com ONTAP 2022 NetApp, Inc. Todos os direitos reservados.
+* Se você instalar o SQL Server em um compartilhamento SMB, verifique se o Unicode está habilitado nos volumes SMB para criar pastas.
+* Defina o valor da reserva do snapshot no volume para zero para facilitar o monitoramento do ponto de vista operacional.
+* Desative as programações de snapshot e as políticas de retenção. Em vez disso, use o SnapCenter para coordenar cópias Snapshot dos volumes de dados do SQL Server.
+* Coloque os bancos de dados do sistema do SQL Server em um volume dedicado.
+* Tempdb é um banco de dados de sistema usado pelo SQL Server como um espaço de trabalho temporário, especialmente para operações de e/S intensivas DBCC CHECKDB. Portanto, coloque esse banco de dados em um volume dedicado com um conjunto separado de fusos. Em ambientes grandes em que a contagem de volume é um desafio, você pode consolidar tempdb em menos volumes e armazená-lo no mesmo volume que outros bancos de dados do sistema após um Planejamento cuidadoso. A proteção de dados para tempdb não é uma prioridade alta porque este banco de dados é recriado sempre que o SQL Server é reiniciado.
+* Coloque os arquivos de dados do usuário (`.mdf`) em volumes separados porque eles são cargas de trabalho de leitura/gravação aleatórias. É comum criar backups de log de transações com mais frequência do que backups de banco de dados. Por esse motivo, coloque arquivos de log de transações (`.ldf`) em um volume separado ou VMDK dos arquivos de dados para que programações de backup independentes possam ser criadas para cada um. Essa separação também isola a e/S de gravação sequencial dos arquivos de log da e/S de leitura/gravação aleatória de arquivos de dados e melhora significativamente o desempenho do SQL Server.
+
+
+
+
+== LUNs
+
+* Certifique-se de que os arquivos do banco de dados do usuário e o diretório de log para armazenar o backup de log estejam em volumes separados para impedir que a política de retenção substitua os snapshots quando eles forem usados com a tecnologia SnapVault.
+* Não misture arquivos de banco de dados e não de banco de dados, como arquivos relacionados à pesquisa de texto completo, no mesmo LUN.
+* Colocar arquivos secundários de banco de dados (como parte de um grupo de arquivos) em volumes separados melhora o desempenho do banco de dados SQL Server. Essa separação só é válida se o arquivo do banco de dados `.mdf`` não compartilhar seu LUN com `.mdf` outros arquivos.
+* Se você criar LUNs com o DiskManager ou outras ferramentas, certifique-se de que o tamanho da unidade de alocação está definido como 64K para partições ao formatar os LUNs.
+* Consulte link:https://www.netapp.com/media/10680-tr4080.pdf["Microsoft Windows e MPIO nativo sob as práticas recomendadas do ONTAP para SAN moderna"]para aplicar suporte multipathing no Windows a dispositivos iSCSI nas propriedades MPIO.
+

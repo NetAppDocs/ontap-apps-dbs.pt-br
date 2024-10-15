@@ -1,0 +1,135 @@
+---
+sidebar: sidebar 
+permalink: microsoft/win_deploy_nano.html 
+keywords: Windows,Hyper-V,VHDX,VM,Virtual 
+summary: Saiba mais sobre como implantar o Microsoft Windows Nano Server 
+---
+= Implante o servidor Nano
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Saiba mais sobre como implantar o Microsoft Windows Nano Server.
+
+
+
+== Implantação
+
+Para implantar um Nano Server como um host Hyper-V, execute as seguintes etapas:
+
+. Inicie sessão no Windows Server como membro do grupo de administradores.
+. Copie a pasta NanoServerImageGenerator da pasta NanoServer na ISO do Windows Server para a unidade de disco rígido local.
+. Para criar um Nano Server VHD/VHDX, execute as seguintes etapas:
++
+.. Inicie o Windows PowerShell como administrador, navegue até a pasta NanoServerImageGenerator copiada no disco rígido local e execute o seguinte cmdlet:
++
+....
+Set-ExecutionPolicy RemoteSigned
+Import-Module .\NanoServerImageGenerator -Verbose
+....
+.. Crie um VHD para o Nano Server como um host Hyper-V executando o cmdlet do PowerShell a seguir. Este comando solicita uma senha de administrador para o novo VHD.
++
+ New-NanoServerImage -Edition Standard -DeploymentType Guest -MediaPath <"input the path to the root of the contents of Windows Server 2016 ISO"> -TargetPath <"input the path, including the filename and extension where the resulting VHD/VHDX will be created"> -ComputerName <"input the name of the nano server computer you are about to create"> -Compute
+.. No exemplo a seguir, criamos um Nano Server VHD com o recurso Hyper-V host com cluster de failover ativado. Este exemplo cria um Nano Server VHD a partir de um ISO montado em f: '. O VHD recém-criado é colocado em uma pasta chamada NanoServer na pasta de onde o cmdlet é executado. O nome do computador é NanoServer e o VHD resultante contém a edição padrão do Windows Server.
++
+ New-NanoServerImage -Edition Standard -DeploymentType Guest -MediaPath f:\ -TargetPath .\NanoServer.vhd -ComputerName NanoServer -Compute -Clustering
+.. Com o cmdlet New-NanoServerImage, configure parâmetros que definem o endereço IP, a máscara de sub-rede, o gateway padrão, o servidor DNS, o nome do domínio, etc.
+
+
+. Use o VHD em uma VM ou host físico para implantar o Nano Server como um host Hyper-V:
++
+.. Para implantação em uma VM, crie uma nova VM no Hyper-V Manager e use o VHD criado na Etapa 3.
+.. Para implantação em um host físico, copie o VHD para o computador físico e configure-o para inicializar a partir deste novo VHD. Primeiro, monte o VHD, execute o bcdboot e: Janelas (onde o VHD está montado sob e:), desmonte o VHD, reinicie o computador físico e inicialize no Nano Server.
+
+
+. Junte o Nano Server a um domínio (opcional):
++
+.. Faça login em qualquer computador no domínio e crie um blob de dados executando o seguinte cmdlet do PowerShell:
++
+....
+$domain = "<input the domain to which the Nano Server is to be joined>"
+$nanoserver = "<input name of the Nano Server>"
+....
++
+ djoin.exe /provision /domain $domain /machine $nanoserver /savefile C:\temp\odjblob /reuse
+.. Copie o arquivo odjblob para o Nano Server executando os seguintes cmdlets do PowerShell em uma máquina remota:
++
+....
+$nanoserver = "<input name of the Nano Server>"
+$nanouname = ""<input username of the Nano Server>"
+$nanopwd = ""<input password of the Nano Server>"
+....
++
+....
+$filePath = 'c:\temp\odjblob'
+$fileContents = Get-Content -Path $filePath -Encoding Unicode
+....
++
+....
+$securenanopwd = ConvertTo-SecureString -AsPlainText -Force $nanopwd
+$nanosecurecred = new-object management.automation.pscredential $nanouname, $securenanopwd
+....
++
+....
+Invoke-Command -VMName $nanoserver -Credential $nanosecurecred -ArgumentList @($filePath,$fileContents) -ScriptBlock \{
+    param($filePath,$data)
+    New-Item -ItemType directory -Path c:\temp
+    Set-Content -Path $filePath -Value $data -Encoding Unicode
+    cd C:\temp
+    djoin /requestodj /loadfile c:\temp\odjblob /windowspath c:\windows /localos
+}
+....
+.. Reinicie o Nano Server.
+
+
+
+
+
+
+== Conete-se ao Nano Server
+
+Para se conetar ao Nano Server remotamente usando o PowerShell, execute as seguintes etapas:
+
+. Adicione o Nano Server como um host confiável no computador remoto executando o seguinte cmdlet no servidor remoto:
++
+ Set-Item WSMan:\LocalHost\Client\TrustedHosts "<input IP Address of the Nano Server>"
+. Se o ambiente estiver seguro e se você quiser definir todos os hosts para serem adicionados como hosts confiáveis em um servidor, execute o seguinte comando:
++
+ Set-Item WSMan:\LocalHost\Client\TrustedHosts *
+. Inicie a sessão remota executando o cmdlet a seguir no servidor remoto. Forneça a senha para o Nano Server quando solicitado.
++
+ Enter-PSSession -ComputerName "<input IP Address of the Nano Server>" -Credential ~\Administrator
+
+
+Para se conetar ao Nano Server remotamente usando ferramentas de gerenciamento de GUI de um Windows Server remoto, execute os seguintes comandos:
+
+. Inicie sessão no Windows Server como membro do grupo de administradores.
+. Inicie o Server Manager**.**
+. Para gerenciar um Nano Server remotamente a partir do Gerenciador de servidores, clique com o botão direito em todos os servidores, clique em Adicionar servidores, forneça as informações do Nano Server e adicione-o. Agora você pode ver o Nano Server listado na lista de servidores. Selecione o Nano Server, clique com o botão direito do Mouse nele e comece a gerenciá-lo com as várias opções fornecidas.
+. Para gerenciar serviços em um Nano Server remotamente, execute as seguintes etapas:
++
+.. Abra Serviços na seção Ferramentas do Gerenciador de servidores.
+.. Clique com o botão direito em Serviços (local).
+.. Clique em conetar ao servidor.
+.. Forneça os detalhes do Nano Server para visualizar e gerenciar os serviços no Nano Server.
+
+
+. Se a função Hyper-V estiver ativada no Nano Server, execute as seguintes etapas para gerenciá-la remotamente a partir do Gerenciador Hyper-V:
++
+.. Abra o Gerenciador do Hyper-V na seção Ferramentas do Gerenciador de servidores.
+.. Clique com o botão direito do rato em Gestor Hyper-V.
+.. Clique em conetar ao servidor e forneça os detalhes do Nano Server. Agora, o Nano Server pode ser gerenciado como um servidor Hyper-V para criar e gerenciar VMs em cima dele.
+
+
+. Se a função de cluster de failover estiver ativada no Nano Server, execute as seguintes etapas para gerenciá-lo remotamente a partir do gerenciador de cluster de failover:
++
+.. Abra o Gerenciador de Cluster de failover na seção Ferramentas do Gerenciador de servidores.
+.. Execute operações relacionadas a clustering com o Nano Server.
+
+
+

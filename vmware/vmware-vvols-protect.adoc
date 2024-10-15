@@ -1,0 +1,166 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-vvols-protect.html 
+keywords: tr-4400, vvols, ontap, virtual volumes, protect 
+summary:  
+---
+= Protegendo vVols
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+As seções a seguir descrevem os procedimentos e as práticas recomendadas para o uso do VMware vVols com storage ONTAP.
+
+
+
+== Alta disponibilidade do fornecedor VASA
+
+O Fornecedor NetApp VASA é executado como parte do dispositivo virtual juntamente com o plug-in do vCenter e o servidor de API REST (anteriormente conhecido como o console de armazenamento virtual [VSC]) e o adaptador de replicação de armazenamento. Se o provedor VASA não estiver disponível, as VMs que usam vVols continuarão a ser executadas. No entanto, novos datastores vVols não podem ser criados e o vVols não pode ser criado ou vinculado pelo vSphere. Isso significa que as VMs que usam vVols não podem ser ativadas, uma vez que o vCenter não poderá solicitar a criação da vVol de swap. E as VMs em execução não podem usar o vMotion para migração para outro host porque os vVols não podem ser vinculados ao novo host.
+
+O VASA Provider 7,1 e posterior suportam novos recursos para garantir que os serviços estejam disponíveis quando necessário. Inclui novos processos watchdog que monitorizam o fornecedor VASA e os serviços de base de dados integrados. Se detetar uma falha, ele atualiza os arquivos de log e reinicia os serviços automaticamente.
+
+Proteção adicional deve ser configurada pelo administrador do vSphere usando os mesmos recursos de disponibilidade usados para proteger outras VMs de missão crítica contra falhas no software, hardware do host e rede. Nenhuma configuração adicional é necessária no dispositivo virtual para usar esses recursos; basta configurá-los usando abordagens padrão do vSphere. Eles foram testados e são suportados pelo NetApp.
+
+O vSphere High Availability é facilmente configurado para reiniciar uma VM em outro host no cluster de host em caso de falha. A tolerância a falhas do vSphere fornece maior disponibilidade criando uma VM secundária que é continuamente replicada e pode assumir o controle a qualquer momento. Informações adicionais sobre esses recursos estão disponíveis no https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/concepts/concept_configure_high_availability_for_ontap_tools_for_vmware_vsphere.html["Ferramentas do ONTAP para documentação do VMware vSphere (Configurar alta disponibilidade para ferramentas do ONTAP)"], bem como na documentação do VMware vSphere (procure disponibilidade do vSphere em ESXi e vCenter Server).
+
+O ONTAP provedor VASA faz o backup automático da configuração do vVols em tempo real para sistemas ONTAP gerenciados, onde as informações do vVols são armazenadas nos metadados do FlexVol volume. Caso o ONTAP Tools Appliance fique indisponível por qualquer motivo, você pode implantar uma nova ferramenta de forma fácil e rápida e importar a configuração. Consulte este artigo da KB para obter mais informações sobre as etapas de recuperação do provedor VASA:
+
+https://kb.netapp.com/mgmt/OTV/Virtual_Storage_Console/How_to_perform_a_VASA_Provider_Disaster_Recovery_-_Resolution_Guide["Como executar uma recuperação de desastres do provedor VASA - Guia de resolução"]
+
+
+
+== Replicação do vVols
+
+Muitos clientes da ONTAP replicam seus armazenamentos de dados tradicionais para sistemas de storage secundário usando o NetApp SnapMirror e, em seguida, usam o sistema secundário para recuperar VMs individuais ou um local inteiro em caso de desastre. Na maioria dos casos, os clientes usam uma ferramenta de software para gerenciar isso, como um produto de software de backup, como o plug-in do NetApp SnapCenter para VMware vSphere ou uma solução de recuperação de desastres, como o Gerenciador de recuperação de site da VMware (juntamente com o adaptador de replicação de armazenamento nas ferramentas do ONTAP).
+
+Esse requisito para uma ferramenta de software é ainda mais importante para gerenciar a replicação do vVols. Embora alguns aspectos possam ser gerenciados por recursos nativos (por exemplo, os snapshots gerenciados do vVols da VMware são descarregados para o ONTAP, que usa clones rápidos e eficientes de arquivos ou LUN), em geral, a orquestração é necessária para gerenciar a replicação e a recuperação. Os metadados sobre o vVols são protegidos pelo ONTAP, bem como pelo Fornecedor VASA, mas é necessário um processamento adicional para usá-los em um local secundário.
+
+As ferramentas do ONTAP 9.7.1 em conjunto com a versão 8,3 do VMware Site Recovery Manager (SRM) adicionou suporte para orquestração do fluxo de trabalho de migração e recuperação de desastres aproveitando a tecnologia NetApp SnapMirror.
+
+Na versão inicial do suporte do SRM com as ferramentas do ONTAP 9.7.1, era necessário pré-criar FlexVols e habilitar a proteção SnapMirror antes de usá-los como volumes de backup para um armazenamento de dados vVols. A partir das ferramentas ONTAP 9,10, esse processo não é mais necessário. Agora, você pode adicionar proteção SnapMirror aos volumes de backup existentes e atualizar suas políticas de storage de VM para aproveitar o gerenciamento baseado em políticas com orquestração e recuperação de desastres e automação integradas ao SRM.
+
+Atualmente, o VMware SRM é a única solução de automação de recuperação de desastres e migração para vVols suportada pelo NetApp, e as ferramentas ONTAP verificarão a existência de um servidor SRM 8,3 ou posterior registrado no vCenter antes de permitir a replicação do vVols, embora seja possível aproveitar as APIS REST do ONTAP Tools para criar seus próprios serviços.
+
+
+
+=== Replicação do vVols com o SRM
+
+image:vvols-image17.png["Replicação do vVols com o SRM"]
+
+
+
+== Suporte à MetroCluster
+
+Embora as ferramentas do ONTAP não sejam capazes de acionar um switchover do MetroCluster, ele oferece suporte a sistemas NetApp MetroCluster para vVols que suportam volumes em uma configuração uniforme de cluster de storage metro do vSphere (vmsc). O switchover de um sistema MetroCluster é Tratado da maneira normal.
+
+Embora o NetApp SnapMirror Business Continuity (SM-BC) também possa ser usado como base para uma configuração vmsc, ele não é atualmente suportado com vVols.
+
+Consulte estes guias para obter mais informações sobre o NetApp MetroCluster:
+
+https://www.netapp.com/media/13481-tr4689.pdf["_Arquitetura e design da solução IP MetroCluster TR-4689_"]
+
+https://www.netapp.com/pdf.html?item=/media/13480-tr4705.pdf["_TR-4705 arquitetura e design da solução NetApp MetroCluster_"]
+
+https://kb.vmware.com/s/article/2031038["_VMware KB 2031038 suporte ao VMware vSphere com NetApp MetroCluster_"]
+
+
+
+== Visão geral do vVols Backup
+
+Existem várias abordagens para proteger VMs, como usar agentes de backup in-Guest, anexar arquivos de dados da VM a um proxy de backup ou usar APIs definidas como VMware VADP. O vVols pode ser protegido usando os mesmos mecanismos e muitos parceiros da NetApp suportam backups de VM, incluindo vVols.
+
+Como mencionado anteriormente, os snapshots gerenciados do VMware vCenter são descarregados para ONTAP clones de arquivo/LUN rápidos e eficientes em termos de espaço. Eles podem ser usados para backups rápidos e manuais, mas são limitados pelo vCenter a um máximo de 32 snapshots. Você pode usar o vCenter para tirar snapshots e reverter conforme necessário.
+
+A partir do plug-in SnapCenter para VMware vSphere (SCV) 4,6, quando usado em conjunto com as ferramentas ONTAP 9,10 e posteriores, adiciona suporte para backup e recuperação consistentes com falhas de VMs baseadas em vVols, utilizando snapshots ONTAP FlexVol volume com suporte para replicação SnapMirror e SnapVault. Suporte para até 1023 instantâneos por volume. O SCV também pode armazenar mais snapshots com retenção mais longa em volumes secundários usando o SnapMirror com uma política de cofre-espelho.
+
+O suporte ao vSphere 8,0 foi introduzido com o SCV 4,7, que usou uma arquitetura de plug-in local isolada. O suporte ao vSphere 8.0U1 foi adicionado ao SCV 4,8, que fez a transição completa para a nova arquitetura de plug-in remoto.
+
+
+
+== Backup do vVols com o plug-in do SnapCenter para VMware vSphere
+
+Com o NetApp SnapCenter, agora você pode criar grupos de recursos para vVols com base em tags e/ou pastas para aproveitar automaticamente os snapshots baseados no FlexVol do ONTAP para VMs baseadas em vVols. Isso permite que você defina serviços de backup e recuperação que protegerão as VMs automaticamente à medida que elas são provisionadas dinamicamente em seu ambiente.
+
+O plug-in do SnapCenter para VMware vSphere é implantado como um dispositivo autônomo registrado como uma extensão do vCenter, gerenciado por meio da IU do vCenter ou por meio de APIs REST para automação de serviços de backup e recuperação.
+
+
+
+=== Arquitetura da SnapCenter
+
+image:snapcenter_arch.png["Arquitetura da SnapCenter"]
+
+Como os outros plugins do SnapCenter ainda não suportam vVols no momento desta escrita, vamos nos concentrar no modelo de implantação independente neste documento.
+
+Como o SnapCenter usa snapshots do ONTAP FlexVol, não há sobrecarga no vSphere, nem há nenhuma penalidade de desempenho como se pode ver nas VMs tradicionais que usam snapshots gerenciados do vCenter. Além disso, como a funcionalidade do SCV é exposta por meio de APIs REST, ele facilita a criação de fluxos de trabalho automatizados usando ferramentas como VMware Aria Automation, Ansible, Terraform e praticamente qualquer outra ferramenta de automação capaz de usar APIs REST padrão.
+
+Para obter informações sobre APIS REST do SnapCenter, consulte https://docs.netapp.com/us-en/snapcenter/sc-automation/overview_rest_apis.html["Visão geral das APIs REST"]
+
+Para obter informações sobre o plug-in do SnapCenter para APIs REST do VMware vSphere, consulte https://docs.netapp.com/us-en/sc-plugin-vmware-vsphere/scpivs44_rest_apis_overview.html["Plug-in do SnapCenter para APIs REST do VMware vSphere"]
+
+
+
+=== Práticas recomendadas
+
+As práticas recomendadas a seguir podem ajudá-lo a aproveitar ao máximo sua implantação do SnapCenter.
+
+|===
+
+
+ a| 
+* O SCV oferece suporte ao vCenter Server RBAC e ao ONTAP RBAC e inclui funções do vCenter predefinidas que são criadas automaticamente para você quando o plug-in é registrado. Você pode ler mais sobre os tipos compatíveis de RBAC https://docs.netapp.com/us-en/sc-plugin-vmware-vsphere/scpivs44_types_of_rbac_for_snapcenter_users.html["aqui."]
++
+** Use a IU do vCenter para atribuir acesso a contas com menos privilégios usando as funções predefinidas descritas https://docs.netapp.com/us-en/sc-plugin-vmware-vsphere/scpivs44_predefined_roles_packaged_with_snapcenter.html["aqui"].
+** Se você usar o SCV com o servidor SnapCenter, deverá atribuir a função _SnapCenterAdmin_.
+** ONTAP RBAC refere-se à conta de usuário usada para adicionar e gerenciar os sistemas de storage usados pela SCV. O ONTAP RBAC não se aplica a backups baseados em vVols. Leia mais sobre ONTAP RBAC e SCV https://docs.netapp.com/us-en/sc-plugin-vmware-vsphere/scpivs44_ontap_rbac_features_in_snapcenter.html["aqui"].
+
+
+
+
+
+
+ a| 
+* Replique seus conjuntos de dados de backup para um segundo sistema usando o SnapMirror para réplicas completas de volumes de origem. Como mencionado anteriormente, você também pode usar políticas de espelhamento de cofre para retenção de dados de backup a longo prazo, independentemente das configurações de retenção de snapshot do volume de origem. Ambos os mecanismos são suportados com vVols.
+
+
+
+
+ a| 
+* Como o SCV também requer ferramentas do ONTAP para a funcionalidade vVols do VMware vSphere, verifique sempre a ferramenta de Matriz de interoperabilidade (IMT) do NetApp para obter compatibilidade de versões específicas
+
+
+
+
+ a| 
+* Se você estiver usando a replicação do vVols com o VMware SRM, lembre-se de sua política de RPO e agendamento de backup
+
+
+
+
+ a| 
+* Crie suas políticas de backup com configurações de retenção que atendem aos objetivos do ponto de restauração (RPOs) definidos pela organização
+
+
+
+
+ a| 
+* Configure as configurações de notificação em seus grupos de recursos para ser notificado sobre o status quando os backups são executados (veja a figura 10 abaixo)
+
+
+|===
+
+
+=== Opções de notificação do grupo de recursos
+
+image:vvols-image19.png["Opções de notificação do grupo de recursos"]
+
+
+
+=== Comece a usar a SCV usando esses documentos
+
+https://docs.netapp.com/us-en/sc-plugin-vmware-vsphere/index.html["Saiba mais sobre o plug-in do SnapCenter para VMware vSphere"]
+
+https://docs.netapp.com/us-en/sc-plugin-vmware-vsphere/scpivs44_deploy_snapcenter_plug-in_for_vmware_vsphere.html["Implante o plug-in do SnapCenter para VMware vSphere"]

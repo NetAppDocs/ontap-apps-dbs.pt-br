@@ -1,0 +1,47 @@
+---
+section: mysql
+title: MySQL
+entries:
+- title: Visão geral
+  url: "/mysql/mysql-overview.html"
+- title: Configuração do banco de dados
+  pdf-filename: Configuração de banco de dados para MySQL
+  entries:
+  - title: Estrutura de ficheiros
+    url: "/mysql/mysql-file-structure.html"
+  - title: Visão geral da configuração
+    url: "/mysql/mysql-configuration.html"
+  - title: innodb_log_file_size
+    url: "/mysql/mysql-innodb_log_file_size.html"
+  - title: innodb_flush_log_at_trx_commit
+    url: "/mysql/mysql-innodb_flush_log_at_trx_commit.html"
+  - title: innodb_doublewrite
+    url: "/mysql/mysql-innodb_doublewrite.html"
+  - title: innodb_buffer_pool_size
+    url: "/mysql/mysql-innodb_buffer_pool_size.html"
+  - title: innodb_flush_method
+    url: "/mysql/mysql-innodb_flush_method.html"
+  - title: innodb_io_capacity
+    url: "/mysql/mysql-innodb_io_capacity.html"
+  - title: innodb_lru_scan_depth
+    url: "/mysql/mysql-innodb_lru_scan_depth.html"
+  - title: open_file_limits
+    url: "/mysql/mysql-open_file_limits.html"
+- title: Configuração de host
+  pdf-filename: Configuração de host para MySQL
+  entries:
+  - title: Conteinerização
+    url: "/mysql/mysql-containers.html"
+  - title: Mesas de slot
+    url: "/mysql/mysql-slot-tables.html"
+  - title: Agendadores de e/S.
+    url: "/mysql/mysql-schedulers.html"
+  - title: Descritores de arquivo
+    url: "/mysql/mysql-file-descriptors.html"
+- title: Configuração de armazenamento
+  pdf-filename: Configuração de armazenamento para MySQL
+  entries:
+  - title: MySQL sobre NFS
+    url: "/mysql/mysql-mysql-over-nfs.html"
+  - title: MySQL sobre SAN
+    url: "/mysql/mysql-mysql-over-san.html"

@@ -1,0 +1,30 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-tiering-logs.html 
+keywords: tiering, fabricpool 
+summary: Disposição em camadas do log de arquivamento do Oracle 
+---
+= Disposição em camadas do log de arquivamento de banco de dados Oracle
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Talvez o uso mais importante para o FabricPool seja melhorar a eficiência de dados inativos conhecidos, como logs de transações de banco de dados.
+
+A maioria dos bancos de dados relacionais opera no modo de arquivamento de log de transações para fornecer recuperação pontual. As alterações nos bancos de dados são confirmadas registrando as alterações nos logs de transação e o log de transação é mantido sem ser substituído. O resultado pode ser um requisito para manter um enorme volume de logs de transações arquivados. Exemplos semelhantes existem com muitos outros fluxos de trabalho de aplicações que geram dados que precisam ser retidos, mas é altamente improvável que nunca sejam acessados.
+
+A FabricPool soluciona esses problemas ao fornecer uma única solução com disposição em camadas integrada. Os arquivos são armazenados e permanecem acessíveis em seu local habitual, mas praticamente não ocupam espaço na matriz primária.
+
+
+
+== Políticas
+
+O uso de uma `tiering-minimum-cooling-days` política de poucos dias resulta na retenção de blocos nos arquivos criados recentemente (que são os arquivos mais prováveis de serem necessários no curto prazo) na categoria de performance. Os blocos de dados de arquivos mais antigos são movidos para o nível de capacidade.
+
+O `auto` aplica a disposição em camadas quando o limite de resfriamento tiver sido atingido, independentemente de os logs terem sido excluídos ou continuarem a existir no sistema de arquivos primário. Armazenar todos os logs potencialmente necessários em um único local no sistema de arquivos ativo também simplifica o gerenciamento. Não há razão para pesquisar instantâneos para localizar um arquivo que precisa ser restaurado.
+
+Alguns aplicativos, como o Microsoft SQL Server, truncam arquivos de log de transações durante operações de backup para que os logs não estejam mais no sistema de arquivos ativo. A capacidade pode ser salva usando a `snapshot-only` política de disposição em camadas, mas a `auto` política não é útil para dados de log, porque raramente devem existir dados de log refrigerados no sistema de arquivos ativo.

@@ -1,0 +1,156 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dp-storage-snapshot-optimized-backups.html 
+keywords: oracle, data protection, snapshot-optimized, crash-consistent 
+summary: Backups otimizados para Oracle Storage Snapshot 
+---
+= Backups otimizados para o Oracle Database Storage Snapshot
+:allow-uri-read: 
+
+
+[role="lead"]
+Backup e recuperação baseados em snapshot se tornaram ainda mais simples quando o Oracle 12c foi lançado porque não há necessidade de colocar um banco de dados no modo hot backup. O resultado é a capacidade de agendar backups baseados em snapshot diretamente em um sistema de storage e ainda preservar a capacidade de executar recuperação completa ou pontual.
+
+Embora o procedimento de recuperação de hot backup seja mais familiar aos DBAs, há muito tempo foi possível usar snapshots que não foram criados enquanto o banco de dados estava no modo hot backup. Etapas manuais extras foram necessárias com o Oracle 10gi e 11gi durante a recuperação para tornar o banco de dados consistente. Com o Oracle 12ci, `sqlplus` e `rman` conter a lógica extra para reproduzir logs de arquivo em backups de arquivos de dados que não estavam no modo de backup ativo.
+
+Como discutido anteriormente, a recuperação de um hot backup baseado em snapshot requer dois conjuntos de dados:
+
+* Um instantâneo dos arquivos de dados criados no modo de backup
+* Os logs de arquivo gerados enquanto os datafiles estavam no modo hot backup
+
+
+Durante a recuperação, o banco de dados lê metadados dos arquivos de dados para selecionar os logs de arquivo necessários para recuperação.
+
+A recuperação otimizada para snapshot de storage requer conjuntos de dados ligeiramente diferentes para alcançar os mesmos resultados:
+
+* Um instantâneo dos arquivos de dados, além de um método para identificar a hora em que o snapshot foi criado
+* Arquive logs do tempo do ponto de verificação mais recente do arquivo de dados até a hora exata do instantâneo
+
+
+Durante a recuperação, o banco de dados lê metadados dos arquivos de dados para identificar o Registro de arquivo mais antigo necessário. A recuperação completa ou pontual pode ser realizada. Ao executar uma recuperação pontual, é fundamental saber o tempo do snapshot dos arquivos de dados. O ponto de recuperação especificado deve ser após o tempo de criação dos instantâneos. A NetApp recomenda adicionar pelo menos alguns minutos à hora do instantâneo para contabilizar a variação do relógio.
+
+Para obter detalhes completos, consulte a documentação da Oracle sobre o tópico "recuperação usando Otimização de Snapshot de armazenamento" disponível em várias versões da documentação do Oracle 12c. Além disso, consulte Oracle Document ID Doc ID 604683,1 sobre o suporte a snapshots de terceiros da Oracle.
+
+
+
+== Layout de dados
+
+O layout mais simples é isolar os arquivos de dados em um ou mais volumes dedicados. Eles devem ser não contaminados por qualquer outro tipo de arquivo. Isso é para garantir que os volumes de arquivo de dados possam ser restaurados rapidamente com uma operação SnapRestore sem destruir um log de refazer importante, controlfile ou log de arquivo.
+
+A SAN tem requisitos semelhantes para isolamento de arquivos de dados dentro de volumes dedicados. Com um sistema operacional como o Microsoft Windows, um único volume pode conter vários LUNs de arquivo de dados, cada um com um sistema de arquivos NTFS. Com outros sistemas operacionais, geralmente há um gerenciador de volume lógico também. Por exemplo, com o Oracle ASM, a opção mais simples seria limitar grupos de discos a um único volume que pode ser feito backup e restaurado como uma unidade. Se forem necessários volumes adicionais por motivos de gerenciamento de performance ou capacidade, criar um grupo de discos adicional no novo volume resulta em gerenciamento mais fácil.
+
+Se essas diretrizes forem seguidas, os snapshots poderão ser agendados diretamente no ONTAP sem a necessidade de realizar um snapshot de grupo de consistência. O motivo é que backups otimizados para snapshot não exigem que sejam feitos backup de dados ao mesmo tempo.
+
+Uma complicação surge em situações como um grupo de discos ASM que é distribuído entre volumes. Nesses casos, um cg-snapshot deve ser executado para garantir que os metadados ASM sejam consistentes em todos os volumes constituintes.
+
+[Nota]Verifique se os arquivos ASM spfile e passwd não estão no grupo de discos que hospeda os arquivos de dados. Isso interfere na capacidade de restaurar seletivamente datafiles e apenas datafiles.
+
+
+
+== Procedimento de recuperação local – NFS
+
+Este procedimento pode ser conduzido manualmente ou através de uma aplicação como o SnapCenter. O procedimento básico é o seguinte:
+
+. Encerre o banco de dados.
+. Recupere o(s) volume(s) de arquivo de dados para o instantâneo imediatamente antes do ponto de restauração desejado.
+. Reproduza registos de arquivo até ao ponto pretendido.
+
+
+Este procedimento pressupõe que os registos de arquivo desejados ainda estão presentes no sistema de ficheiros ativo. Se não estiverem, os registos de arquivo têm de ser restaurados ou `rman` `sqlplus` podem ser direcionados para os dados no `.snapshot` diretório.
+
+Além disso, para bancos de dados menores, os arquivos de dados podem ser recuperados por um usuário final diretamente `.snapshot` do diretório sem a ajuda de ferramentas de automação ou um administrador de armazenamento para executar um comando SnapRestore.
+
+
+
+== Procedimento de recuperação local – SAN
+
+Este procedimento pode ser conduzido manualmente ou através de uma aplicação como o SnapCenter. O procedimento básico é o seguinte:
+
+. Encerre o banco de dados.
+. Quiesce o(s) grupo(s) de discos que hospedam os arquivos de dados. O procedimento varia consoante o gestor de volume lógico escolhido. Com ASM, o processo requer a desmontagem do grupo de discos. Com o Linux, os sistemas de arquivos devem ser desmontados e os volumes lógicos e grupos de volumes são desativados. O objetivo é parar todas as atualizações no grupo de volume alvo a serem restauradas.
+. Restaure os grupos de discos de arquivo de dados para o instantâneo imediatamente antes do ponto de restauração desejado.
+. Reative os grupos de discos recentemente restaurados.
+. Reproduza registos de arquivo até ao ponto pretendido.
+
+
+Este procedimento pressupõe que os registos de arquivo desejados ainda estão presentes no sistema de ficheiros ativo. Se não estiverem, os registos de arquivo devem ser restaurados colocando os LUNs de registo de arquivo offline e executando uma restauração. Este também é um exemplo no qual dividir os logs de arquivo em volumes dedicados é útil. Se os logs do arquivo compartilharem um grupo de volumes com os logs de refazer, os logs de refazer devem ser copiados em outro lugar antes da restauração do conjunto geral de LUNs para evitar perder as transações registradas finais.
+
+
+
+== Exemplo de recuperação completa
+
+Suponha que os arquivos de dados foram corrompidos ou destruídos e a recuperação completa é necessária. O procedimento para o fazer é o seguinte:
+
+....
+[oracle@host1 ~]$ sqlplus / as sysdba
+Connected to an idle instance.
+SQL> startup mount;
+ORACLE instance started.
+Total System Global Area 1610612736 bytes
+Fixed Size                  2924928 bytes
+Variable Size            1040191104 bytes
+Database Buffers          553648128 bytes
+Redo Buffers               13848576 bytes
+Database mounted.
+SQL> recover automatic;
+Media recovery complete.
+SQL> alter database open;
+Database altered.
+SQL>
+....
+
+
+== Exemplo de recuperação pontual
+
+Todo o procedimento de recuperação é um único comando: `recover automatic`.
+
+Se a recuperação pontual for necessária, o carimbo de data/hora do(s) instantâneo(s) deve(m) ser conhecido(s) e pode(m) ser identificado(s) da seguinte forma:
+
+....
+Cluster01::> snapshot show -vserver vserver1 -volume NTAP_oradata -fields create-time
+vserver   volume        snapshot   create-time
+--------  ------------  ---------  ------------------------
+vserver1  NTAP_oradata  my-backup  Thu Mar 09 10:10:06 2017
+....
+A hora de criação do instantâneo é listada como 9th de Março e 10:10:06. Para estar seguro, um minuto é adicionado à hora do instantâneo:
+
+....
+[oracle@host1 ~]$ sqlplus / as sysdba
+Connected to an idle instance.
+SQL> startup mount;
+ORACLE instance started.
+Total System Global Area 1610612736 bytes
+Fixed Size                  2924928 bytes
+Variable Size            1040191104 bytes
+Database Buffers          553648128 bytes
+Redo Buffers               13848576 bytes
+Database mounted.
+SQL> recover database until time '09-MAR-2017 10:44:15' snapshot time '09-MAR-2017 10:11:00';
+....
+A recuperação agora é iniciada. Ele especificou um tempo instantâneo de 10:11:00, um minuto após o tempo gravado para contabilizar a possível variação do relógio e um tempo de recuperação alvo de 10:44. Em seguida, sqlplus solicita os logs de arquivo necessários para alcançar o tempo de recuperação desejado de 10:44.
+
+....
+ORA-00279: change 551760 generated at 03/09/2017 05:06:07 needed for thread 1
+ORA-00289: suggestion : /oralogs_nfs/arch/1_31_930813377.dbf
+ORA-00280: change 551760 for thread 1 is in sequence #31
+Specify log: {<RET>=suggested | filename | AUTO | CANCEL}
+ORA-00279: change 552566 generated at 03/09/2017 05:08:09 needed for thread 1
+ORA-00289: suggestion : /oralogs_nfs/arch/1_32_930813377.dbf
+ORA-00280: change 552566 for thread 1 is in sequence #32
+Specify log: {<RET>=suggested | filename | AUTO | CANCEL}
+ORA-00279: change 553045 generated at 03/09/2017 05:10:12 needed for thread 1
+ORA-00289: suggestion : /oralogs_nfs/arch/1_33_930813377.dbf
+ORA-00280: change 553045 for thread 1 is in sequence #33
+Specify log: {<RET>=suggested | filename | AUTO | CANCEL}
+ORA-00279: change 753229 generated at 03/09/2017 05:15:58 needed for thread 1
+ORA-00289: suggestion : /oralogs_nfs/arch/1_34_930813377.dbf
+ORA-00280: change 753229 for thread 1 is in sequence #34
+Specify log: {<RET>=suggested | filename | AUTO | CANCEL}
+Log applied.
+Media recovery complete.
+SQL> alter database open resetlogs;
+Database altered.
+SQL>
+....
+
+NOTE: A recuperação completa de um banco de dados usando snapshots usando o `recover automatic` comando não requer licenciamento específico, mas a recuperação pontual usando `snapshot time` requer a licença Oracle Advanced Compression.

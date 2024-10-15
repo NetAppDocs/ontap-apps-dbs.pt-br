@@ -1,0 +1,25 @@
+= 
+:allow-uri-read: 
+
+
+Por padrão, o ONTAP limita os tamanhos de e/S de NFS a 64K.
+
+A e/S aleatória com a maioria dos aplicativos e bancos de dados usa um tamanho de bloco muito menor que está bem abaixo do máximo 64K. A e/S de bloco grande geralmente é paralelizada, portanto o máximo de 64K GB também não é uma limitação para obter largura de banda máxima.
+
+Existem algumas cargas de trabalho em que o máximo 64K cria uma limitação. Em particular, operações de um único processo, como operação de backup ou recuperação ou uma verificação de tabela completa de banco de dados, são executadas de forma mais rápida e eficiente se o banco de dados puder executar menos, mas maiores I/os. O tamanho ideal de manuseio de e/S para ONTAP é 256K.
+
+O tamanho máximo de transferência para um determinado SVM do ONTAP pode ser alterado da seguinte forma:
+
+....
+Cluster01::> set advanced
+Warning: These advanced commands are potentially dangerous; use them only when directed to do so by NetApp personnel.
+Do you want to continue? {y|n}: y
+Cluster01::*> nfs server modify -vserver vserver1 -tcp-max-xfer-size 262144
+Cluster01::*>
+....
+|===
+| Cuidado 
+
+
+| Nunca diminua o tamanho máximo de transferência permitido no ONTAP abaixo do valor de rsize/wsize dos sistemas de arquivos NFS atualmente instalados. Isso pode criar pendências ou até mesmo corrupção de dados com alguns sistemas operacionais. Por exemplo, se os clientes NFS estiverem atualmente definidos em um rsize/wsize de 65536, o tamanho máximo de transferência do ONTAP poderá ser ajustado entre 65536 e 1048576 sem efeito porque os próprios clientes são limitados. Reduzir o tamanho máximo de transferência abaixo de 65536 pode danificar a disponibilidade ou os dados. 
+|===

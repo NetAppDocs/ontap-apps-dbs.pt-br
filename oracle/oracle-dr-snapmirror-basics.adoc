@@ -1,0 +1,95 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dr-snapmirror-basics.html 
+keywords: ontap, snapmirror 
+summary: Bancos de dados Oracle com SnapMirror e SyncMirror 
+---
+= Bancos de dados Oracle com SnapMirror e SyncMirror
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Quase todas as aplicações precisam de replicação de dados.
+
+No nível mais básico, a replicação pode significar uma cópia em fita armazenada fora do local ou replicação no nível do aplicativo para um local de espera. A recuperação de desastres se refere ao uso dessas cópias de réplica para colocar um serviço on-line em caso de perda catastrófica de serviço.
+
+O ONTAP oferece várias opções de replicação para atender a uma variedade de requisitos nativamente no storage array, atendendo a uma ampla gama de necessidades. Essas opções incluem replicação simples de backups para um local remoto e uma solução síncrona e totalmente automatizada que oferece recuperação de desastres e alta disponibilidade na mesma plataforma.
+
+As principais tecnologias de replicação do ONTAP aplicáveis às aplicações são as tecnologias NetApp SnapMirror e NetApp SyncMirror. Estes não são produtos complementares; em vez disso, eles são totalmente integrados ao ONTAP e são ativados pela simples adição de uma chave de licença. A replicação no nível de storage também não é a única opção. A replicação no nível da aplicação, como o Oracle DataGuard, também pode ser integrada a uma estratégia de proteção de dados baseada no ONTAP.
+
+A escolha certa depende dos requisitos específicos de replicação, recuperação e retenção.
+
+
+
+== ONTAP SnapMirror
+
+O SnapMirror é a solução de replicação assíncrona da NetApp, ideal para proteger conjuntos de dados grandes, complicados e dinâmicos, como bancos de dados e suas aplicações associadas. Seus valores-chave são os seguintes:
+
+* *Capacidade de gerenciamento.* O SnapMirror é fácil de configurar e gerenciar porque é uma parte nativa do software de storage. Não são necessários produtos complementares. As relações de replicação podem ser estabelecidas em minutos e podem ser gerenciadas diretamente no sistema de storage.
+* *Simplicidade.* A replicação é baseada em volumes FlexVol, que são contêineres de LUNs ou arquivos replicados como um único grupo consistente.
+* *Eficiência.* Depois que a relação de replicação inicial é estabelecida, apenas as alterações são replicadas. Além disso, recursos de eficiência como deduplicação e compactação são preservados, reduzindo ainda mais a quantidade de dados que precisam ser transferidos para um local remoto.
+* *Flexibilidade.* Os espelhos podem ser quebrados temporariamente para permitir testes de procedimentos de recuperação de desastres e, em seguida, o espelhamento pode ser facilmente restabelecido sem a necessidade de um novo espelhamento completo. Apenas os dados alterados devem ser aplicados para sincronizar os espelhos novamente. O espelhamento também pode ser revertido para permitir uma ressincronização rápida após a conclusão do desastre e o local original voltar ao serviço. Por fim, clones de leitura e gravação de dados replicados estão disponíveis para teste e desenvolvimento.
+
+
+O ONTAP oferece várias tecnologias de replicação diferentes, mas a mais flexível é o SnapMirror, uma opção de espelhamento assíncrono volume a volume.
+
+Como mencionado anteriormente, um FlexVol volume é a unidade básica de gerenciamento para backups baseados em snapshot e recuperação baseada em SnapRestore. Um FlexVol volume também é a unidade básica para replicação baseada em SnapMirror. O primeiro passo é estabelecer o espelho de linha de base do volume de origem para o volume de destino. Depois que esta relação espelhada é inicializada, todas as operações subsequentes são baseadas apenas na replicação dos dados alterados.
+
+Do ponto de vista da recuperação, os valores-chave do SnapMirror são os seguintes:
+
+* As operações do SnapMirror são simples de entender e podem ser facilmente automatizadas.
+* Uma simples atualização de uma réplica do SnapMirror requer que apenas as alterações delta sejam replicadas, reduzindo as demandas de largura de banda e permitindo atualizações mais frequentes.
+* O SnapMirror é altamente granular. Ele é baseado em relacionamentos simples de volume para volume, permitindo a criação de centenas de réplicas gerenciadas de forma independente e intervalos de replicação. A replicação não precisa ser um tamanho único para todos.
+* A direção do espelhamento pode ser facilmente revertida, preservando a capacidade de atualizar o relacionamento com base nas mudanças sozinhas. Isso fornece recurso de failback rápido depois que o local principal é restaurado para o serviço após um desastre, como uma falha de energia. Somente as alterações devem ser sincronizadas de volta à fonte.
+* Os espelhos podem ser facilmente quebrados e resynced eficientemente para permitir o ensaio dos procedimentos de recuperação de desastres.
+* O SnapMirror que opera no modo de replicação em nível de bloco completo replica não apenas os dados em um volume, mas também os snapshots. Essa funcionalidade fornece uma cópia dos dados e um conjunto completo de backups no local de recuperação de desastres.
+
+
+O SnapMirror operando no modo flexível de versão permite a replicação de snapshots específicos, permitindo tempos de retenção diferentes nos locais primário e secundário.
+
+
+
+== SnapMirror síncrono
+
+O SnapMirror síncrono (SM-S) é um aprimoramento para o SnapMirror que oferece replicação síncrona RPO de 0. Ele é mais usado em arquiteturas de storage em que apenas um subconjunto do total de dados requer espelhamento síncrono.
+
+SM-S pode operar em dois modos ligeiramente diferentes, Sync e StrictSync.
+
+No modo de sincronização, as alterações são replicadas antes de serem confirmadas. Isso garante um RPO de zero, contanto que a replicação esteja operacional. Se a alteração não puder ser replicada, o SM-S pode sair do modo síncrono e permitir que as operações continuem. Isso permite RPO de 0 em circunstâncias normais, mas os processos de dados não param completamente se o destino da replicação não estiver disponível.
+
+A StrictSync garante um RPO igual a 0. Uma falha na replicação de alterações resulta em um erro de e/S, que normalmente causa o desligamento de um aplicativo.
+
+Para obter uma explicação completa do SM-S, consulte https://www.netapp.com/media/17174-tr4733.pdf?v=1221202075448P["TR-4733"^] e a documentação oficial do ONTAP. Os recursos são continuamente adicionados com novas versões do ONTAP.
+
+
+
+== Grupos de consistência
+
+O ONTAP permite a criação de snapshots de grupo de consistência. A partir do 9.13.1, o ONTAP pode replicar grupos de volumes (lembre-se de que um volume na terminologia do ONTAP não é um LUN, é um contêiner de gerenciamento que consiste em um ou mais arquivos ou LUNs) como grupo consistente.
+
+A replicação do SnapMirror e a relação CG SnapMirror que quebra preserva a consistência nos volumes, e as sincronizações SnapMirror e SnapMirror active Sync preservam a consistência nos volumes constituintes.
+
+Como resultado, você pode replicar um conjunto de dados multivolumes e garantir que todos os volumes sejam consistentes entre si. Entre outras coisas, isso permite "quebrar o espelho e ir" operações de DR sem a necessidade de etapas adicionais de recuperação de aplicativos ou bancos de dados.
+
+
+
+== MetroCluster e SyncMirror
+
+O MetroCluster também é uma solução de replicação síncrona, destinada a workloads essenciais de grande escala. A replicação é baseada no SyncMirror. Na camada mais simples, o SyncMirror cria dois conjuntos completos de dados protegidos por RAID em dois locais diferentes. Eles podem estar em salas adjacentes dentro de um data center ou podem estar localizados a muitos quilômetros de distância.
+
+O SyncMirror é totalmente integrado ao ONTAP e opera um pouco acima do nível RAID. Portanto, todos os recursos habituais do ONTAP, como cópias Snapshot, SnapRestore e NetApp FlexClone, funcionam de forma otimizada. Ainda é ONTAP, ele inclui apenas uma camada adicional de espelhamento síncrono de dados.
+
+Uma coleção de controladores ONTAP que gerenciam dados do SyncMirror é chamada de configuração do NetApp MetroCluster. O principal objetivo do MetroCluster é fornecer acesso de alta disponibilidade a dados espelhados de forma síncrona em uma variedade de cenários típicos de falha de recuperação de desastres.
+
+Os principais valores de proteção de dados com o MetroCluster e o SyncMirror são os seguintes:
+
+* Em operações normais, o SyncMirror oferece espelhamento síncrono garantido entre locais. Uma operação de gravação não é reconhecida até que esteja presente em Mídia não volátil em ambos os sites.
+* Se a conetividade entre locais falhar, o SyncMirror alterna automaticamente para o modo assíncrono para manter o site principal fornecendo dados até que a conetividade seja restaurada. Quando restaurado, ele oferece ressincronização rápida atualizando eficientemente as alterações acumuladas no local principal. A reinicialização total não é necessária.
+
+
+O SnapMirror também é totalmente compatível com sistemas baseados em SyncMirror. Por exemplo, um banco de dados principal pode estar sendo executado em um cluster MetroCluster espalhado por dois sites geográficos. Esse banco de dados também pode replicar backups para um terceiro local como arquivos de longo prazo ou para a criação de clones em um ambiente DevOps.

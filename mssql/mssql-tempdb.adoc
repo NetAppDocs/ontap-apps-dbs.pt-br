@@ -1,0 +1,68 @@
+---
+sidebar: sidebar 
+permalink: mssql/mssql-tempdb.html 
+keywords: MSSQL,SQL Server, tempdb, ONTAP 
+summary: Colocação de tempdb no ONTAP 
+---
+= Arquivos tempdb do Microsoft SQL Server
+:allow-uri-read: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O banco de dados tempdb pode ser muito utilizado. Além do posicionamento ideal de arquivos de banco de dados de usuários no ONTAP, o posicionamento de datafiles tempdb também é fundamental para reduzir a contenção de alocação
+
+A contenção de páginas pode ocorrer nas páginas mapa de alocação global (GAM), mapa de alocação global compartilhado (SGAM) ou espaço livre de páginas (PFS) quando o SQL Server deve gravar em páginas especiais do sistema para alocar novos objetos. Os trincos bloqueiam estas páginas na memória. Em uma instância ocupada do SQL Server, pode levar muito tempo para obter uma trava em uma página do sistema no tempdb. Isso resulta em tempos de execução de consulta mais lentos e é conhecido como contenção de trava. Veja as práticas recomendadas a seguir para criar arquivos de dados tempdb:
+
+* Para 8 núcleos: Arquivos de dados tempdb: Número de núcleos
+* Para > 8 núcleos: 8 arquivos de dados tempdb
+
+
+O script de exemplo a seguir modifica tempdb criando oito arquivos tempdb e movendo tempdb para o ponto de montagem `C:\MSSQL\tempdb` do SQL Server 2012 e posterior.
+
+....
+use master
+
+go
+
+-- Change logical tempdb file name first since SQL Server shipped with logical file name called tempdev
+
+alter database tempdb modify file (name = 'tempdev', newname = 'tempdev01');
+
+
+
+-- Change location of tempdev01 and log file
+
+alter database tempdb modify file (name = 'tempdev01', filename = 'C:\MSSQL\tempdb\tempdev01.mdf');
+
+alter database tempdb modify file (name = 'templog', filename = 'C:\MSSQL\tempdb\templog.ldf');
+
+GO
+
+-- Assign proper size for tempdev01
+
+ALTER DATABASE [tempdb] MODIFY FILE ( NAME = N'tempdev01', SIZE = 10GB );
+
+ALTER DATABASE [tempdb] MODIFY FILE ( NAME = N'templog', SIZE = 10GB );
+
+GO
+
+-- Add more tempdb files
+
+ALTER DATABASE [tempdb] ADD FILE ( NAME = N'tempdev02', FILENAME = N'C:\MSSQL\tempdb\tempdev02.ndf' , SIZE = 10GB , FILEGROWTH = 10%);
+
+ALTER DATABASE [tempdb] ADD FILE ( NAME = N'tempdev03', FILENAME = N'C:\MSSQL\tempdb\tempdev03.ndf' , SIZE = 10GB , FILEGROWTH = 10%);
+
+ALTER DATABASE [tempdb] ADD FILE ( NAME = N'tempdev04', FILENAME = N'C:\MSSQL\tempdb\tempdev04.ndf' , SIZE = 10GB , FILEGROWTH = 10%);
+
+ALTER DATABASE [tempdb] ADD FILE ( NAME = N'tempdev05', FILENAME = N'C:\MSSQL\tempdb\tempdev05.ndf' , SIZE = 10GB , FILEGROWTH = 10%);
+
+ALTER DATABASE [tempdb] ADD FILE ( NAME = N'tempdev06', FILENAME = N'C:\MSSQL\tempdb\tempdev06.ndf' , SIZE = 10GB , FILEGROWTH = 10%);
+
+ALTER DATABASE [tempdb] ADD FILE ( NAME = N'tempdev07', FILENAME = N'C:\MSSQL\tempdb\tempdev07.ndf' , SIZE = 10GB , FILEGROWTH = 10%);
+
+ALTER DATABASE [tempdb] ADD FILE ( NAME = N'tempdev08', FILENAME = N'C:\MSSQL\tempdb\tempdev08.ndf' , SIZE = 10GB , FILEGROWTH = 10%);
+
+GO
+....
+A partir do SQL Server 2016, o número de núcleos de CPU visíveis para o sistema operacional é detetado automaticamente durante a instalação e, com base nesse número, o SQL Server calcula e configura o número de arquivos tempdb necessários para um desempenho ideal.

@@ -1,0 +1,31 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-vsphere-dp.html 
+keywords: Data protection, Space reclamation, VM and datastore cloning, Storage efficiency, thin provisioning, QoS, SIOC, Storage Distributed Resource Scheduler, DRS, Active IQ Unified Manager, Encryption 
+summary: O SnapCenter permite criar políticas de backup que podem ser aplicadas a vários trabalhos. Essas políticas podem definir agendamento, retenção, replicação e outros recursos. Elas continuam permitindo a seleção opcional de snapshots consistentes com VM, o que aproveita a capacidade do hipervisor de silenciar a I/o antes de tirar um snapshot da VMware. 
+---
+= Proteção de dados
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Fazer backup de suas VMs e recuperá-las rapidamente estão entre os grandes pontos fortes do ONTAP para vSphere, e é fácil gerenciar essa capacidade no vCenter com o plug-in SnapCenter para VMware vSphere.
+
+Use snapshots para fazer cópias rápidas da VM ou do armazenamento de dados sem afetar a performance e enviá-las para um sistema secundário usando o SnapMirror para proteção de dados externa a mais longo prazo. Essa abordagem minimiza o espaço de armazenamento e a largura de banda da rede, armazenando apenas informações alteradas.
+
+O SnapCenter permite criar políticas de backup que podem ser aplicadas a vários trabalhos. Essas políticas podem definir agendamento, retenção, replicação e outros recursos. Elas continuam permitindo a seleção opcional de snapshots consistentes com VM, o que aproveita a capacidade do hipervisor de silenciar a I/o antes de tirar um snapshot da VMware. No entanto, devido ao efeito de desempenho dos snapshots VMware, eles geralmente não são recomendados, a menos que você precise que o sistema de arquivos Guest seja encerrado. Em vez disso, use snapshots para proteção geral e use ferramentas de aplicativos, como plug-ins do SnapCenter, para proteger dados transacionais, como SQL Server ou Oracle. Esses snapshots são diferentes dos snapshots VMware (consistência) e são adequados para proteção de longo prazo. Os snapshots VMware são http://pubs.vmware.com/vsphere-65/index.jsp?topic=%2Fcom.vmware.vsphere.vm_admin.doc%2FGUID-53F65726-A23B-4CF0-A7D5-48E584B88613.html["recomendado"^] apenas para uso a curto prazo devido ao desempenho e a outros efeitos.
+
+Esses plug-ins oferecem recursos estendidos para proteger os bancos de dados em ambientes físicos e virtuais. Com o vSphere, você pode usá-los para proteger bancos de dados SQL Server ou Oracle onde os dados são armazenados em LUNs RDM, LUNs iSCSI diretamente conetados ao SO convidado ou arquivos VMDK em armazenamentos de dados VMFS ou NFS. Os plug-ins permitem a especificação de diferentes tipos de backups de banco de dados, suporte a backup on-line ou off-line e proteção de arquivos de banco de dados juntamente com arquivos de log. Além de backup e recuperação, os plug-ins também dão suporte à clonagem de bancos de dados para fins de desenvolvimento ou teste.
+
+A figura a seguir mostra um exemplo de implantação do SnapCenter.
+
+image:vsphere_ontap_image4.png["Implantação de SnapCenter"]
+
+Para obter recursos aprimorados de recuperação de desastres, considere usar o NetApp SRA para ONTAP com o VMware Site Recovery Manager. Além de oferecer suporte à replicação de datastores para um local de DR, ele também permite testes sem interrupções no ambiente de DR clonando os datastores replicados. A recuperação de um desastre e a reproteção da produção após a solução da interrupção também são facilitadas pela automação incorporada ao SRA.
+
+Por fim, para obter o mais alto nível de proteção de dados, considere uma configuração vMSC (VMware vSphere Metro Storage Cluster) usando o NetApp MetroCluster. O vMSC é uma solução certificada pela VMware que combina replicação síncrona com clustering baseado em array, oferecendo os mesmos benefícios de um cluster de alta disponibilidade, mas distribuído em locais separados para proteger contra desastres no local. O NetApp MetroCluster oferece configurações econômicas para replicação síncrona com recuperação transparente a partir de qualquer falha única de componente de storage, bem como recuperação de comando único em caso de desastre no local. O vMSC é descrito em mais detalhes em https://www.netapp.com/pdf.html?item=/media/19773-tr-4128.pdf["TR-4128"^].

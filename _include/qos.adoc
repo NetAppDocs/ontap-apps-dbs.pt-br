@@ -1,0 +1,44 @@
+= QoS de IOPS
+:allow-uri-read: 
+
+
+Especificamente, o aumento da adoção do storage all-flash possibilitou a consolidação de workloads. Os storage arrays que dependem de Mídia giratória costumavam dar suporte a apenas um número limitado de workloads de e/S com uso intenso de e/S devido aos recursos limitados de IOPS da tecnologia de unidade de rotação mais antiga. Um ou dois bancos de dados altamente ativos saturariam as unidades subjacentes muito antes que as controladoras de storage atingissem seus limites. Isso mudou. A capacidade de desempenho de um número relativamente pequeno de unidades SSD pode saturar até mesmo os controladores de armazenamento mais poderosos. Isso significa que todos os recursos das controladoras podem ser aproveitados sem o medo de colapso repentino da performance na medida em que picos de latência de Mídia giratórios.
+
+Como exemplo de referência, um simples sistema HA AFF A800 de dois nós é capaz de atender a até um milhão de IOPS aleatórios antes que a latência suba acima de um milissegundo. Espera-se que muito poucas cargas de trabalho individuais alcancem tais níveis. A utilização total desse array de sistema AFF A800 envolverá o hospedar vários workloads e isso com segurança, garantindo a previsibilidade requer controles de QoS.
+
+Há dois tipos de qualidade de serviço (QoS) no ONTAP: IOPS e largura de banda. Controles de QoS podem ser aplicados a SVMs, volumes, LUNs e arquivos.
+
+
+
+== QoS de IOPS
+
+Um controle de QoS de IOPS é obviamente baseado no total de IOPS de um determinado recurso, mas há vários aspetos da QoS de IOPS que podem não ser intuitivos. Alguns clientes inicialmente ficaram intrigados com o aparente aumento da latência quando um limite de IOPS é atingido. O aumento da latência é o resultado natural da limitação do IOPS. Logicamente, ele funciona de forma semelhante a um sistema de token. Por exemplo, se um determinado volume contendo datafiles tiver um limite de 10K IOPS, cada I/o que chegar deve receber primeiro um token para continuar o processamento. Desde que não mais de 10K tokens tenham sido consumidos em um determinado segundo, nenhum atraso está presente. Se as operações de e/S precisarem esperar para receber o token, essa espera aparecerá como latência adicional. Quanto mais difícil uma carga de trabalho ultrapassar o limite de QoS, mais tempo cada IO deve esperar na fila para que sua vez seja processada, o que parece ao usuário como maior latência.
+
+
+NOTE: Tenha cuidado ao aplicar controles de QoS a dados de log de transação/refazer de banco de dados. Embora as demandas de desempenho do Registro de refazer sejam normalmente muito, muito mais baixas do que datafiles, a atividade do log de refazer é bursty. O IO acontece em breves pulsos, e um limite de QoS que parece apropriado para os níveis médios de e/S refazer pode ser muito baixo para os requisitos reais. O resultado pode ser limitações graves de desempenho, pois a QoS interage com cada sequência de log de refazer. Em geral, refazer e arquivar o log não deve ser limitado pela QoS.
+
+
+
+== QoS de largura de banda
+
+Nem todos os tamanhos de e/S são iguais. Por exemplo, um banco de dados pode estar executando um grande número de leituras de blocos pequenos, o que resultaria no limite de IOPS ser atingido, mas os bancos de dados também podem estar executando uma operação de verificação de tabela completa que consistiria em um número muito pequeno de leituras de blocos grandes, consumindo uma quantidade muito grande de largura de banda, mas relativamente poucos IOPS.
+
+Da mesma forma, um ambiente VMware pode gerar um número muito alto de IOPS aleatório durante a inicialização, mas executaria um iOS menor, mas maior, durante um backup externo.
+
+Às vezes, o gerenciamento eficaz da performance exige limites de QoS de IOPS ou largura de banda, ou até mesmo ambos.
+
+
+
+== QoS mínima/garantida
+
+Muitos clientes procuram uma solução que inclua QoS garantida, que é mais difícil de alcançar do que parece e é potencialmente um desperdício. Por exemplo, a colocação de bancos de dados 10 com uma garantia de 10K IOPS exige o dimensionamento de um sistema para um cenário em que todos os bancos de dados 10 estejam sendo executados simultaneamente a 10K IOPS, totalizando 100KK.
+
+A melhor utilização para controles mínimos de QoS é proteger workloads críticos. Por exemplo, considere um controlador ONTAP com um máximo de IOPS possível de 500K K e uma combinação de workloads de produção e desenvolvimento. Você deve aplicar políticas máximas de QoS a workloads de desenvolvimento para impedir que qualquer banco de dados monopolize o controlador. Em seguida, você aplicaria políticas mínimas de QoS a workloads de produção para garantir que eles sempre tenham o IOPS necessário disponível quando necessário.
+
+
+
+== QoS adaptável
+
+QoS adaptável refere-se ao recurso ONTAP em que o limite de QoS é baseado na capacidade do objeto de storage. Raramente é usado com bancos de dados porque geralmente não há nenhum link entre o tamanho de um banco de dados e seus requisitos de desempenho. Bancos de dados grandes podem ser quase inertes, enquanto bancos de dados menores podem ser os mais intensivos em IOPS.
+
+A QoS adaptável pode ser muito útil com armazenamentos de dados de virtualização, pois os requisitos de IOPS desses conjuntos de dados tendem a se correlacionar com o tamanho total do banco de dados. Um datastore mais recente contendo 1TB TB de arquivos VMDK provavelmente precisará de cerca de metade do desempenho como um datastore 2TB. A QoS adaptável permite que você aumente os limites de QoS automaticamente à medida que o armazenamento de dados se torna preenchido com dados.

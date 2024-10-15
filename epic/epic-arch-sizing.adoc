@@ -1,0 +1,23 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-arch-sizing.html 
+keywords: epic,cache,iris 
+summary: Dimensionamento épico 
+---
+= Dimensionamento épico
+:allow-uri-read: 
+
+
+[role="lead"]
+Uma das principais considerações da arquitetura ao dimensionar um ambiente de storage Epic é o tamanho do banco de dados ODB.
+
+Use o diagrama abaixo para selecionar uma arquitetura de storage da Epic para pequeno e médio porte. Esses designs incluem a execução de todas as cargas de trabalho listadas no Guia de configuração de hardware. A árvore de dimensionamento é baseada em dados de mais de 100 guias de configuração de hardware e deve ser principalmente estimativa precisa.
+
+É importante notar que este é apenas um ponto de partida. Você deve trabalhar com nossa equipe de aliança Epic para confirmar todos os designs da Epic. A equipe pode ser alcançada em NetApp.com. Todas as implantações precisam atender às solicitações dos clientes, aderindo às práticas recomendadas pela Epic e pela NetApp.
+
+* Arquitetura pequena da Epic com um banco de dados da Epic menos de 10TB TB
+* Arquitetura média da Epic com um banco de dados da Epic de 10TB a 50TB
+* Grande arquitetura da Epic com um banco de dados da Epic de mais de 50TB TB
+
+
+image:epic-sizing.png["Orientação épica para dimensionamento"]

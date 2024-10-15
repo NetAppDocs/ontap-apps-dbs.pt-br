@@ -1,0 +1,10 @@
+= 
+:allow-uri-read: 
+
+
+Os recursos de eficiência de espaço, como compressão, compactação e deduplicação, foram projetados para aumentar a quantidade de dados lógicos compatíveis com uma determinada quantidade de storage físico. O resultado são custos mais baixos e sobrecarga de gerenciamento.
+
+Em um alto nível, a compressão é um processo matemático pelo qual padrões nos dados são detetados e codificados de uma forma que reduz os requisitos de espaço. Em contraste, a deduplicação deteta blocos repetidos reais de dados e remove as cópias externas. A compactação permite que vários blocos lógicos de dados compartilhem o mesmo bloco físico na Mídia.
+
+
+NOTE: Veja as seções abaixo sobre provisionamento de thin para uma explicação da interação entre eficiência de armazenamento e reserva fracionária.

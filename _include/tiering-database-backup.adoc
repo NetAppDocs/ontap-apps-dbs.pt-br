@@ -1,0 +1,13 @@
+= 
+:allow-uri-read: 
+
+
+ `tiering-minimum-cooling-days` policy of a few days preserves the most recent backups, and therefore the backups most likely to be required for an urgent recovery situation, on the performance tier. The data blocks of the older files are then moved to the capacity tier.
+A `auto` política é a política mais adequada para dados de backup. Isso garante a disposição de camadas de prompt quando o limite de resfriamento tiver sido atingido, independentemente de os arquivos terem sido excluídos ou continuarem existindo no sistema de arquivos primário. Armazenar todos os arquivos potencialmente necessários em um único local no sistema de arquivos ativo também simplifica o gerenciamento. Não há razão para pesquisar instantâneos para localizar um arquivo que precisa ser restaurado.
+
+A `snapshot-only` política poderia ser feita para funcionar, mas essa política só se aplica a blocos que não estão mais no sistema de arquivos ativo. Portanto, os arquivos em um compartilhamento NFS ou SMB devem ser excluídos primeiro antes que os dados possam ser categorizados.
+
+Esta política seria ainda menos eficiente com uma configuração LUN porque a exclusão de um arquivo de um LUN só remove as referências de arquivo dos metadados do sistema de arquivos. Os blocos reais nos LUNs permanecem no lugar até que sejam substituídos. Essa situação pode criar um longo atraso entre o tempo em que um arquivo é excluído e o tempo em que os blocos são substituídos e se tornam candidatos à disposição em camadas. Há algum benefício ao migrar `snapshot-only` os blocos para a categoria de capacidade, mas, no geral, o gerenciamento de dados de backup da FabricPool funciona melhor com essa `auto` política.
+
+
+NOTE: Essa abordagem ajuda os usuários a gerenciar o espaço necessário para backups com mais eficiência, mas o próprio FabricPool não é uma tecnologia de backup. A disposição em camadas dos arquivos de backup no armazenamento de objetos simplifica o gerenciamento porque os arquivos ainda estão visíveis no sistema de storage original, mas os blocos de dados no destino do armazenamento de objetos dependem do sistema de storage original. Se o volume de origem for perdido, os dados do armazenamento de objetos não serão mais utilizáveis.

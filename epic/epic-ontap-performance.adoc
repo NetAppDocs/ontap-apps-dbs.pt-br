@@ -1,0 +1,33 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-ontap-performance.html 
+keywords: epic,cache,iris 
+summary: Desempenho épico em ONTAP 
+---
+= Desempenho épico em ONTAP
+:allow-uri-read: 
+
+
+[role="lead"]
+A ONTAP apresentou as tecnologias flash em 2009 e oferece suporte para SSDs desde 2010. Essa longa experiência com storage flash permite que a NetApp ajuste os recursos do ONTAP para otimizar o desempenho da SSD e aprimorar a resistência da Mídia flash, mantendo os recursos avançados do ONTAP.
+
+Desde o ano 2020, todos os workloads da Epic ODB precisam estar no storage all-flash. As cargas de trabalho épicas normalmente operam em aproximadamente 1.000 a 2.000 IOPs por terabyte de storage (8k bloco, 75%/25% de taxa de leitura e gravação e 100% de forma aleatória). O Epic é muito sensível à latência, e a alta latência tem um efeito visível na experiência do usuário final, bem como em tarefas operacionais, como execução de relatórios, backup, verificações de integridade e tempos de atualização do ambiente.
+
+* O fator limitante para all-flash arrays não são as unidades, mas sim a utilização nas controladoras.
+* O ONTAP usa uma arquitetura ativo-ativo. Para obter performance, os dois nós do par de HA gravam nas unidades.
+* Isso resulta na maximização da utilização da CPU, o fator mais importante que permite que a NetApp publique a melhor performance da Epic no setor.
+* As tecnologias NetApp RAID DP, Advanced Disk Partitioning (ADP) e WAFL atendem a todos os requisitos da Epic. Todos os workloads distribuem e/S por todos os discos. Sem gargalos.
+* O ONTAP é otimizado para gravação; as gravações são confirmadas depois de gravadas no NVRAM espelhado antes de serem gravadas no disco na velocidade de memória inline.
+* O WAFL, o NVRAM e a arquitetura modular permitem que o NetApp use o software para inovar com eficiências in-line, criptografia e performance. Eles também permitem que o NetApp apresente novos recursos e funcionalidades sem afetar o desempenho.
+* Historicamente, com cada nova versão do ONTAP há um aumento no desempenho e eficiência na faixa de 30-50%. O desempenho é ideal quando você se mantém atualizado com o ONTAP.
+
+
+
+
+== NVMe
+
+Quando a performance é fundamental, o NetApp também oferece suporte a NVMe/FC, o protocolo FC SAN de última geração.
+
+Como pode ser visto na figura abaixo, nossos testes do Genio alcançaram um número muito maior de IOPS usando o protocolo NVMe/FC em comparação com o protocolo FC. A solução conectada NVMe/FC alcançou mais de 700k IOPS antes de superar o limite do ciclo de gravação de 45 segundos. Com a substituição de comandos SCSI pelo NVMe, você também reduz significativamente a utilização no host.
+
+image:epic-genio.png["Gráfico épico de Genio"]

@@ -1,0 +1,30 @@
+---
+sidebar: sidebar 
+permalink: mysql/mysql-file-descriptors.html 
+keywords: MySQL,MariaDB,file descriptors 
+summary: Descrição do arquivo MySQL 
+---
+= Descritores de arquivo MySQL
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Para executar, o servidor MySQL precisa de descritores de arquivo e os valores padrão não são suficientes.
+
+Ele os usa para abrir novas conexões, armazenar tabelas no cache, criar tabelas temporárias para resolver consultas complicadas e acessar as persistentes. Se o mysqld não for capaz de abrir novos arquivos quando necessário, ele pode parar de funcionar corretamente. Um sintoma comum deste problema é o erro 24, "muitos arquivos abertos". O número de descritores de arquivo que o mysqld pode abrir simultaneamente é definido pela `open_files_limit` opção definida no arquivo de configuração (`/etc/my.cnf`). Mas `open_files_limit` também depende dos limites do sistema operacional. Essa dependência torna a configuração da variável mais complicada.
+
+O MySQL não pode definir sua `open_files_limit` opção mais alta do que a especificada em `ulimit 'open files'`. Portanto, você precisa definir explicitamente esses limites no nível do sistema operacional para permitir que o MySQL abra arquivos conforme necessário. Existem duas maneiras de verificar o limite de arquivos no Linux:
+
+* O `ulimit` comando fornece rapidamente uma descrição detalhada dos parâmetros que estão sendo permitidos ou bloqueados. As alterações feitas ao executar este comando não são permanentes e serão apagadas após uma reinicialização do sistema.
+* As alterações ao `/etc/security/limit.conf` ficheiro são permanentes e não são afetadas pela reinicialização do sistema.
+
+
+Certifique-se de alterar os limites físicos e macios para o usuário mysql. Os seguintes trechos são da configuração:
+
+....
+mysql hard nofile 65535
+mysql soft nofile 65353
+....
+Em paralelo, atualize a mesma configuração no `my.cnf` para usar totalmente os limites de arquivos abertos.

@@ -1,0 +1,21 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-example-volumes.html 
+keywords: epic,cache,iris 
+summary: Implementação de exemplo épico no ONTAP - volumes 
+---
+= Implementação de exemplo épico no ONTAP - volumes
+:allow-uri-read: 
+
+
+[role="lead"]
+Para criar volumes, consulte https://docs.netapp.com/us-en/ontap-cli-9141//volume-create.html[]
+
+
+NOTE: A partir do ONTAP 9.7, a criptografia de volume e agregado é habilitada por padrão quando você tem uma licença NVE e gerenciamento de chaves externas ou integradas. Para ativar a deduplicação em nível de volume, defina o comando add -criptografar a falha para o comando criar/modificar volume (se você tiver uma licença NVE).
+
+
+
+== Instantâneos a bordo
+
+Para instantâneos de funcionamento em rede: https://docs.netapp.com/us-en/ontap-cli-9141//volume-snapshot-autodelete-modify.html[]

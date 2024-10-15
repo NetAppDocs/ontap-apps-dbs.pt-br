@@ -1,0 +1,112 @@
+---
+sidebar: sidebar 
+permalink: mssql/mssql-dr-mcc-overview.html 
+keywords: MSSQL,SQL Server, MetroCluster, Disaster recovery 
+summary: Microsoft SQL Server e NetApp MetroCluster 
+---
+= Visão geral e arquitetura do MetroCluster
+:allow-uri-read: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+A implantação do Microsoft SQL Server com ambiente MetroCluster requer alguma explicação do design físico de um sistema MetroCluster.
+
+O MetroCluster espelha de forma síncrona os dados e a configuração entre dois clusters ONTAP em locais separados ou domínios de falha. O MetroCluster fornece storage disponível continuamente para aplicações, gerenciando automaticamente dois objetivos:
+
+* Objetivo do ponto de restauração zero (RPO) espelhando de forma síncrona os dados gravados no cluster.
+* Objetivo de tempo de recuperação quase zero (rto) espelhando a configuração e automatizando o acesso aos dados no segundo local.
+
+
+O MetroCluster oferece simplicidade com o espelhamento automático de dados e a configuração entre os dois clusters independentes localizados nos dois locais. À medida que o storage é provisionado em um cluster, ele é espelhado automaticamente para o segundo cluster no segundo local. O NetApp SyncMirror fornece uma cópia completa de todos os dados com RPO zero. Isso significa que workloads de um local podem alternar a qualquer momento para o local oposto e continuar fornecendo dados sem perda de dados. O MetroCluster gerencia o processo de switchover fornecendo acesso a dados provisionados por SAN e nas no segundo local. O design do MetroCluster como uma solução validada contém dimensionamento e configuração que permitem que um switchover seja executado dentro dos períodos de tempo limite do protocolo ou antes (geralmente menos de 120 segundos). Isso resulta em um RPO quase zero e as aplicações podem continuar acessando os dados sem incorrer em falhas. O MetroCluster está disponível em várias variações definidas pela malha de storage de back-end.
+
+
+
+== O MetroCluster pode ser usado em 3 configurações diferentes
+
+* Pares HA com conetividade IP
+* Pares DE HA com conectividade FC
+* Controladora única com conectividade FC
+
+
+
+NOTE: O termo 'conetividade' refere-se à conexão de cluster usada para replicação entre sites. Não se refere aos protocolos de host. Todos os protocolos do lado do host são suportados como de costume em uma configuração MetroCluster, independentemente do tipo de conexão usada para comunicação entre clusters.
+
+
+
+== IP MetroCluster
+
+A configuração MetroCluster IP de par de HA usa dois ou quatro nós por local. Essa opção de configuração aumenta a complexidade e os custos em relação à opção de dois nós, mas oferece um benefício importante: A redundância intrasite. Uma simples falha do controlador não requer acesso aos dados na WAN. O acesso aos dados permanece local por meio do controlador local alternativo.
+
+A maioria dos clientes está escolhendo a conetividade IP porque os requisitos de infraestrutura são mais simples. No passado, a conetividade entre locais de alta velocidade era geralmente mais fácil de provisionar usando switches FC e fibra escura, mas hoje em dia os circuitos IP de baixa latência e alta velocidade estão mais prontamente disponíveis.
+
+A arquitetura também é mais simples porque as únicas conexões entre locais são para os controladores. No Metroclusters FC SAN conetados, um controlador grava diretamente nas unidades no local oposto e, portanto, requer conexões, switches e bridges SAN adicionais. Em contraste, um controlador em uma configuração IP grava nas unidades opostas através do controlador.
+
+Para obter informações adicionais, consulte a documentação oficial do ONTAP e https://www.netapp.com/pdf.html?item=/media/13481-tr4689.pdf["Arquitetura e design da solução IP da MetroCluster"^].
+
+image:mccip.png["Erro: Imagem gráfica em falta"]
+
+
+
+== MetroCluster conectados a FC de par HA SAN
+
+A configuração de MetroCluster FC de par de HA usa dois ou quatro nós por local. Essa opção de configuração aumenta a complexidade e os custos em relação à opção de dois nós, mas oferece um benefício importante: A redundância intrasite. Uma simples falha do controlador não requer acesso aos dados na WAN. O acesso aos dados permanece local por meio do controlador local alternativo.
+
+image:mcc-4-node.png["Erro: Imagem gráfica em falta"]
+
+Algumas infraestruturas multisite não foram desenvolvidas para operações ativas-ativas, mas são usadas mais como local principal e local de recuperação de desastres. Nesta situação, uma opção MetroCluster de par de HA é geralmente preferível pelas seguintes razões:
+
+* Embora um cluster de dois nós MetroCluster seja um sistema de HA, a falha inesperada de uma controladora ou a manutenção planejada exige que os serviços de dados fiquem online no local oposto. Se a conetividade de rede entre locais não puder suportar a largura de banda necessária, o desempenho é afetado. A única opção seria também falhar sobre os vários sistemas operacionais host e serviços associados ao site alternativo. O cluster de MetroCluster de par de HA elimina esse problema porque a perda de uma controladora resulta em failover simples no mesmo local.
+* Algumas topologias de rede não são projetadas para acesso entre sites, mas usam sub-redes diferentes ou SANs FC isoladas. Nesses casos, o cluster MetroCluster de dois nós não funciona mais como um sistema de HA porque o controlador alternativo não pode fornecer dados aos servidores no local oposto. A opção MetroCluster de par de HA é necessária para fornecer redundância completa.
+* Se uma infraestrutura de dois locais for vista como uma única infraestrutura altamente disponível, a configuração de dois nós do MetroCluster será adequada. No entanto, se o sistema precisar funcionar por um longo período de tempo após a falha do local, é preferível usar um par de HA porque ele continua fornecendo HA em um único local.
+
+
+
+
+== MetroCluster com conexão SAN FC de dois nós
+
+A configuração do MetroCluster de dois nós usa apenas um nó por local. Esse design é mais simples do que a opção de par de HA, pois há menos componentes para configurar e manter. Ele também reduziu as demandas de infraestrutura em termos de cabeamento e switch FC. Finalmente, reduz custos.
+
+image:mcc-2-node.png["Erro: Imagem gráfica em falta"]
+
+O impactos óbvio desse projeto é que a falha do controlador em um único local significa que os dados estão disponíveis no local oposto. Esta restrição não é necessariamente um problema. Muitas empresas têm operações de data center multisite com redes estendidas, de alta velocidade e baixa latência, que funcionam essencialmente como uma única infraestrutura. Nesses casos, a versão de dois nós do MetroCluster é a configuração preferida. Sistemas de dois nós são usados atualmente em escala de petabyte por vários provedores de serviços.
+
+
+
+== Recursos de resiliência do MetroCluster
+
+Não há pontos únicos de falha em uma solução MetroCluster:
+
+* Cada controladora tem dois caminhos independentes para os compartimentos de unidades no local.
+* Cada controladora tem dois caminhos independentes para o shelves de unidades no local remoto.
+* Cada controlador tem dois caminhos independentes para os controladores no local oposto.
+* Na configuração de par de HA, cada controladora tem dois caminhos para seu parceiro local.
+
+
+Em resumo, qualquer componente na configuração pode ser removido sem comprometer a capacidade do MetroCluster de fornecer dados. A única diferença em termos de resiliência entre as duas opções é que a versão do par de HA ainda é um sistema de storage de HA geral após uma falha do local.
+
+
+
+== SyncMirror
+
+A proteção do SQL Server com MetroCluster é baseada no SyncMirror, que oferece uma tecnologia de espelhamento síncrono com escalabilidade horizontal e alta performance.
+
+
+
+== Proteção de dados com o SyncMirror
+
+No nível mais simples, a replicação síncrona significa que qualquer alteração deve ser feita em ambos os lados do storage espelhado antes que seja reconhecida. Por exemplo, se um banco de dados estiver escrevendo um log ou se um convidado VMware estiver sendo corrigido, uma gravação nunca deve ser perdida. Como um nível de protocolo, o sistema de storage não deve reconhecer a gravação até que ela tenha sido comprometida com a Mídia não volátil em ambos os locais. Só então é seguro prosseguir sem o risco de perda de dados.
+
+O uso de uma tecnologia de replicação síncrona é a primeira etapa no projeto e gerenciamento de uma solução de replicação síncrona. A consideração mais importante é entender o que poderia acontecer durante vários cenários de falha planejados e não planejados. Nem todas as soluções de replicação síncrona oferecem os mesmos recursos. Se você precisa de uma solução que forneça um objetivo de ponto de restauração (RPO) zero, o que significa perda de dados zero, é necessário considerar todos os cenários de falha. Em particular, qual é o resultado esperado quando a replicação é impossível devido à perda de conetividade entre sites?
+
+
+
+== Disponibilidade de dados do SyncMirror
+
+A replicação do MetroCluster é baseada na tecnologia NetApp SyncMirror, projetada para entrar e sair do modo síncrono com eficiência. Essa funcionalidade atende aos requisitos dos clientes que exigem replicação síncrona, mas que também precisam de alta disponibilidade para seus serviços de dados. Por exemplo, se a conetividade a um local remoto for cortada, geralmente é preferível que o sistema de armazenamento continue operando em um estado não replicado.
+
+Muitas soluções de replicação síncrona só são capazes de operar no modo síncrono. Esse tipo de replicação tudo ou nada é às vezes chamado de modo domino. Esses sistemas de storage param de fornecer dados em vez de permitir que cópias locais e remotas dos dados fiquem não sincronizadas. Se a replicação for violada à força, a ressincronização pode ser extremamente demorada e pode deixar um cliente exposto à perda completa de dados durante o tempo em que o espelhamento é restabelecido.
+
+O SyncMirror não só pode alternar facilmente do modo síncrono se o local remoto não estiver acessível, como também pode sincronizar rapidamente para um estado RPO de 0 quando a conetividade é restaurada. A cópia obsoleta dos dados no local remoto também pode ser preservada em um estado utilizável durante a ressincronização, o que garante que cópias locais e remotas dos dados existam em todos os momentos.
+
+Quando o modo domino é necessário, o NetApp oferece SnapMirror Synchronous (SM-S). Opções de nível de aplicativo também existem, como o Oracle DataGuard ou o SQL Server Always On Availability Groups. O espelhamento de disco no nível DO SO pode ser uma opção. Consulte sua equipe de conta do NetApp ou do parceiro para obter informações e opções adicionais.

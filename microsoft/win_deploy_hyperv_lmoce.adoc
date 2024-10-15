@@ -1,0 +1,72 @@
+---
+sidebar: sidebar 
+permalink: microsoft/win_deploy_hyperv_lmoce.html 
+keywords: Windows,Hyper-V,VHDX,VM,Virtual 
+summary: Este apêndice descreve como usar a migração em tempo real do Hyper-V fora de um ambiente em cluster 
+---
+= Implante a migração do Hyper-V Live fora de um ambiente em cluster
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Esta seção descreve a implantação da migração em tempo real do Hyper-V fora de um ambiente em cluster.
+
+
+
+== Pré-requisitos
+
+* Servidores Hyper-V autônomos com storage independente ou armazenamento SMB compartilhado.
+* A função Hyper-V instalada nos servidores de origem e de destino.
+* Ambos os servidores Hyper-V pertencem ao mesmo domínio ou a domínios que confiam uns nos outros.
+
+
+
+
+== Implantação
+
+Para executar a migração em tempo real em um ambiente não agrupado, configure os servidores Hyper-V de origem e destino para que eles possam enviar e receber operações de migração em tempo real. Em ambos os servidores Hyper-V, execute as seguintes etapas:
+
+. Abra o Gerenciador do Hyper-V na seção Ferramentas do Gerenciador de servidores.
+. Em ações, clique em Configurações do Hyper-V.
+. Clique em Live Migrations (migrações em tempo real) e selecione Enable Incoming (Ativar migrações em tempo real de entrada
+. Escolha se deseja permitir tráfego de migração em tempo real em qualquer rede disponível ou apenas em redes específicas.
+. Opcionalmente, você pode configurar o protocolo de autenticação e as opções de desempenho na seção Avançado de Live Migrations.
+. Se CredSSP for usado como protocolo de autenticação, certifique-se de fazer login no servidor Hyper-V de origem do servidor Hyper-V de destino antes de mover a VM.
+. Se o Kerberos for usado como protocolo de autenticação, configure a delegação restrita. Isso requer acesso ao controlador de domínio do ative Directory. Para configurar a delegação, execute as seguintes etapas:
++
+.. Faça login no controlador de domínio do ative Directory como administrador.
+.. Inicie o Server Manager.
+.. Na seção Ferramentas, clique em usuários e computadores do ative Directory.
+.. Expanda o domínio e clique em computadores.
+.. Selecione o servidor Hyper-V de origem na lista, clique nele com o botão direito e clique em Propriedades.
+.. Na guia Delegação, selecione confiar neste computador somente para Delegação aos Serviços especificados.
+.. Selecione usar somente Kerberos.
+.. Clique em Adicionar, que abre o assistente Adicionar serviços.
+.. Em Adicionar Serviços, clique em usuários e computadores, que abre Select Users or Computers**
+.. Forneça o nome do servidor Hyper-V de destino e clique em OK.
++
+*** Para mover o armazenamento de VM, selecione CIFS.
+*** Para mover VMs, selecione o serviço Microsoft Virtual System Migration.
+
+
+.. Na guia Delegação, clique em OK.
+.. Na pasta computadores, selecione o servidor Hyper-V de destino na lista e repita o processo. Em Selecionar usuários ou computadores, forneça o nome do servidor Hyper-V de origem.
+
+
+. Mova a VM.
++
+.. Abra o Gerenciador do Hyper-V.
+.. Clique com o botão direito em uma VM e clique em mover.
+.. Escolha mover a Máquina Virtual.
+.. Especifique o servidor Hyper-V de destino para a VM.
+.. Escolha as opções mover. Para migração ao vivo compartilhada, escolha mover somente a Máquina Virtual. Para Shared Nothing Live Migration, escolha qualquer uma das outras duas opções com base nas suas preferências.
+.. Forneça a localização da VM no servidor Hyper-V de destino com base nas suas preferências.
+.. Revise o resumo e clique em OK para mover a VM.
+
+
+

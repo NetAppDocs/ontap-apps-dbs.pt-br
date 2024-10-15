@@ -1,0 +1,21 @@
+---
+permalink: oracle/oracle-app-config-mbr.html 
+sidebar: sidebar 
+keywords: oracle, database, ontap, db_file_multiblock_read_count, multiblock 
+summary: Parâmetros do banco de dados Oracle - dB_file_multiblock_read_count 
+---
+= Parâmetros do banco de dados Oracle: db_file_multiblock_read_count
+:allow-uri-read: 
+
+
+[role="lead"]
+O `db_file_multiblock_read_count` parâmetro controla o número máximo de blocos de banco de dados Oracle que o Oracle lê como uma única operação durante a e/S sequencial
+
+Este parâmetro não afeta, no entanto, o número de blocos que o Oracle lê durante todas e quaisquer operações de leitura, nem afeta e/S aleatórias Apenas o tamanho de bloco de e/S sequenciais é afetado.
+
+A Oracle recomenda que o usuário deixe esse parâmetro desconfigurado. Isso permite que o software de banco de dados defina automaticamente o valor ideal. Isso geralmente significa que esse parâmetro é definido para um valor que produz um tamanho de e/S de 1MB. Por exemplo, uma leitura 1MB de 8KB blocos exigiria que 128 blocos fossem lidos, e o valor padrão para este parâmetro seria, portanto, 128.
+
+A maioria dos problemas de desempenho do banco de dados observados pelo NetApp nas instalações dos clientes envolve uma configuração incorreta para este parâmetro. Houve razões válidas para alterar esse valor com as versões 8 e 9 do Oracle. Como resultado, o parâmetro pode estar inconscientemente presente em `init.ora` arquivos porque o banco de dados foi atualizado para o Oracle 10 e posterior. Uma configuração legada de 8 ou 16, comparada a um valor padrão de 128, danifica significativamente o desempenho de e/S sequenciais.
+
+
+TIP: *NetApp recomenda* a configuração `db_file_multiblock_read_count` do parâmetro não deve estar presente no `init.ora` arquivo. O NetApp nunca encontrou uma situação em que a alteração desse parâmetro melhorou o desempenho, mas há muitos casos em que causou danos claros ao throughput sequencial de e/S.

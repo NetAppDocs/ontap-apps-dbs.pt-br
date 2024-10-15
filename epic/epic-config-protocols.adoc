@@ -1,0 +1,21 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-config-protocols.html 
+keywords: epic,cache,iris 
+summary: Épico em ONTAP - protocolos 
+---
+= Épico em ONTAP - protocolos
+:allow-uri-read: 
+
+
+[role="lead"]
+FCP é o protocolo preferido para a apresentação de LUNs.
+
+[TIP]
+====
+*A NetApp recomenda* zoneamento de iniciador único: Um iniciador por zona com todas as portas de destino necessárias no armazenamento usando nomes de portas mundiais (WWPNs). A presença de mais de um iniciador em uma única zona é suscetível de levar a interferência cruzada HBA intermitente, o que causa uma interrupção significativa.
+
+====
+Depois que o LUN é criado, mapeie o LUN para o grupo de iniciadores (igrop) que contém as WWPNs do host para habilitar o acesso.
+
+O NetApp também dá suporte ao uso de NVMe/FC (se você tiver versões dos sistemas operacionais AIX e RHEL capazes) e melhora a performance. FCP e NVMe/FC podem coexistir na mesma malha.

@@ -1,0 +1,19 @@
+---
+sidebar: sidebar 
+permalink: sap-solutions.html 
+keywords: sap,hana,anydb 
+summary: Soluções para SAP HANA e AnyDB 
+---
+= SAP HANA e SAP com AnyDB
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+As práticas recomendadas para configuração, gerenciamento e automação de soluções SAP podem ser encontradas na página soluções SAP da NetApp.
+
+Por favor, clique link:https://docs.netapp.com/us-en/netapp-solutions-sap/["aqui"] para mais.

@@ -1,0 +1,56 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-otv-hardening-access.html 
+keywords: VMware, Data protection, security, ONTAP tools, Hardening, ONTAP Tools 
+summary: Guia de fortalecimento da segurança para ferramentas do ONTAP para VMware vSphere, pontos de acesso do usuário. 
+---
+= Ferramentas do ONTAP para pontos de acesso do VMware vSphere (usuários)
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+A instalação das Ferramentas do ONTAP para VMware vSphere cria e usa três tipos de usuários:
+
+. Usuário do sistema: A conta de usuário raiz
+. Usuário do aplicativo: O usuário administrador, usuário de manutenção e contas de usuário de banco de dados
+. Usuário de suporte: A conta de usuário diag
+
+
+
+
+== 1. Utilizador do sistema
+
+O usuário System(root) é criado pela instalação de ferramentas ONTAP no sistema operacional subjacente (Debian).
+
+* Um usuário padrão do sistema "root" é criado no Debian pela instalação de ferramentas do ONTAP. Seu padrão é desabilitado e pode ser habilitado em uma base ad-hoc através do console 'aint'.
+
+
+
+
+== 2. Utilizador da aplicação
+
+O usuário do aplicativo é nomeado como um usuário local nas ferramentas do ONTAP. Estes são usuários criados no aplicativo de ferramentas do ONTAP. A tabela abaixo lista os tipos de usuários de aplicativos:
+
+[cols="22%,78%"]
+|===
+| *Usuário* | *Descrição* 
+
+
+| Usuário Administrador | Ele é criado durante a instalação das ferramentas do ONTAP e o usuário fornece as credenciais ao implantar as ferramentas do ONTAP. Os usuários têm a opção de alterar a 'senha' no console 'não'. A senha expirará em 90 dias e espera-se que os usuários alterem a mesma. 
+
+
+| Utilizador de manutenção | Ele é criado durante a instalação das ferramentas do ONTAP e o usuário fornece as credenciais ao implantar as ferramentas do ONTAP. Os usuários têm a opção de alterar a 'senha' no console 'não'. Este é um usuário de manutenção e é criado para executar as operações do console de manutenção. 
+
+
+| Utilizador da base de dados | Ele é criado durante a instalação das ferramentas do ONTAP e o usuário fornece as credenciais ao implantar as ferramentas do ONTAP. Os usuários têm a opção de alterar a 'senha' no console 'não'. A senha expirará em 90 dias e espera-se que os usuários alterem a mesma. 
+|===
+
+
+== 3. Usuário do suporte (usuário diag)
+
+Durante a instalação das ferramentas do ONTAP, um usuário de suporte é criado. Esse usuário pode ser usado para acessar as ferramentas do ONTAP em caso de qualquer problema ou falha no servidor e para coletar logs. Por padrão, esse usuário está desativado, mas pode ser habilitado em uma base adhoc através do console 'mint'. É importante notar que este utilizador será automaticamente desativado após um determinado período de tempo.

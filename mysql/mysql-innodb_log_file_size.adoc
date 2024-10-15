@@ -1,0 +1,20 @@
+---
+sidebar: sidebar 
+permalink: mysql/mysql-innodb_log_file_size.html 
+keywords: MySQL,MariaDB,innodb_log_file_size 
+summary: MySQL e innodb_log_file_size 
+---
+= innodb_log_file_size
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Selecionar o tamanho certo para o tamanho do arquivo de log InnoDB é importante para as operações de gravação e para ter um tempo de recuperação decente após uma falha do servidor.
+
+Como muitas transações são registradas no arquivo, o tamanho do arquivo de log é importante para operações de gravação. Quando os Registros são modificados, a alteração não é imediatamente gravada de volta para o espaço da tabela. Em vez disso, a alteração é gravada no final do arquivo de log e a página é marcada como suja. InnoDB usa seu log para converter a e/S aleatória em e/S sequencial
+
+Quando o log está cheio, a página suja é escrita para a tablespace em sequência para liberar espaço no arquivo de log. Por exemplo, suponha que um servidor trava no meio de uma transação, e as operações de gravação são registradas apenas no arquivo de log. Antes que o servidor possa voltar ao vivo, ele deve passar por uma fase de recuperação na qual as alterações registradas no arquivo de log são reproduzidas. Quanto mais entradas estiverem no arquivo de log, mais tempo leva para que o servidor se recupere.
+
+Neste exemplo, o tamanho do arquivo de log afeta tanto o tempo de recuperação quanto o desempenho de gravação. Ao escolher o número certo para o tamanho do arquivo de log, equilibre o tempo de recuperação em relação ao desempenho de gravação. Normalmente, qualquer coisa entre 128M e 512M é um bom valor.

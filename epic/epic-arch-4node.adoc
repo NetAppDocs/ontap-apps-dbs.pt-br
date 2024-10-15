@@ -1,0 +1,28 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-arch-4node.html 
+keywords: epic,cache,iris 
+summary: Arquitetura épica de quatro nós 
+---
+= Arquitetura épica de quatro nós
+:allow-uri-read: 
+
+
+[role="lead"]
+As figuras abaixo mostram o layout de storage para uma arquitetura de quatro nós: Um par de HA em produção e um par de HA na recuperação de desastres. O tamanho dos controladores e o número de discos baseiam-se na última imagem de dimensionamento.
+
+A NetApp garante um desempenho mínimo ao nível do piso, aceitando as políticas recomendadas pela SLM. A Epic é compatível com a consolidação de pools de storage no ONTAP em muito menos hardware. Para obter mais informações, consulte o documento RELATÓRIOS trimestrais da Epic. Basicamente, pool1, pool2 e NAS1 (listados no Guia de configuração de hardware da Epic) podem ser executados em um único par de HA com workloads distribuídos uniformemente entre as duas controladoras. Na recuperação de desastres, o pool 3 e as 3 da Epic também são divididos entre as duas controladoras no par de HA.
+
+Ambientes de cópia completa de teste (como SUP, REL e PJX) são clonados da Epic Production, Epic Report ou Epic Disaster Recovery. Para obter informações sobre backup e atualização da Epic, consulte a seção intitulada "Gerenciamento de dados".
+
+
+
+== Arquitetura de quatro nós
+
+image:epic-4node.png["Arquitetura épica de 4 nós"]
+
+
+
+== Disposição do workload de quatro nós
+
+image:epic-4node-design.png["Disposição épica de 4 nós"]

@@ -1,0 +1,24 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-storage-nfs-config-caching.html 
+keywords: NFS 
+summary: Armazenamento em cache NFS com bancos de dados Oracle 
+---
+= Armazenamento em cache NFS com bancos de dados Oracle
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+A presença de qualquer uma das seguintes opções de montagem faz com que o cache do host seja desativado:
+
+....
+cio, actimeo=0, noac, forcedirectio
+....
+Essas configurações podem ter um efeito negativo grave na velocidade de instalação do software, patches e operações de backup/restauração. Em alguns casos, especialmente com aplicações em cluster, essas opções são necessárias como resultado inevitável da necessidade de fornecer coerência de cache em todos os nós do cluster. Em outros casos, os clientes usam erroneamente esses parâmetros e o resultado é danos desnecessários no desempenho.
+
+Muitos clientes removem temporariamente essas opções de montagem durante a instalação ou o patch dos binários da aplicação. Essa remoção pode ser realizada com segurança se o usuário verificar que nenhum outro processo está usando ativamente o diretório de destino durante o processo de instalação ou patch.

@@ -1,0 +1,34 @@
+---
+sidebar: sidebar 
+permalink: mysql/mysql-slot-tables.html 
+keywords: MySQL,MariaDB,TR-4722 
+summary: MySQL e NFSv3 tabelas de slots 
+---
+= MySQL e NFSv3 tabelas de slots
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+O desempenho do NFSv3 no Linux depende de um parâmetro `tcp_max_slot_table_entries` chamado .
+
+As tabelas de slot TCP são equivalentes a NFSv3 mm de profundidade de fila do adaptador de barramento do host (HBA). Essas tabelas controlam o número de operações NFS que podem ficar pendentes de uma só vez. O valor padrão é geralmente 16, o que é muito baixo para um desempenho ideal. O problema oposto ocorre em kernels Linux mais recentes, que podem aumentar automaticamente o limite da tabela de slots TCP para um nível que satura o servidor NFS com solicitações.
+
+Para um desempenho ideal e para evitar problemas de desempenho, ajuste os parâmetros do kernel que controlam as tabelas de slots TCP.
+
+Executar o `sysctl -a | grep tcp.*.slot_table` comando e respeitar os seguintes parâmetros:
+
+....
+# sysctl -a | grep tcp.*.slot_table
+sunrpc.tcp_max_slot_table_entries = 128
+sunrpc.tcp_slot_table_entries = 128
+....
+Todos os sistemas Linux devem incluir `sunrpc.tcp_slot_table_entries`, mas apenas alguns incluem `sunrpc.tcp_max_slot_table_entries`. Ambos devem ser definidos para 128.
+
+|===
+| Cuidado 
+
+
+| A falha em definir esses parâmetros pode ter efeitos significativos no desempenho. Em alguns casos, o desempenho é limitado porque o sistema operacional linux não está emitindo e/S suficiente Em outros casos, as latências de e/S aumentam à medida que o sistema operacional linux tenta emitir mais e/S do que pode ser reparado. 
+|===

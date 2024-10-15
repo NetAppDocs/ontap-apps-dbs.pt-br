@@ -1,0 +1,71 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-network-config-ethernet.html 
+keywords: ethernet, jumbo frames, MTU 
+summary: Configuração Oracle e TCP/IP e ethernet 
+---
+= Configuração TCP/IP e ethernet para bancos de dados Oracle
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Muitos clientes do Oracle no ONTAP usam ethernet, o protocolo de rede de NFS, iSCSI, NVMe/TCP e, especialmente, a nuvem.
+
+
+
+== Configurações do sistema operacional do host
+
+A maioria da documentação do fornecedor de aplicativos inclui configurações específicas de TCP e ethernet destinadas a garantir que o aplicativo esteja funcionando de forma ideal. Essas mesmas configurações geralmente são suficientes para oferecer também um desempenho ideal de storage baseado em IP.
+
+
+
+== Controle de fluxo Ethernet
+
+Esta tecnologia permite que um cliente solicite que um remetente pare temporariamente a transmissão de dados. Isso geralmente é feito porque o recetor não consegue processar os dados de entrada com rapidez suficiente. Ao mesmo tempo, solicitar que um remetente cessasse a transmissão era menos disruptivo do que ter um recetor descartar pacotes porque os buffers estavam cheios. Este não é mais o caso com as pilhas TCP usadas nos sistemas operacionais atuais. Na verdade, o controle de fluxo causa mais problemas do que resolve.
+
+Os problemas de desempenho causados pelo controle de fluxo Ethernet têm aumentado nos últimos anos. Isso ocorre porque o controle de fluxo Ethernet opera na camada física. Se uma configuração de rede permitir que qualquer sistema operacional host envie uma solicitação de controle de fluxo Ethernet para um sistema de armazenamento, o resultado será uma pausa em e/S para todos os clientes conetados. Como um número crescente de clientes é servido por um único controlador de armazenamento, a probabilidade de um ou mais desses clientes enviar solicitações de controle de fluxo aumenta. O problema tem sido visto frequentemente em sites de clientes com ampla virtualização de SO.
+
+Uma NIC em um sistema NetApp não deve receber solicitações de controle de fluxo. O método utilizado para alcançar este resultado varia consoante o fabricante do comutador de rede. Na maioria dos casos, o controle de fluxo em um switch Ethernet pode ser definido como `receive desired` `receive on` ou , o que significa que uma solicitação de controle de fluxo não é encaminhada para o controlador de armazenamento. Em outros casos, a conexão de rede no controlador de armazenamento pode não permitir a desativação do controle de fluxo. Nesses casos, os clientes devem ser configurados para nunca enviar solicitações de controle de fluxo, seja alterando para a configuração da NIC no próprio servidor host ou para as portas de switch às quais o servidor host está conetado.
+
+
+TIP: *A NetApp recomenda* certificando-se de que os controladores de armazenamento NetApp não recebam pacotes de controle de fluxo Ethernet. Isso geralmente pode ser feito definindo as portas do switch às quais o controlador está conetado, mas alguns hardwares do switch têm limitações que podem exigir alterações no lado do cliente.
+
+
+
+== Tamanhos de MTU
+
+O uso de quadros jumbo tem sido mostrado para oferecer alguma melhoria de desempenho em redes 1GBG, reduzindo a sobrecarga de CPU e rede, mas o benefício geralmente não é significativo.
+
+
+TIP: *A NetApp recomenda* a implementação de quadros jumbo quando possível, tanto para obter quaisquer benefícios potenciais de desempenho quanto para preparar a solução para o futuro.
+
+Usar quadros jumbo em uma rede 10GbG é quase obrigatório. Isso ocorre porque a maioria das implementações 10Gb atingem um limite de pacotes por segundo sem quadros jumbo antes que atinjam a marca 10Gb. O uso de quadros jumbo melhora a eficiência no processamento TCP/IP porque permite que o sistema operacional, servidor, NICs e o sistema de armazenamento processem menos pacotes, mas maiores. A melhoria do desempenho varia de NIC para NIC, mas é significativa.
+
+Para implementações de quadros jumbo, existe a crença comum, mas incorreta, de que todos os dispositivos conetados devem suportar quadros jumbo e que o tamanho da MTU deve corresponder de ponta a ponta Em vez disso, os dois pontos de extremidade da rede negociam o tamanho de quadro mais alto mutuamente aceitável ao estabelecer uma conexão. Em um ambiente típico, um switch de rede é definido para um tamanho MTU de 9216, o controlador NetApp é definido como 9000 e os clientes são definidos como uma combinação de 9000 e 1514. Os clientes que podem suportar um MTU de 9000 podem usar quadros jumbo, e os clientes que só podem suportar 1514 podem negociar um valor mais baixo.
+
+Problemas com este arranjo são raros em um ambiente completamente comutado. No entanto, tenha cuidado em um ambiente roteado que nenhum roteador intermediário é forçado a fragmentar quadros jumbo.
+
+[TIP]
+====
+*A NetApp recomenda* configurando o seguinte:
+
+* Os quadros jumbo são desejáveis, mas não são necessários com Ethernet de 1GB GB (GbE).
+* Os quadros Jumbo são necessários para o máximo desempenho com 10GbE e mais rápido.
+
+
+====
+
+
+== Parâmetros TCP
+
+Três configurações geralmente são mal configuradas: Carimbos de data/hora TCP, reconhecimento seletivo (SACK) e escala de janela TCP. Muitos documentos desatualizados na Internet recomendam desativar um ou mais desses parâmetros para melhorar o desempenho. Havia algum mérito a esta recomendação há muitos anos, quando os recursos da CPU eram muito menores e havia um benefício para reduzir a sobrecarga no processamento TCP sempre que possível.
+
+No entanto, com os sistemas operacionais modernos, desabilitar qualquer um desses recursos TCP geralmente resulta em nenhum benefício detetável, ao mesmo tempo em que potencialmente danifica o desempenho. Os danos no desempenho são especialmente prováveis em ambientes de rede virtualizados, pois esses recursos são necessários para o manuseio eficiente da perda de pacotes e alterações na qualidade da rede.
+
+
+TIP: *A NetApp recomenda* a ativação de timestamps TCP, SACK e escala de janelas TCP no host, e todos esses três parâmetros devem estar ativados por padrão em qualquer sistema operacional atual.

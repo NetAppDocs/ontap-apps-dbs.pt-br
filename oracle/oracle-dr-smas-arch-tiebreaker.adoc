@@ -1,0 +1,58 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dr-smas-arch-tiebreaker.html 
+keywords: oracle, active sync, mcc, MCC-IP 
+summary: Sincronização ativa do Oracle SnapMirror 
+---
+= Sincronização ativa do Oracle e do SnapMirror - RAC tiebreaker
+:allow-uri-read: 
+
+
+[role="lead"]
+Embora o RAC estendido usando o SnapMirror ative Sync seja uma arquitetura simétrica com relação ao IO, há uma exceção que está conetada ao gerenciamento de split-brain.
+
+O que acontece se o link de replicação for perdido e nenhum dos sites tiver quórum? O que deve acontecer? Esta pergunta se aplica ao comportamento do Oracle RAC e do ONTAP. Se as alterações não puderem ser replicadas nos sites e você quiser retomar as operações, um dos sites terá que sobreviver e o outro site terá que ficar indisponível.
+
+O link:oracle-dr-smas-mediator.html["ONTAP Mediador"] atende a esse requisito na camada ONTAP. Existem várias opções para quebra de binário RAC.
+
+
+
+== Tiebreakers Oracle
+
+O melhor método para gerenciar os riscos do Oracle RAC dividido é usar um número ímpar de nós RAC, de preferência pelo uso de um desempate de site 3rd. Se um site 3rd não estiver disponível, a instância tiebreaker pode ser colocada em um local dos dois sites, designando-o efetivamente um local sobrevivente preferido.
+
+
+
+== Oracle e CSS_critical
+
+Com um número par de nós, o comportamento padrão do Oracle RAC é que um dos nós no cluster será considerado mais importante do que os outros nós. O local com esse nó de maior prioridade sobreviverá ao isolamento do local, enquanto os nós do outro local serão despejados. A priorização é baseada em vários fatores, mas você também pode controlar esse comportamento usando a `css_critical` configuração.
+
+Na link:oracle-dr-smas-fail-sample.html["exemplo"] arquitetura, os nomes de host para os nós RAC são jfs12 e jfs13. As definições atuais para `css_critical` são as seguintes:
+
+....
+[root@jfs12 ~]# /grid/bin/crsctl get server css_critical
+CRS-5092: Current value of the server attribute CSS_CRITICAL is no.
+
+[root@jfs13 trace]# /grid/bin/crsctl get server css_critical
+CRS-5092: Current value of the server attribute CSS_CRITICAL is no.
+....
+Se você quiser que o site com jfs12 seja o site preferido, altere esse valor para sim em um nó De site e reinicie os serviços.
+
+....
+[root@jfs12 ~]# /grid/bin/crsctl set server css_critical yes
+CRS-4416: Server attribute 'CSS_CRITICAL' successfully changed. Restart Oracle High Availability Services for new value to take effect.
+
+[root@jfs12 ~]# /grid/bin/crsctl stop crs
+CRS-2791: Starting shutdown of Oracle High Availability Services-managed resources on 'jfs12'
+CRS-2673: Attempting to stop 'ora.crsd' on 'jfs12'
+CRS-2790: Starting shutdown of Cluster Ready Services-managed resources on server 'jfs12'
+CRS-2673: Attempting to stop 'ora.ntap.ntappdb1.pdb' on 'jfs12'
+…
+CRS-2673: Attempting to stop 'ora.gipcd' on 'jfs12'
+CRS-2677: Stop of 'ora.gipcd' on 'jfs12' succeeded
+CRS-2793: Shutdown of Oracle High Availability Services-managed resources on 'jfs12' has completed
+CRS-4133: Oracle High Availability Services has been stopped.
+
+[root@jfs12 ~]# /grid/bin/crsctl start crs
+CRS-4123: Oracle High Availability Services has been started.
+....

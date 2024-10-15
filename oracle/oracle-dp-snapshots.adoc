@@ -1,0 +1,178 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dp-snapshots.html 
+keywords: oracle, database, ontap, snapshots 
+summary: Bancos de dados Oracle no ONTAP e a função de snapshots 
+---
+= Bancos de dados Oracle e backups baseados em snapshot
+:allow-uri-read: 
+
+
+[role="lead"]
+A base da proteção de dados de banco de dados Oracle no ONTAP é a tecnologia NetApp Snapshot.
+
+Os valores-chave são os seguintes:
+
+* *Simplicidade.* Um snapshot é uma cópia somente leitura do conteúdo de um contentor de dados em um determinado momento.
+* *Eficiência.* Os instantâneos não requerem espaço no momento da criação. O espaço só é consumido quando os dados são alterados.
+* *Capacidade de gerenciamento.* Uma estratégia de backup baseada em snapshots é fácil de configurar e gerenciar, pois os snapshots são uma parte nativa do sistema operacional de storage. Se o sistema de armazenamento estiver ligado, ele estará pronto para criar backups.
+* *Escalabilidade.* É possível preservar até 1024 backups de um único contêiner de arquivos e LUNs. Para conjuntos de dados complexos, vários contêineres de dados podem ser protegidos por um único conjunto consistente de snapshots.
+* O desempenho não é afetado, independentemente de um volume conter 1024 snapshots ou nenhum.
+
+
+Embora muitos fornecedores de storage ofereçam tecnologia Snapshot, a tecnologia Snapshot no ONTAP é única e oferece benefícios significativos para ambientes de aplicações e bancos de dados empresariais:
+
+* As cópias snapshot fazem parte do layout de arquivo em qualquer lugar (WAFL) subjacente. Eles não são uma tecnologia adicional ou externa. Isso simplifica o gerenciamento porque o sistema de storage é o sistema de backup.
+* As cópias snapshot não afetam a performance, exceto em alguns casos de borda, como quando muitos dados são armazenados em snapshots que o sistema de storage subjacente preenche.
+* O termo "grupo de consistência" é frequentemente usado para se referir a um agrupamento de objetos de armazenamento que são gerenciados como uma coleta consistente de dados. Um snapshot de um determinado volume ONTAP constitui um backup de grupo de consistência.
+
+
+Os snapshots do ONTAP também são mais dimensionados do que a tecnologia da concorrência. Os clientes podem armazenar snapshots 5, 50 ou 500 sem afetar a performance. O número máximo de instantâneos atualmente permitido em um volume é 1024. Se a retenção adicional de snapshot for necessária, há opções para colocar os snapshots em cascata em volumes adicionais.
+
+Como resultado, proteger um conjunto de dados hospedado no ONTAP é simples e altamente dimensionável. Os backups não exigem movimentação de dados, portanto, uma estratégia de backup pode ser adaptada às necessidades da empresa, em vez das limitações de taxas de transferência de rede, grande número de unidades de fita ou áreas de preparo de disco.
+
+
+
+== Um instantâneo é um backup?
+
+Uma pergunta comumente feita sobre o uso de snapshots como estratégia de proteção de dados é o fato de que os dados "reais" e os dados instantâneos estão localizados nas mesmas unidades. A perda dessas unidades resultaria na perda dos dados primários e do backup.
+
+Este é um problema válido. Os snapshots locais são usados para necessidades diárias de backup e recuperação e, nesse aspeto, o snapshot é um backup. Cerca de 99% de todos os cenários de recuperação em ambientes NetApp dependem de snapshots para atender até aos requisitos mais agressivos de rto.
+
+No entanto, os snapshots locais nunca devem ser a única estratégia de backup. É por isso que a NetApp oferece tecnologia como replicação SnapMirror e SnapVault para replicar snapshots para um conjunto independente de unidades com rapidez e eficiência. Em uma solução de arquitetura adequada com snapshots e replicação de snapshot, o uso da fita pode ser minimizado para talvez um arquivamento trimestral ou eliminado totalmente.
+
+
+
+== Backups baseados em snapshot
+
+Há muitas opções para o uso de cópias ONTAP Snapshot para proteger seus dados. Além disso, os snapshots são a base de muitos outros recursos da ONTAP, incluindo replicação, recuperação de desastres e clonagem. Uma descrição completa da tecnologia de instantâneos está além do escopo deste documento, mas as seções a seguir fornecem uma visão geral.
+
+Existem duas abordagens principais para criar um instantâneo de um conjunto de dados:
+
+* Backups consistentes com falhas
+* Backups consistentes com aplicativos
+
+
+Um backup consistente com falhas de um conjunto de dados refere-se à captura de toda a estrutura do conjunto de dados em um único ponto no tempo. Se o conjunto de dados for armazenado em um único volume, o processo será simples. É possível criar um Snapshot a qualquer momento. Se um conjunto de dados abranger volumes, é necessário criar um instantâneo de grupo de consistência (CG). Existem várias opções para criar snapshots CG, incluindo o software NetApp SnapCenter, recursos nativos do grupo de consistência do ONTAP e scripts mantidos pelo usuário.
+
+Backups consistentes com falhas são usados principalmente quando a recuperação do ponto de backup é suficiente. Quando uma recuperação mais granular é necessária, backups consistentes com aplicações geralmente são necessários.
+
+A palavra "consistente" em "consistente com aplicativos" é muitas vezes um erro. Por exemplo, colocar um banco de dados Oracle no modo de backup é referido como um backup consistente com aplicativos, mas os dados não são consistentes ou silenciosos de forma alguma. Os dados continuam a mudar durante todo o backup. Em contraste, a maioria dos backups MySQL e Microsoft SQL Server realmente silenciam os dados antes de executar o backup. A VMware pode ou não tornar certos arquivos consistentes.
+
+
+
+== Grupos de consistência
+
+O termo "grupo de consistência" refere-se à capacidade de um storage array gerenciar vários recursos de armazenamento como uma única imagem. Por exemplo, um banco de dados pode consistir em 10 LUNs. O array deve ser capaz de fazer backup, restaurar e replicar esses 10 LUNs de maneira consistente. A restauração não é possível se as imagens dos LUNs não forem consistentes no ponto de backup. A replicação desses 10 LUNs requer que todas as réplicas sejam perfeitamente sincronizadas umas com as outras.
+
+O termo "grupo de consistência" não é frequentemente usado quando se discute ONTAP porque consistência sempre foi uma função básica da arquitetura de volume e agregado dentro do ONTAP. Muitos outros storage arrays gerenciam LUNs ou sistemas de arquivos como unidades individuais. Eles poderiam, então, ser opcionalmente configurados como um "grupo de consistência" para fins de proteção de dados, mas esta é uma etapa extra na configuração.
+
+O ONTAP sempre foi capaz de capturar imagens de dados locais e replicados consistentes. Embora os vários volumes em um sistema ONTAP não sejam geralmente formalmente descritos como um grupo de consistência, é isso que eles são. Um snapshot desse volume é uma imagem de grupo de consistência, a restauração para esse snapshot é uma restauração de grupo de consistência, e o SnapMirror e o SnapVault oferecem replicação de grupo de consistência.
+
+
+
+== Instantâneos do grupo de consistência
+
+Os snapshots de grupos de consistência (snapshots cg) são uma extensão da tecnologia básica do ONTAP Snapshot. Uma operação de snapshot padrão cria uma imagem consistente de todos os dados em um único volume, mas às vezes é necessário criar um conjunto consistente de snapshots em vários volumes e até mesmo em vários sistemas de storage. O resultado é um conjunto de instantâneos que podem ser usados da mesma forma que um instantâneo de apenas um volume individual. Eles podem ser usados para recuperação de dados local, replicados para fins de recuperação de desastres ou clonados como uma única unidade consistente.
+
+O maior uso conhecido de snapshots cg é para um ambiente de banco de dados de aproximadamente 1PB TB de tamanho abrangendo 12 controladoras. Os snapshots cg criados neste sistema foram usados para backup, recuperação e clonagem.
+
+Na maioria das vezes, quando um conjunto de dados abrange volumes e ordem de gravação deve ser preservado, um cg-snapshot é usado automaticamente pelo software de gerenciamento escolhido. Nesses casos, não há necessidade de entender os detalhes técnicos dos instantâneos cg. No entanto, há situações em que requisitos complicados de proteção de dados exigem controle detalhado sobre o processo de replicação e proteção de dados. Fluxos de trabalho de automação ou o uso de scripts personalizados para chamar APIs cg-snapshot são algumas das opções. Compreender a melhor opção e o papel do cg-snapshot requer uma explicação mais detalhada da tecnologia.
+
+A criação de um conjunto de instantâneos cg é um processo de duas etapas:
+
+. Estabeleça cercas de gravação em todos os volumes de destino.
+. Crie instantâneos desses volumes enquanto estiver no estado cercado.
+
+
+A esgrima de escrita é estabelecida em série. Isso significa que, à medida que o processo de esgrima é configurado em vários volumes, a e/S de gravação é congelada no primeiro volume da sequência, uma vez que continua a ser comprometida com volumes que aparecem mais tarde. Isso pode inicialmente parecer violar o requisito para que a ordem de gravação seja preservada, mas isso só se aplica a e/S que é emitida assincronamente no host e não depende de outras gravações.
+
+Por exemplo, um banco de dados pode emitir muitas atualizações assíncronas de arquivos de dados e permitir que o sistema operacional reordene a e/S e as complete de acordo com sua própria configuração de agendador. A ordem deste tipo de e/S não pode ser garantida porque a aplicação e o sistema operativo já lançaram a exigência de preservar a ordem de escrita.
+
+Como um exemplo de contador, a maioria das atividades de Registro de banco de dados é síncrona. O banco de dados não prossegue com outras gravações de log até que a e/S seja reconhecida, e a ordem dessas gravações deve ser preservada. Se uma e/S de log chegar em um volume cercado, ela não será reconhecida e a aplicação será bloqueada em outras gravações. Da mesma forma, a e/S de metadados do sistema de arquivos geralmente é síncrona. Por exemplo, uma operação de exclusão de arquivos não deve ser perdida. Se um sistema operacional com um sistema de arquivos xfs excluísse um arquivo e a e/S que atualizasse os metadados do sistema de arquivos xfs para remover a referência a esse arquivo aterrado em um volume cercado, a atividade do sistema de arquivos pausará. Isso garante a integridade do sistema de arquivos durante operações cg-snapshot.
+
+Depois que o grima de gravação é configurado nos volumes de destino, eles estão prontos para a criação de snapshot. Os instantâneos não precisam ser criados exatamente ao mesmo tempo porque o estado dos volumes é congelado de um ponto de vista de gravação dependente. Para se proteger contra uma falha na aplicação criando os instantâneos cg, a esgrima de gravação inicial inclui um tempo limite configurável no qual o ONTAP libera automaticamente a esgrima e retoma o processamento de gravação após um número definido de segundos. Se todos os instantâneos forem criados antes do período de tempo limite expirar, o conjunto de instantâneos resultante será um grupo de consistência válido.
+
+
+
+=== Ordem de escrita dependente
+
+Do ponto de vista técnico, a chave para um grupo de consistência é preservar a ordem de gravação e, especificamente, a ordem de gravação dependente. Por exemplo, um banco de dados gravando em 10 LUNs grava simultaneamente em todos eles. Muitas gravações são emitidas assincronamente, o que significa que a ordem em que são concluídas não é importante e a ordem real que são concluídas varia de acordo com o sistema operacional e o comportamento da rede.
+
+Algumas operações de gravação devem estar presentes no disco antes que o banco de dados possa continuar com gravações adicionais. Essas operações críticas de gravação são chamadas de gravações dependentes. A e/S de gravação subsequente depende da presença dessas gravações no disco. Qualquer snapshot, recuperação ou replicação desses 10 LUNs deve garantir que a ordem de gravação dependente seja garantida. As atualizações do sistema de arquivos são outro exemplo de gravações dependentes da ordem de gravação. A ordem em que as alterações do sistema de arquivos são feitas deve ser preservada ou todo o sistema de arquivos pode ficar corrompido.
+
+
+
+== Estratégias
+
+Há duas abordagens principais para backups baseados em snapshot:
+
+* Backups consistentes com falhas
+* Backups ativos protegidos por snapshot
+
+
+Um backup consistente com falhas de um banco de dados refere-se à captura de toda a estrutura do banco de dados, incluindo datafiles, logs de refazer e arquivos de controle, em um único ponto no tempo. Se o banco de dados for armazenado em um único volume, o processo será simples; uma captura Instantânea pode ser criada a qualquer momento. Se um banco de dados abranger volumes, um snapshot de grupo de consistência (CG) deve ser criado. Existem várias opções para criar snapshots CG, incluindo o software NetApp SnapCenter, recursos nativos do grupo de consistência do ONTAP e scripts mantidos pelo usuário.
+
+Os backups Snapshot consistentes com falhas são usados principalmente quando a recuperação do ponto de backup é suficiente. Registros de arquivo podem ser aplicados em algumas circunstâncias, mas quando uma recuperação pontual mais granular é necessária, um backup on-line é preferível.
+
+O procedimento básico para um backup on-line baseado em snapshot é o seguinte:
+
+. Coloque a base de dados `backup` no modo.
+. Crie um instantâneo de todos os volumes que hospedam datafiles.
+. Sair `backup` do modo.
+. Execute o comando `alter system archive log current` para forçar o arquivamento de logs.
+. Crie instantâneos de todos os volumes que hospedam os logs do arquivo.
+
+
+Este procedimento produz um conjunto de instantâneos contendo datafiles no modo de backup e os logs críticos de arquivo gerados no modo de backup. Estes são os dois requisitos para recuperar um banco de dados. Arquivos como arquivos de controle também devem ser protegidos por conveniência, mas o único requisito absoluto é a proteção para arquivos de dados e logs de arquivo.
+
+Embora clientes diferentes possam ter estratégias muito diferentes, quase todas essas estratégias são baseadas nos mesmos princípios descritos abaixo.
+
+
+
+== Recuperação baseada em Snapshot
+
+Ao projetar layouts de volume para bancos de dados Oracle, a primeira decisão é se usar a tecnologia NetApp SnapRestore baseada em volume (VBSR).
+
+O SnapRestore baseado em volume permite que um volume seja revertido quase instantaneamente para um ponto anterior no tempo. Como todos os dados no volume são revertidos, o VBSR pode não ser apropriado para todos os casos de uso. Por exemplo, se um banco de dados inteiro, incluindo datafiles, refazer logs e Registros de arquivamento, for armazenado em um único volume e esse volume for restaurado com VBSR, os dados serão perdidos porque o Registro de arquivo mais recente e os dados de refazer são descartados.
+
+VBSR não é necessário para restaurar. Muitos bancos de dados podem ser restaurados usando o SnapRestore de arquivo único (SFSR) baseado em arquivo ou simplesmente copiando arquivos do snapshot de volta para o sistema de arquivos ativo.
+
+O VBSR é preferido quando um banco de dados é muito grande ou quando ele deve ser recuperado o mais rápido possível, e o uso do VBSR requer isolamento dos arquivos de dados. Em um ambiente NFS, os arquivos de dados de um determinado banco de dados devem ser armazenados em volumes dedicados que não estejam contaminados por qualquer outro tipo de arquivo. Em um ambiente SAN, os arquivos de dados devem ser armazenados em LUNs dedicados em volumes dedicados. Se um gerenciador de volumes for usado (incluindo Oracle Automatic Storage Management [ASM]), o grupo de discos também deve ser dedicado a arquivos de dados.
+
+Isolar datafiles desta maneira permite que eles sejam revertidos para um estado anterior sem danificar outros sistemas de arquivos.
+
+
+
+== Reserva do Snapshot
+
+Para cada volume com dados Oracle em um ambiente SAN, o `percent-snapshot-space` deve ser definido como zero porque reservar espaço para um snapshot em um ambiente LUN não é útil. Se a reserva fracionária estiver definida como 100, um instantâneo de um volume com LUNs requer espaço livre suficiente no volume, excluindo a reserva instantânea, para absorver 100% de rotatividade de todos os dados. Se a reserva fracionária for definida para um valor mais baixo, uma quantidade correspondente menor de espaço livre será necessária, mas sempre exclui a reserva instantânea. Isso significa que o espaço de reserva do snapshot em um ambiente LUN é desperdiçado.
+
+Em um ambiente NFS, há duas opções:
+
+* Defina o `percent-snapshot-space` com base no consumo de espaço esperado do instantâneo.
+* Defina o `percent-snapshot-space` como zero e gerencie o consumo de espaço ativo e instantâneo coletivamente.
+
+
+Com a primeira opção, `percent-snapshot-space` é definido para um valor diferente de zero, normalmente em torno de 20%. Este espaço é então escondido do usuário. Esse valor não cria, no entanto, um limite de utilização. Se um banco de dados com uma reserva de 20% sofrer 30% de rotatividade, o espaço instantâneo pode crescer além dos limites da reserva de 20% e ocupar espaço não reservado.
+
+O principal benefício de definir uma reserva para um valor como 20% é verificar se algum espaço está sempre disponível para instantâneos. Por exemplo, um volume 1TB com uma reserva de 20% permitiria apenas que um administrador de banco de dados (DBA) armazenasse 800GB TB de dados. Essa configuração garante pelo menos 200GBMB de espaço para consumo de snapshot.
+
+ `percent-snapshot-space`Quando está definido como zero, todo o espaço no volume está disponível para o usuário final, o que proporciona melhor visibilidade. O DBA deve entender que, se ele ou ela vir um volume de 1TB TB que aproveita snapshots, esse 1TB TB de espaço será compartilhado entre dados ativos e a rotatividade do Snapshot.
+
+Não há preferência clara entre a opção um e a opção dois entre os usuários finais.
+
+
+
+== ONTAP e snapshots de terceiros
+
+O Oracle Doc ID 604683,1 explica os requisitos para suporte a instantâneos de terceiros e as várias opções disponíveis para operações de backup e restauração.
+
+O fornecedor terceirizado deve garantir que os snapshots da empresa estejam em conformidade com os seguintes requisitos:
+
+* Os snapshots devem ser integrados às operações de restauração e recuperação recomendadas pela Oracle.
+* Os snapshots devem ser consistentes com falhas de banco de dados no ponto do snapshot.
+* A ordenação de gravação é preservada para cada arquivo dentro de um snapshot.
+
+
+Os produtos de gerenciamento ONTAP e NetApp da Oracle atendem a esses requisitos.

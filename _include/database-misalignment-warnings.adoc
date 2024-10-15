@@ -1,0 +1,9 @@
+= 
+:allow-uri-read: 
+
+
+O log de refazer/transações do banco de dados normalmente gera e/S desalinhadas que podem causar avisos enganosos sobre LUNs desalinhados no ONTAP.
+
+O log executa uma gravação sequencial do arquivo de log com gravações de tamanho variável. Uma operação de gravação de log que não esteja alinhada aos limites do 4KB normalmente não causa problemas de desempenho porque a próxima operação de gravação de log completa o bloco. O resultado é que o ONTAP é capaz de processar quase todas as gravações como blocos 4KB completos, mesmo que os dados em cerca de 4KB blocos tenham sido gravados em duas operações separadas.
+
+Verifique o alinhamento usando utilitários como `sio` ou `dd` que podem gerar e/S em um tamanho de bloco definido. As estatísticas de alinhamento de e/S no sistema de storage podem ser visualizadas com o `stats` comando. Consulte link:../notes/wafl_alignment_verification.html["Verificação do alinhamento do WAFL"] para obter mais informações.

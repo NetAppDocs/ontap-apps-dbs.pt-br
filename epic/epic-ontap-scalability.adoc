@@ -1,0 +1,22 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-ontap-scalability.html 
+keywords: epic,cache,iris 
+summary: Escalabilidade épica para ONTAP 
+---
+= Escalabilidade épica para ONTAP
+:allow-uri-read: 
+
+
+[role="lead"]
+O Guia de configuração de hardware da Epic representa um crescimento de cerca de 20% por ano por 3 anos. No entanto, os ambientes também podem crescer inesperadamente.
+
+O NetApp pode dimensionar a performance e a capacidade de forma otimizada até 12 nós para clusters nas, SAN e objetos. Como resultado, você pode fazer escalabilidade vertical e horizontal sem interrupções à medida que sua empresa cresce.
+
+O Epic Iris oferece recursos adicionais de dimensionamento. Com ele, clientes maiores que têm várias instâncias da Epic podem se consolidar em uma única instância. link:https://www.netapp.com/media/27905-nva-1159-design.pdf["Arquitetura verificada da NetApp na SAN moderna"^]O documento demonstra que a Epic pode dimensionar workloads consolidados de forma otimizada para 720K IOPS em um único HA e fazer escalabilidade horizontal para mais de 4M IOPS em um cluster. Faça a escalabilidade vertical sem interrupções atualizando controladores ou adicionando discos a clusters existentes.
+
+Os dados nas, SAN e de objetos também podem ser movidos entre nós no cluster sem interrupções. Cada par de HA no cluster pode ser qualquer combinação de tipos e tamanhos de sistemas ONTAP FAS e AFF. Você pode equilibrar seus workloads em um único cluster para maximizar seu investimento em storage.
+
+O ONTAP também oferece a opção de usar o storage de objetos no StorageGRID ou na nuvem como destino de backup e/ou destino automático de disposição em camadas de storage frio. Essa funcionalidade permite que você libere automaticamente discos all-flash caros, snapshots em camadas e dados inativos no Object.
+
+Como resultado, a Epic simplesmente funciona melhor com o portfólio de produtos da NetApp, utilizando ONTAP, vários protocolos, StorageGRID e a nuvem de sua preferência. Esses produtos oferecem opções para recuperação de desastres, arquivamento, análises, disposição em camadas e muito mais.

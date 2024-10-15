@@ -1,0 +1,35 @@
+---
+sidebar: sidebar 
+permalink: mssql/mssql-log-directory.html 
+keywords: MSSQL,SQL Server, volumes, LUN, SnapCenter 
+summary: Diretório de log do Microsoft SQL Server 
+---
+= Diretório de log do Microsoft SQL Server
+:allow-uri-read: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O diretório de log é especificado no SQL Server para armazenar dados de backup de log de transação no nível do host. Se você estiver usando o SnapCenter para fazer backup de arquivos de log, cada host do SQL Server usado pelo SnapCenter deve ter um diretório de log do host configurado para executar backups de log. O SnapCenter tem um repositório de banco de dados, portanto, os metadados relacionados a operações de backup, restauração ou clonagem são armazenados em um repositório de banco de dados central.
+
+Os tamanhos do diretório de log do host são calculados da seguinte forma: Tamanho do diretório de log do host ( (tamanho máximo de DB LDF x taxa de alteração diária de log %) x (retenção de snapshot) ÷ (1 - LUN overhead space %) a fórmula de dimensionamento do diretório de log do host assume um espaço de sobrecarga de LUN de 10%
+
+Coloque o diretório de log em um volume dedicado ou LUN. A quantidade de dados no diretório de log do host depende do tamanho dos backups e do número de dias em que os backups são mantidos. O SnapCenter permite apenas um diretório de log de host por host do SQL Server. Você pode configurar os diretórios de log do host em SnapCenter --> Host --> Configurar Plug-in.
+
+[TIP]
+====
+*A NetApp recomenda* o seguinte para um diretório de log do host:
+
+* Certifique-se de que o diretório de log do host não é compartilhado por nenhum outro tipo de dados que possa potencialmente corromper os dados instantâneos do backup.
+* Não coloque bancos de dados do usuário ou bancos de dados do sistema em um LUN que hospeda pontos de montagem.
+* Crie o diretório de log do host em um volume dedicado ao qual o SnapCenter copia logs de transações.
+* Use os assistentes do SnapCenter para migrar bancos de dados para o storage do NetApp, de modo que os bancos de dados sejam armazenados em locais válidos, permitindo operações de backup e restauração bem-sucedidas do SnapCenter. Tenha em mente que o processo de migração é disruptivo e pode fazer com que os bancos de dados fiquem offline enquanto a migração está em andamento.
+* As seguintes condições devem estar em vigor para instâncias de cluster de failover (FCIs) do SQL Server:
++
+** Se você estiver usando uma instância de cluster de failover, o LUN do diretório de log do host deve ser um recurso de disco de cluster no mesmo grupo de cluster que a instância do SQL Server que está sendo feita backup do SnapCenter.
+** Se você estiver usando uma instância de cluster de failover, os bancos de dados de usuário devem ser colocados em LUNs compartilhados que são recursos de cluster de disco físico atribuídos ao grupo de cluster associado à instância do SQL Server.
+
+
+
+
+====

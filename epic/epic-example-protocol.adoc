@@ -1,0 +1,16 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-example-protocol.html 
+keywords: epic,cache,iris 
+summary: Implantação de exemplo épica no ONTAP - protocolo FCP 
+---
+= Implantação de exemplo épica no ONTAP - protocolo FCP
+:allow-uri-read: 
+
+
+[role="lead"]
+Depois que o SVM tiver sido criado, você precisará adicionar protocolos a ele.
+
+Para criar LIFs de dados FCP, clique link:https://docs.netapp.com/us-en/ontap/san-admin/configure-svm-fc-task.html["aqui"^]em .
+
+Os grupos de iniciadores são usados para permitir o acesso do servidor a LUNs. Para criar um iGroup, clique link:https://docs.netapp.com/us-en/ontap/san-admin/manage-san-initiators-task.html#view-manage-san-igroups["aqui"^]em .

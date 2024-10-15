@@ -1,0 +1,103 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-notes-optimization-and-benchmarking.html 
+keywords: oracle, database, ontap, performance, hammerdb, swingbench, calibrate_io, slob2, orion, slob, benchmarking, benchmark 
+summary: Teste de desempenho de banco de dados Oracle 
+---
+= Procedimentos de otimização e benchmarking de desempenho de banco de dados Oracle
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O teste preciso do desempenho de armazenamento de banco de dados é um assunto extremamente complicado. Requer uma compreensão dos seguintes problemas:
+
+* IOPS e taxa de transferência
+* A diferença entre as operações de e/S de primeiro plano e segundo plano
+* O efeito da latência sobre o banco de dados
+* Várias configurações de sistema operacional e rede que também afetam o desempenho do armazenamento
+
+
+Além disso, há tarefas de bancos de dados que não são de storage a serem consideradas. Há um ponto em que a otimização do desempenho de storage não produz benefícios úteis porque a performance do storage não é mais um fator limitante para o desempenho.
+
+A maioria dos clientes de bancos de dados agora seleciona all-flash arrays, o que cria algumas considerações adicionais. Por exemplo, considere o teste de desempenho em um sistema AFF A900 de dois nós:
+
+* Com uma taxa de leitura/gravação de 80/20, dois nós de A900 TB podem fornecer mais de 1M IOPS de banco de dados aleatórios antes mesmo de a latência ultrapassar a marca de 150µs. Isso está muito além das demandas atuais de desempenho da maioria dos bancos de dados que é difícil prever a melhoria esperada. O storage seria, em grande parte, apagado como um gargalo.
+* A largura de banda da rede é uma fonte cada vez mais comum de limitações de desempenho. Por exemplo, as soluções de disco giratório costumam ser gargalos para a performance do banco de dados, pois a latência de e/S é muito alta. Quando as limitações de latência são removidas por um array all-flash, a barreira frequentemente muda para a rede. Isso é especialmente notável com ambientes virtualizados e sistemas blade, onde a verdadeira conetividade de rede é difícil de visualizar. Isso pode complicar o teste de desempenho se o próprio sistema de armazenamento não puder ser totalmente utilizado devido a limitações de largura de banda.
+* Em geral, não é possível comparar o desempenho de um array all-flash com um array que contém discos giratórios devido à latência drasticamente aprimorada dos all-flash arrays. Os resultados dos testes normalmente não são significativos.
+* Comparar o desempenho máximo de IOPS com um array all-flash geralmente não é um teste útil, pois os bancos de dados não são limitados pela e/S do storage Por exemplo, suponha que um array possa suportar 500K IOPS aleatórios, enquanto outro pode sustentar 300KK. A diferença é irrelevante no mundo real se um banco de dados está gastando 99% do seu tempo em processamento de CPU. Os workloads nunca utilizam todas as funcionalidades do storage array. Em contraste, os recursos de IOPS de pico podem ser críticos em uma plataforma de consolidação na qual o storage array deve ser carregado para seus recursos de pico.
+* Considere sempre a latência e o IOPS em qualquer teste de storage. Muitos storage arrays no mercado reivindicam níveis extremos de IOPS, mas a latência torna esses IOPS inúteis em tais níveis. O destino típico com all-flash arrays é a marca 1ms. Uma abordagem melhor para testar não é medir o máximo de IOPS possível, mas determinar quantos IOPS um storage array pode sustentar antes que a latência média seja maior que 1ms.
+
+
+
+
+== Oracle Automatic Workload Repository e benchmarking
+
+O padrão-ouro para comparações de desempenho Oracle é um relatório do Oracle Automatic Workload Repository (AWR).
+
+Existem vários tipos de relatórios AWR. Do ponto de vista de armazenamento, um relatório gerado pela execução do `awrrpt.sql` comando é o mais abrangente e valioso, porque tem como alvo uma instância de banco de dados específica e inclui alguns histogramas detalhados que quebram eventos de e/S de armazenamento com base na latência.
+
+Comparar dois arrays de desempenho idealmente envolve executar a mesma carga de trabalho em cada array e produzir um relatório AWR que segmente precisamente a carga de trabalho. No caso de uma carga de trabalho muito longa, um único relatório de AWR com um tempo decorrido que engloba o tempo de início e de parada pode ser usado, mas é preferível dividir os dados de AWR como vários relatórios. Por exemplo, se um trabalho em lote foi executado da meia-noite às 6 da manhã, crie uma série de relatórios AWR de uma hora das meia-noite às 1 da manhã, das 1 às 2 da manhã, e assim por diante.
+
+Em outros casos, uma consulta muito curta deve ser otimizada. A melhor opção é um relatório AWR baseado em um instantâneo AWR criado quando a consulta começa e um segundo instantâneo AWR criado quando a consulta termina. O servidor de banco de dados deve ser silencioso para minimizar a atividade em segundo plano que obscureceria a atividade da consulta em análise.
+
+
+NOTE: Onde os relatórios AWR não estão disponíveis, os relatórios do Oracle statspack são uma boa alternativa. Eles contêm a maioria das mesmas estatísticas de e/S que um relatório AWR.
+
+
+
+== Oracle AWR e solução de problemas
+
+Um relatório AWR também é a ferramenta mais importante para analisar um problema de desempenho.
+
+Assim como no benchmarking, a solução de problemas de desempenho exige que você meça com precisão uma carga de trabalho específica. Quando possível, forneça dados de AWR ao relatar um problema de desempenho ao centro de suporte da NetApp ou ao trabalhar com um NetApp ou equipe de conta de parceiro sobre uma nova solução.
+
+Ao fornecer dados AWR, considere os seguintes requisitos:
+
+* Execute o `awrrpt.sql` comando para gerar o relatório. A saída pode ser texto ou HTML.
+* Se os Oracle Real Application clusters (RACs) forem usados, gere relatórios AWR para cada instância no cluster.
+* Segmente a hora específica em que o problema existia. O tempo decorrido máximo aceitável de um relatório AWR é geralmente de uma hora. Se um problema persistir por várias horas ou envolver uma operação de várias horas, como um trabalho em lote, forneça vários relatórios AWR de uma hora que cobrem todo o período a ser analisado.
+* Se possível, ajuste o intervalo de instantâneos AWR para 15 minutos. Esta definição permite efetuar uma análise mais detalhada. Isso também requer execuções adicionais de `awrrpt.sql` para fornecer um relatório para cada intervalo de 15 minutos.
+* Se o problema for uma consulta em execução muito curta, forneça um relatório AWR com base em um instantâneo AWR criado quando a operação começar e um segundo instantâneo AWR criado quando a operação terminar. O servidor de banco de dados deve ser silencioso para minimizar a atividade em segundo plano que obscureceria a atividade da operação em análise.
+* Se um problema de desempenho for relatado em determinados momentos, mas não em outros, forneça dados AWR adicionais que demonstrem bom desempenho para comparação.
+
+
+
+
+== calibrar_io
+
+O `calibrate_io` comando nunca deve ser usado para testar, comparar ou comparar sistemas de storage. Conforme indicado na documentação da Oracle, este procedimento calibra os recursos de e/S do armazenamento.
+
+A calibração não é a mesma que o benchmarking. O objetivo deste comando é emitir e/S para ajudar a calibrar as operações do banco de dados e melhorar sua eficiência otimizando o nível de e/S emitido para o host. Como o tipo de I/o realizado pela `calibrate_io` operação não representa a e/S real do usuário do banco de dados, os resultados não são previsíveis e frequentemente nem reprodutíveis.
+
+
+
+== SLOB2
+
+SLOB2, o silly Little Oracle Benchmark, tornou-se a ferramenta preferida para avaliar o desempenho do banco de dados. Foi desenvolvido por Kevin Closson e está disponível em link:https://kevinclosson.net/slob/["https://kevinclosson.net/slob/"^]. Leva minutos para instalar e configurar, e ele usa um banco de dados Oracle real para gerar padrões de e/S em um espaço de tabela definido pelo usuário. É uma das poucas opções de teste disponíveis que pode saturar um array all-flash com e/S. Também é útil para gerar níveis muito mais baixos de e/S para simular workloads de storage com IOPS baixo, mas sensíveis à latência.
+
+
+
+== Banco oscilante
+
+O Swingbench pode ser útil para testar o desempenho do banco de dados, mas é extremamente difícil usar o Swingbench de uma forma que estressa o armazenamento. NetApp não viu nenhum teste do Swingbench que rendeu e/S suficiente para ser uma carga significativa em qualquer array AFF. Em casos limitados, o teste de entrada de pedidos (OET) pode ser usado para avaliar o armazenamento de um ponto de vista de latência. Isso pode ser útil em situações em que um banco de dados tem uma dependência de latência conhecida para consultas específicas. É preciso ter cuidado para garantir que o host e a rede estejam configurados adequadamente para realizar os potenciais de latência de um array all-flash.
+
+
+
+== HammerDB
+
+HammerDB é uma ferramenta de teste de banco de dados que simula benchmarks TPC-C e TPC-H, entre outros. Pode levar muito tempo para construir um conjunto de dados suficientemente grande para executar corretamente um teste, mas pode ser uma ferramenta eficaz para avaliar o desempenho para aplicativos OLTP e data warehouse.
+
+
+
+== Orion
+
+A ferramenta Oracle Orion foi comumente usada com o Oracle 9, mas não foi mantida para garantir a compatibilidade com alterações em vários sistemas operacionais de host. Raramente é usado com Oracle 10i ou Oracle 11i devido a incompatibilidades com o SO e configuração de armazenamento.
+
+A Oracle reescreveu a ferramenta, e ela é instalada por padrão com o Oracle 12c. Embora este produto tenha sido melhorado e use muitas das mesmas chamadas que um banco de dados Oracle real usa, ele não usa exatamente o mesmo caminho de código ou comportamento de e/S usado pela Oracle. Por exemplo, a maioria das e/S Oracle são executadas de forma síncrona, o que significa que o banco de dados pára até que a e/S esteja concluída à medida que a operação de e/S for concluída em primeiro plano. Simplesmente inundar um sistema de armazenamento com e/S aleatórias não é uma reprodução de e/S Oracle real e não oferece um método direto de comparar matrizes de armazenamento ou medir o efeito das alterações de configuração.
+
+Dito isto, existem alguns casos de uso para Orion, como a medição geral do desempenho máximo possível de uma configuração particular de armazenamento de rede-host, ou para medir a integridade de um sistema de armazenamento. Com testes cuidadosos, testes Orion utilizáveis podem ser desenvolvidos para comparar matrizes de armazenamento ou avaliar o efeito de uma alteração de configuração, desde que os parâmetros incluam consideração de IOPS, taxa de transferência e latência e tentativa de replicar fielmente uma carga de trabalho realista.

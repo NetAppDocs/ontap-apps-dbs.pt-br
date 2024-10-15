@@ -1,0 +1,20 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dp-nvfail.html 
+keywords: oracle, metrocluster, nvfail 
+summary: Configurando o NVFAIL para proteger bancos de dados Oracle 
+---
+= Bancos de dados Oracle e NVFAIL
+:allow-uri-read: 
+
+
+[role="lead"]
+O NVFAIL é um recurso do ONTAP que garante a integridade durante cenários de failover catastróficos.
+
+Os bancos de dados estão vulneráveis a corrupção durante eventos de failover de storage porque mantêm grandes caches internos. Se um evento catastrófico exigir forçar um failover de ONTAP ou forçar o switchover de MetroCluster, independentemente da integridade da configuração geral, o resultado será confirmado anteriormente que as alterações podem ser efetivamente descartadas. O conteúdo da matriz de armazenamento salta para trás no tempo, e o estado do cache do banco de dados não reflete mais o estado dos dados no disco. Essa inconsistência resulta em corrupção de dados.
+
+O cache pode ocorrer na camada de aplicativo ou servidor. Por exemplo, uma configuração do Oracle Real Application Cluster (RAC) com servidores ativos em um site primário e remoto armazena dados em cache no Oracle SGA. Uma operação de comutação forçada que resultou em dados perdidos colocaria o banco de dados em risco de corrupção porque os blocos armazenados no SGA podem não corresponder aos blocos no disco.
+
+Um uso menos óbvio do cache está na camada do sistema de arquivos do sistema operacional. Blocos de um sistema de arquivos NFS montado podem ser armazenados em cache no sistema operacional. Como alternativa, um sistema de arquivos em cluster baseado em LUNs localizados no site principal pode ser montado em servidores no local remoto e, mais uma vez, os dados podem ser armazenados em cache. Uma falha do NVRAM ou de uma tomada forçada ou comutação forçada nessas situações pode resultar em corrupção do sistema de arquivos.
+
+O ONTAP protege bancos de dados e sistemas operacionais desse cenário com o NVFAIL e suas configurações associadas.

@@ -1,0 +1,43 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-vsphere-policy-and-vvols.html 
+keywords: Data protection, Space reclamation, VM and datastore cloning, Storage efficiency, thin provisioning, QoS, SIOC, Storage Distributed Resource Scheduler, DRS, Active IQ Unified Manager, Encryption 
+summary: O SnapCenter permite criar políticas de backup que podem ser aplicadas a vários trabalhos. Essas políticas podem definir agendamento, retenção, replicação e outros recursos. Elas continuam permitindo a seleção opcional de snapshots consistentes com VM, o que aproveita a capacidade do hipervisor de silenciar a I/o antes de tirar um snapshot da VMware. 
+---
+= VVols e gerenciamento baseado em políticas de storage
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+As VMware vSphere APIs for Storage Awareness (VASA) facilitam para um administrador de storage configurar datastores com recursos bem definidos e permitem que o administrador da VM use-os sempre que necessário para provisionar VMs sem ter que interagir uns com os outros.
+
+Vale a pena dar uma olhada nessa abordagem para ver como ela pode otimizar suas operações de storage de virtualização e evitar muito trabalho trivial.
+
+Antes do VASA, os administradores de VM podiam definir políticas de armazenamento de VM, mas precisavam trabalhar com o administrador de armazenamento para identificar armazenamentos de dados apropriados, geralmente usando documentação ou convenções de nomenclatura. Com o VASA, o administrador de storage pode definir uma variedade de recursos de storage, incluindo desempenho, disposição em camadas, criptografia e replicação. Um conjunto de recursos para um volume ou um conjunto de volumes é chamado de Perfil de capacidade de armazenamento (SCP).
+
+O SCP suporta QoS mínimo e/ou máximo para vVols de dados de uma VM. A QoS mínima é suportada apenas em sistemas AFF. As ferramentas do ONTAP para VMware vSphere incluem um painel que exibe o desempenho granular da VM e a capacidade lógica para vVols em sistemas ONTAP.
+
+A figura a seguir mostra as ferramentas do ONTAP para o painel vVols do VMware vSphere 9,8.
+
+image:vsphere_ontap_image7.png["Ferramentas do ONTAP para o painel vVols do VMware vSphere 9,8"]
+
+Após a definição do perfil de funcionalidade de storage, ele pode ser usado para provisionar VMs usando a política de storage que identifica seus requisitos. O mapeamento entre a política de armazenamento de VM e o perfil de capacidade de armazenamento de dados permite que o vCenter exiba uma lista de datastores compatíveis para seleção. Essa abordagem é conhecida como gerenciamento baseado em políticas de storage.
+
+O VASA fornece a tecnologia para consultar o armazenamento e retornar um conjunto de recursos de armazenamento ao vCenter. Os fornecedores do VASA fornecem a tradução entre as APIs e construções do sistema de storage e as APIs da VMware que são entendidas pelo vCenter. O fornecedor VASA da NetApp para ONTAP é oferecido como parte das ferramentas da ONTAP para a VM do dispositivo VMware vSphere, e o plug-in do vCenter fornece a interface para provisionar e gerenciar datastores vVol, bem como a capacidade de definir perfis de capacidade de armazenamento (SCPs).
+
+O ONTAP dá suporte aos armazenamentos de dados VMFS e NFS VVol. O uso do vVols com armazenamentos de dados SAN traz alguns dos benefícios do NFS, como granularidade no nível da VM. Aqui estão algumas práticas recomendadas a serem consideradas e você pode encontrar informações adicionais emlink:vmware-vvols-overview.html["TR-4400"^]:
+
+* Um datastore da VVol pode consistir em vários volumes FlexVol em vários nós dos clusters. A abordagem mais simples é um único datastore, mesmo quando os volumes têm capacidades diferentes. O SPBM garante que um volume compatível seja usado para a VM. No entanto, todos os volumes precisam fazer parte de um único SVM do ONTAP e acessá-los usando um único protocolo. Um LIF por nó para cada protocolo é suficiente. Evite o uso de várias versões do ONTAP em um único datastore da vVol porque as funcionalidades do storage podem variar entre lançamentos.
+* Use as ferramentas do ONTAP para o plug-in do VMware vSphere para criar e gerenciar datastores da evolução. Além de gerenciar o datastore e seu perfil, ele cria automaticamente um endpoint de protocolo para acessar os vVols, se necessário. Se os LUNs forem usados, observe que os PES de LUN são mapeados usando IDs de LUN 300 e superiores. Verifique se a configuração do sistema avançado do host ESXi `Disk.MaxLUN` permite um número de ID LUN maior que 300 (o padrão é 1.024). Execute esta etapa selecionando o host ESXi no vCenter, a guia Configurar e localize `Disk.MaxLUN` na lista de Configurações avançadas do sistema.
+* Não instale nem migre o provedor VASA, o vCenter Server (baseado em appliance ou Windows) ou as ferramentas do ONTAP para o próprio VMware vSphere em um datastore vVols, porque eles são mutuamente dependentes, limitando sua capacidade de gerenciá-los no caso de uma interrupção de energia ou outra interrupção do data center.
+* Faça backup da VM do provedor VASA regularmente. No mínimo, crie instantâneos por hora do armazenamento de dados tradicional que contém o Fornecedor VASA. Para obter mais informações sobre como proteger e recuperar o provedor VASA, consulte este https://kb.netapp.com/Advice_and_Troubleshooting/Data_Storage_Software/Virtual_Storage_Console_for_VMware_vSphere/Virtual_volumes%3A_Protecting_and_Recovering_the_NetApp_VASA_Provider["Artigo da KB"^].
+
+
+A figura a seguir mostra os componentes do vVols.
+
+image:vsphere_ontap_image8.png["Componentes do vVols"]

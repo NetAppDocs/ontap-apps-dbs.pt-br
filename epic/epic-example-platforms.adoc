@@ -1,0 +1,16 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-example-platforms.html 
+keywords: epic,cache,iris 
+summary: Implementação de exemplo épico no ONTAP - protocolos 
+---
+= Implementação de exemplo épico no ONTAP - plataformas
+:allow-uri-read: 
+
+
+[role="lead"]
+Para workloads de aplicações, periódicos e bancos de dados ODB da Epic, a Epic recomenda a apresentação de storage nos servidores como LUNs FCP.
+
+O NetApp também dá suporte ao uso de NVMe/FC (se você tiver versões dos sistemas operacionais AIX e RHEL capazes) e melhora a performance. FCP e NVMe/FC podem coexistir na mesma malha.
+
+Os clientes da NetApp executam com sucesso todos os workloads da Epic na nuvem do Azure. A AWS também pode executar workloads da Epic. Com o NetApp Cloud Volumes ONTAP e o NetApp Cloud volumes Services, o NetApp oferece as funcionalidades de classe empresarial e a performance necessária para executar a Epic na nuvem com eficiência. As opções de nuvem da NetApp fornecem bloco sobre iSCSI e arquivo em NFS ou SMB.

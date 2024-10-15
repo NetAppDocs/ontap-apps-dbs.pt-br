@@ -1,0 +1,72 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dp-data-availability.html 
+keywords: data protection, availability, takeover, giveback, switchover, switchback 
+summary: Maximizar a disponibilidade com o banco de dados Oracle no ONTAP 
+---
+= Disponibilidade de banco de dados Oracle com ONTAP
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O ONTAP foi projetado para oferecer a máxima disponibilidade de banco de dados Oracle. Uma descrição completa dos recursos de alta disponibilidade do ONTAP está além do escopo deste documento. No entanto, assim como na proteção de dados, uma compreensão básica dessa funcionalidade é importante ao projetar uma infraestrutura de banco de dados.
+
+
+
+== Pares HA
+
+A unidade básica de alta disponibilidade é o par de HA. Cada par contém links redundantes para suportar a replicação de dados para o NVRAM. NVRAM não é um cache de gravação. A RAM dentro do controlador serve como cache de gravação. O objetivo do NVRAM é registrar temporariamente os dados como uma salvaguarda contra falhas inesperadas do sistema. A este respeito, é semelhante a um log refazer banco de dados.
+
+Tanto o NVRAM quanto o log refazer de banco de dados são usados para armazenar dados rapidamente, permitindo que as alterações aos dados sejam confirmadas o mais rápido possível. A atualização para os dados persistentes em unidades (ou datafiles) não ocorre até mais tarde durante um processo chamado ponto de verificação em plataformas ONTAP e na maioria dos bancos de dados. Nem os dados do NVRAM nem os logs de refazer do banco de dados são lidos durante operações normais.
+
+Se um controlador falhar abruptamente, é provável que haja alterações pendentes armazenadas no NVRAM que ainda não foram gravadas nas unidades. O controlador do parceiro deteta a falha, controla as unidades e aplica as alterações necessárias que foram armazenadas no NVRAM.
+
+
+
+== Takeover e giveback
+
+Takeover e giveback refere-se ao processo de transferência de responsabilidade por recursos de storage entre nós em um par de HA. Há dois aspetos para a aquisição e a giveback:
+
+* Gestão da conetividade de rede que permite o acesso às unidades
+* Gestão das próprias unidades
+
+
+As interfaces de rede que suportam o tráfego CIFS e NFS são configuradas com um local de origem e failover. Uma aquisição inclui mover as interfaces de rede para sua casa temporária em uma interface física localizada na(s) mesma(s) sub-rede(s) do local original. A giveback inclui mover as interfaces de rede de volta para seus locais originais. O comportamento exato pode ser ajustado conforme necessário.
+
+As interfaces de rede que suportam protocolos de bloco SAN, como iSCSI e FC, não são relocadas durante a aquisição e a giveback. Em vez disso, os LUNs devem ser provisionados com caminhos que incluam um par de HA completo, o que resulta em um caminho primário e um caminho secundário.
+
+
+NOTE: Caminhos adicionais para controladores adicionais também podem ser configurados para dar suporte à realocação de dados entre nós em um cluster maior, mas isso não faz parte do processo de HA.
+
+O segundo aspeto da aquisição e da giveback é a transferência da propriedade do disco. O processo exato depende de vários fatores, incluindo o motivo da aquisição/giveback e as opções de linha de comando emitidas. O objetivo é realizar a operação da forma mais eficiente possível. Embora o processo geral possa parecer exigir vários minutos, o momento real em que a propriedade da unidade é transferida de nó para nó geralmente pode ser medido em segundos.
+
+
+
+== Tempo de takeover
+
+A e/S do host tem uma pequena pausa na e/S durante as operações de takeover e giveback, mas não deve haver interrupção do aplicativo em um ambiente configurado corretamente. O processo de transição real no qual a e/S é atrasada geralmente é medido em segundos, mas o host pode exigir tempo adicional para reconhecer a alteração nos caminhos de dados e reenviar operações de e/S.
+
+A natureza da interrupção depende do protocolo:
+
+* Uma interface de rede que suporta tráfego NFS e CIFS emite uma solicitação ARP (Address Resolution Protocol) para a rede após a transição para um novo local físico. Isso faz com que os switches de rede atualizem suas tabelas de endereços de controle de acesso de Mídia (MAC) e retomem a e/S de processamento A interrupção no caso de aquisição planejada e a giveback geralmente é medida em segundos e, em muitos casos, não é detetável. Algumas redes podem ser mais lentas para reconhecer completamente a mudança no caminho da rede, e alguns sistemas operacionais podem colocar em fila muita e/S em um tempo muito curto que deve ser tentado novamente. Isto pode prolongar o tempo necessário para retomar a I/O.
+* Uma interface de rede que suporte protocolos SAN não faz a transição para um novo local. Um sistema operacional do host deve alterar o caminho ou os caminhos em uso. A pausa em I/o observada pelo host depende de vários fatores. Do ponto de vista do sistema de armazenamento, o período em que a e/S não pode ser atendida é de apenas alguns segundos. No entanto, diferentes sistemas operacionais de host podem exigir tempo adicional para permitir que uma e/S termine o tempo limite antes de tentar novamente. Os sistemas operacionais mais novos são mais capazes de reconhecer uma mudança de caminho muito mais rapidamente, mas os sistemas operacionais mais antigos geralmente exigem até 30 segundos para reconhecer uma mudança.
+
+
+Os tempos de aquisição esperados durante os quais o sistema de storage não pode fornecer dados a um ambiente de aplicativo são mostrados na tabela abaixo. Não deve haver erros em qualquer ambiente de aplicativo, o controle deve aparecer como uma pequena pausa no processamento de e/S.
+
+|===
+
+
+|  | NFS | AFF | ASA 
+
+
+| Takeover planejado | 15 seg | 6-10 seg | 2-3 seg 
+
+
+| Takeover não planejado | 30 seg | 6-10 seg | 2-3 seg 
+|===

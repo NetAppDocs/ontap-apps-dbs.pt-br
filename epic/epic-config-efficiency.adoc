@@ -1,0 +1,28 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-config-efficiency.html 
+keywords: epic,cache,iris 
+summary: Configuração de eficiência de storage épica 
+---
+= Configuração de eficiência de storage épica
+:allow-uri-read: 
+
+
+[role="lead"]
+As eficiências de linha do ONTAP são ativadas por padrão e funcionam independentemente do protocolo de storage, aplicação ou camada de storage.
+
+A eficiência reduz a quantidade de dados gravados em um storage flash caro e reduz o número de unidades necessárias. O ONTAP preserva a eficiência com a replicação. Cada uma das eficiências tem pouco ou nenhum efeito na performance, mesmo para uma aplicação sensível à latência, como a Epic.
+
+[TIP]
+====
+*A NetApp recomenda* ativar todas as configurações de eficiência para maximizar a utilização do disco. Estas definições estão ativadas por predefinição nos sistemas baseados em AFF e ASA.
+
+====
+Os recursos a seguir possibilitam essa eficiência de storage:
+
+* A deduplicação economiza espaço no storage primário ao remover cópias redundantes de blocos em um volume que hospeda LUNs. Esta opção recomendada está ativada por predefinição.
+* A compactação in-line reduz a quantidade de dados a serem gravados em disco, e uma economia considerável de espaço é obtida com os workloads da Epic. Esta opção recomendada está ativada por predefinição.
+* A compactação in-line leva 4K blocos menos da metade cheios e os combina em um único bloco. Esta opção recomendada está ativada por predefinição.
+* A thin replication está no centro do portfólio de software de proteção de dados da NetApp, que inclui o software NetApp SnapMirror. O thin replication SnapMirror protege os dados essenciais aos negócios, ao mesmo tempo em que minimiza os requisitos de capacidade de storage. *A NetApp recomenda* a ativação desta opção.
+* Deduplicação de agregado. A deduplicação sempre esteve no nível do volume. Com o ONTAP 9.2, a deduplicação agregada tornou-se disponível, proporcionando economia adicional de redução de disco. A deduplicação agregada pós-processo foi adicionada com o ONTAP 9.3. *A NetApp recomenda* a ativação desta opção.
+

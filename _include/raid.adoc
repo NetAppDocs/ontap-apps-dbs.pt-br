@@ -1,0 +1,9 @@
+= 
+:allow-uri-read: 
+
+
+RAID 4, RAID 5, RAID 6, RAID DP e RAID-teC usam paridade para garantir que a falha da unidade não resulte na perda de dados. Essas opções de RAID oferecem uma utilização do storage muito melhor em comparação com o espelhamento, mas a maioria das implementações de RAID tem uma desvantagem que afeta as operações de gravação. A conclusão de uma operação de gravação em outras implementações de RAID pode exigir várias leituras de unidade para regenerar os dados de paridade, um processo comumente chamado de penalidade de RAID.
+
+O ONTAP, no entanto, não incorre nessa penalidade de RAID. Isso ocorre devido à integração do NetApp WAFL (Write Anywhere File Layout) com a camada RAID. As operações de gravação são Unidas na RAM e preparadas como um stripe RAID completo, incluindo geração de paridade. O ONTAP não precisa executar uma leitura para concluir uma gravação, o que significa que o ONTAP e o WAFL evitam a penalidade de RAID. A performance de operações críticas à latência, como refazer o log, não é impedida, e as gravações aleatórias de arquivos de dados não incorrem em nenhuma penalidade de RAID resultante da necessidade de gerar novamente a paridade.
+
+Com relação à confiabilidade estatística, até mesmo o RAID DP oferece melhor proteção do que o espelhamento RAID. O principal problema é a demanda feita nas unidades durante uma reconstrução RAID. Com um conjunto RAID espelhado, o risco de perda de dados de uma unidade falhar durante a reconstrução para seu parceiro no conjunto RAID é muito maior do que o risco de uma falha de unidade tripla em um conjunto RAID DP.

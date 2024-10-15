@@ -1,0 +1,19 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-overview.html 
+keywords: oracle, database, ontap, TR-3633 
+summary: O ONTAP foi projetado para bancos de dados Oracle. Saiba como! 
+---
+= Bancos de dados Oracle no ONTAP
+:allow-uri-read: 
+
+
+[role="lead"]
+O ONTAP foi projetado para bancos de dados Oracle. Por décadas, o ONTAP foi otimizado para as demandas exclusivas de e/S de banco de dados relacional e vários recursos do ONTAP foram criados especificamente para atender às necessidades dos bancos de dados Oracle e até mesmo a pedido da própria Oracle Inc..
+
+
+NOTE: Esta documentação substitui esses relatórios técnicos publicados anteriormente _TR-3633: Bancos de dados Oracle no ONTAP; TR-4591: Proteção de dados Oracle: Backup, recuperação, replicação; TR-4592: Oracle no MetroCluster; e TR-4534: Migração de bancos de dados Oracle para sistemas de armazenamento NetApp_
+
+Além das muitas maneiras possíveis pelas quais o ONTAP agrega valor ao seu ambiente de banco de dados, há também uma grande variedade de requisitos do usuário, incluindo tamanho do banco de dados, requisitos de desempenho e necessidades de proteção de dados. As implantações conhecidas do storage NetApp incluem tudo, desde um ambiente virtualizado de aproximadamente 6.000 bancos de dados executados no VMware ESX até um data warehouse de instância única atualmente dimensionado a 996TB TB e em crescimento. Como resultado, existem algumas práticas recomendadas claras para configurar um banco de dados Oracle no storage NetApp.
+
+Os requisitos para operar um banco de dados Oracle no storage NetApp são abordados de duas maneiras. Em primeiro lugar, quando existir uma boa prática clara, ela será chamada especificamente. Em um alto nível, muitas considerações de design que devem ser abordadas pelos arquitetos de soluções de armazenamento Oracle com base em seus requisitos de negócios específicos serão explicadas.

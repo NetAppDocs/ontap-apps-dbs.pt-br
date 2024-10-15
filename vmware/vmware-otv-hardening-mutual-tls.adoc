@@ -1,0 +1,59 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-otv-hardening-mutual-tls.html 
+keywords: VMware, Data protection, security, OTV, Hardening, ONTAP Tools 
+summary: Guia de fortalecimento da segurança para ferramentas do ONTAP para VMware vSphere, criptografia TLS mútua para conexões de gerenciamento de storage. 
+---
+= TLS mútuo (autenticação baseada em certificado)
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+As versões 9,7 e posteriores do ONTAP suportam comunicação TLS mútua. A partir das Ferramentas do ONTAP para VMware e vSphere 9,12, o TLS mútuo é usado para comunicação com clusters recém-adicionados (dependendo da versão do ONTAP).
+
+
+
+== ONTAP
+
+Para todos os sistemas de armazenamento adicionados anteriormente: Durante uma atualização, todos os sistemas de armazenamento de dados adicionados serão auto-confiáveis e os mecanismos de autenticação baseados em certificado serão configurados.
+
+Como na captura de tela abaixo, a página de configuração do cluster mostrará o status de TLS mútuo (autenticação baseada em certificado), configurado para cada cluster.
+
+image:vmware-otv-hardening-mutual-tls-image2.png["image2mm, largura 468mm, altura 158mm"]
+
+
+
+=== *Cluster Add*
+
+Durante o fluxo de trabalho de adição de cluster, se o cluster que está sendo adicionado suportar MTLS, o MTLS será configurado por padrão. O usuário não precisa fazer nenhuma configuração para isso. A captura de tela abaixo mostra a tela apresentada ao usuário durante a adição do cluster.
+
+image:vmware-otv-hardening-mutual-tls-image3.png["Adicionar sistema de armazenamento, largura de 450mm, altura de 400mm"]
+
+image:vmware-otv-hardening-mutual-tls-image4.png["Adicionar sistema de armazenamento, largura de 468mm, altura de 416mm"]
+
+image:vmware-otv-hardening-mutual-tls-image5.png["Adicionar sistema de armazenamento, largura de 450mm, altura de 400mm"]
+
+image:vmware-otv-hardening-mutual-tls-image6.png["Adicionar sistema de armazenamento, largura de 468mm, altura de 516mm"]
+
+
+
+=== Cluster Edit (Editar cluster)
+
+Durante a operação de edição de cluster, existem dois cenários:
+
+* Se o certificado ONTAP expirar, o usuário terá que obter o novo certificado e enviá-lo.
+* Se o certificado OTV expirar, o usuário pode regenerá-lo marcando a caixa de seleção.
++
+** _Gerar um novo certificado de cliente para o ONTAP._
+
+
+
+
+image:vmware-otv-hardening-mutual-tls-image7.png["Modificar o sistema de armazenamento, largura 468, altura 461"]
+
+image:vmware-otv-hardening-mutual-tls-image8.png["Modificar o sistema de armazenamento, largura 468, altura 461"]

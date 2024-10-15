@@ -1,0 +1,22 @@
+---
+sidebar: sidebar 
+permalink: mssql/mssql-dr-snapmirror.html 
+keywords: MSSQL,SQL Server, disaster recovery, snapmirror 
+summary: Recuperação de desastres do Microsoft SQL Server com o ONTAP 
+---
+= Recuperação de desastres do Microsoft SQL Server com o SnapMirror
+:allow-uri-read: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Veja a seguir as recomendações do SnapMirror para SQL Server:
+
+* Se o SMB for usado, o SVM de destino deve ser membro do mesmo domínio do ative Directory do qual o SVM de origem é membro, de modo que as listas de controle de acesso (ACLs) armazenadas em arquivos nas não sejam quebradas durante a recuperação de um desastre.
+* Não é necessário usar nomes de volume de destino iguais aos nomes de volume de origem, mas pode tornar o processo de montagem de volumes de destino no destino mais simples de gerenciar. Se o SMB for usado, você deve tornar o namespace nas de destino idêntico em caminhos e estrutura de diretório para o namespace de origem.
+* Para fins de consistência, não programe atualizações do SnapMirror a partir dos controladores. Em vez disso, ative as atualizações do SnapMirror do SnapCenter para atualizar o SnapMirror após a conclusão da cópia de segurança completa ou de registo.
+* Distribua volumes que contêm dados do SQL Server entre diferentes nós do cluster para permitir que todos os nós do cluster compartilhem a atividade de replicação do SnapMirror. Essa distribuição otimiza o uso de recursos de nós.
+* Usar a replicação síncrona, onde a demanda por recuperação rápida de dados é mais alta e soluções assíncronas para flexibilidade no RPO.
+
+
+Para obter mais informações sobre o SnapMirror, link:https://www.netapp.com/us/media/tr-4015.pdf["TR-4015: Guia de práticas recomendadas e configuração do SnapMirror para ONTAP 9"^]consulte .

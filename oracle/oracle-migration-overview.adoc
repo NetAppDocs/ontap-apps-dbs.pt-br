@@ -1,0 +1,23 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-migration-overview.html 
+keywords: oracle, ontap, migrations, TR-4534 
+summary: Introdução à migração de armazenamento Oracle 
+---
+= Migração de bancos de dados Oracle para sistemas de storage ONTAP
+:allow-uri-read: 
+
+
+[role="lead"]
+Aproveitar os recursos de uma nova plataforma de storage tem um requisito inevitável; os dados devem ser colocados no novo sistema de storage. O ONTAP simplifica o processo de migração, incluindo migrações e atualizações do ONTAP para o ONTAP, importações de LUN estrangeiras e procedimentos para o uso do sistema operacional host ou do software de banco de dados Oracle diretamente.
+
+
+NOTE: Esta documentação substitui o relatório técnico publicado anteriormente _TR-4534: Migração de bancos de dados Oracle para sistemas de armazenamento NetApp_
+
+No caso de um novo projeto de banco de dados, isso não é uma preocupação porque os ambientes de banco de dados e aplicativos são construídos no lugar. A migração, no entanto, apresenta desafios especiais em relação à interrupção dos negócios, ao tempo necessário para a conclusão da migração, aos conjuntos de habilidades necessários e à minimização dos riscos.
+
+
+
+== Scripts
+
+Exemplos de scripts são fornecidos nesta documentação. Esses scripts fornecem métodos de exemplo para automatizar vários aspetos da migração para reduzir a chance de erros do usuário. Os scripts podem reduzir as demandas gerais da equipe DE TI responsável por uma migração e acelerar o processo geral. Todos esses scripts são extraídos de projetos de migração reais executados pelos Serviços profissionais da NetApp e parceiros da NetApp. Exemplos de seu uso são mostrados ao longo desta documentação.

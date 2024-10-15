@@ -1,0 +1,21 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-storage-san-config-asmru.html 
+keywords: ontap, thin provisioning 
+summary: Utilitário de reclamação ASM com deteção de bloco zero ONTAP 
+---
+= Utilitário de reclamação ASM e deteção de bloco zero ONTAP
+:allow-uri-read: 
+
+
+[role="lead"]
+O ONTAP remove com eficiência blocos zerados gravados em um arquivo ou LUN quando a compactação in-line está ativada. Utilitários como o Oracle ASM Reclamation Utility (ASRU) funcionam escrevendo zeros em extensões ASM não utilizadas.
+
+Isso permite que os DBAs recuperem espaço na matriz de armazenamento após os dados serem excluídos. O ONTAP interceta os zeros e desaloca o espaço do LUN. O processo de recuperação é extremamente rápido porque nenhum dado está sendo gravado no sistema de storage.
+
+Do ponto de vista do banco de dados, o grupo de discos ASM contém zeros, e a leitura dessas regiões dos LUNs resultaria em um fluxo de zeros, mas o ONTAP não armazena os zeros nas unidades. Em vez disso, são feitas mudanças simples de metadados que marcam internamente as regiões zeroadas do LUN como vazias de qualquer dado.
+
+Por motivos semelhantes, os testes de desempenho envolvendo dados isolados não são válidos, pois blocos de zeros não são realmente processados como gravações no storage array.
+
+
+NOTE: Ao usar o ASRU, certifique-se de que todos os patches recomendados pela Oracle estejam instalados.

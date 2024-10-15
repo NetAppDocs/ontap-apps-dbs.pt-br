@@ -1,0 +1,37 @@
+---
+sidebar: sidebar 
+permalink: microsoft/win_deploy_hyperv_slm.html 
+keywords: Windows,Hyper-V,VHDX,VM,Virtual 
+summary: Como configurar a migração ao vivo de armazenamento Hyper-V 
+---
+= Implante a migração ao vivo do Hyper-V Storage
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Saiba como configurar a migração ao vivo de armazenamento Hyper-V
+
+
+
+== Pré-requisitos
+
+* Você deve ter um servidor Hyper-V autônomo com armazenamento independente (DAS ou LUN) ou armazenamento SMB (local ou compartilhado entre outros servidores Hyper-V).
+* O servidor Hyper-V deve ser configurado para migração em tempo real. Revise a seção sobre implantação no link:win_deploy_hyperv_replica_oce.html["Migração ao vivo fora de um ambiente em cluster"].
+
+
+
+
+== Implantação
+
+. Abra o Gerenciador do Hyper-V.
+. Clique com o botão direito em uma VM e clique em mover.
+. Selecione mover o armazenamento da máquina virtual.
+. Selecione opções para mover o armazenamento de acordo com as suas preferências.
+. Forneça o novo local para os itens da VM.
+. Revise o resumo e clique em OK para mover o armazenamento da VM.
+

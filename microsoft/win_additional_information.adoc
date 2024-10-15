@@ -1,0 +1,25 @@
+---
+sidebar: sidebar 
+permalink: microsoft/win_additional_information.html 
+keywords: Windows,Hyper-V,VHDX,VM,Virtual 
+summary: Recursos adicionais para Microsoft Windows e Hyper-V. 
+---
+= Onde encontrar informações adicionais
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Recursos adicionais para Microsoft Windows e Hyper-V.
+
+* Conceitos de ONTAP https://docs.netapp.com/us-en/ontap/concepts/introducing-data-management-software-concept.html[]
+* Práticas recomendadas para SAN moderna https://www.netapp.com/media/10680-tr4080.pdf[]
+* Disponibilidade e integridade de dados de array all-SAN NetApp com o NetApp ASA https://www.netapp.com/pdf.html?item=/media/85671-tr-4968.pdf[]
+* Documentação SMB https://docs.netapp.com/us-en/ontap/smb-admin/index.html[]
+* Introdução ao Nano Server https://technet.microsoft.com/library/mt126167.aspx[]
+* Novidades no Hyper-V no Windows Server https://technet.microsoft.com/windows-server-docs/compute/hyper-v/what-s-new-in-hyper-v-on-windows[]
+

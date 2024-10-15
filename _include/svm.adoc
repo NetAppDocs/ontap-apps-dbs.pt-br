@@ -1,0 +1,24 @@
+= SVMs
+:allow-uri-read: 
+
+
+Um SVM, conhecido como vserver na CLI do ONTAP, é uma unidade funcional básica de storage e é útil comparar um SVM com um convidado em um servidor VMware ESX.
+
+Quando instalado pela primeira vez, o ESX não tem recursos pré-configurados, como hospedar um sistema operacional convidado ou suportar um aplicativo de usuário final. É um recipiente vazio até que uma máquina virtual (VM) seja definida. ONTAP é semelhante. Quando o ONTAP é instalado pela primeira vez, ele não tem funcionalidades de fornecimento de dados até que um SVM seja criado. É a personalidade do SVM que define os serviços de dados.
+
+Assim como em outros aspectos da arquitetura de storage, as melhores opções para SVM e design de interface lógica (LIF) dependem muito dos requisitos de dimensionamento e das necessidades empresariais.
+
+
+
+== SVMs
+
+Não há prática recomendada oficial para provisionar SVMs para ONTAP. A abordagem certa depende dos requisitos de gerenciamento e segurança.
+
+A maioria dos clientes opera um SVM principal para a maioria de seus requisitos diários, mas cria um pequeno número de SVMs para necessidades especiais. Por exemplo, você pode querer criar:
+
+* SVM para um banco de dados de negócios essencial gerenciado por uma equipe de especialistas
+* Um SVM para um grupo de desenvolvimento a quem controle administrativo completo foi dado para que eles possam gerenciar seu próprio storage de forma independente
+* SVM para dados empresariais confidenciais, como recursos humanos ou dados de relatórios financeiros, em que a equipe administrativa deve ser limitada
+
+
+Em um ambiente de alocação a vários clientes, os dados de cada locatário podem receber um SVM dedicado. O limite para o número de SVMs e LIFs por cluster, par de HA e nó depende do protocolo que está sendo usado, do modelo de nó e da versão do ONTAP. Consulte o link:https://hwu.netapp.com/["NetApp Hardware Universe"^] para estes limites.

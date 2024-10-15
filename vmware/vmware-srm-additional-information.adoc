@@ -1,0 +1,27 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-srm-additional-information.html 
+keywords: vmware, site, recovery manager, vsrm, hybrid, cloud, additional, information 
+summary: Para saber mais sobre as informações descritas neste documento, consulte os seguintes documentos e/ou sites. 
+---
+= Informações adicionais
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Para saber mais sobre as informações descritas neste documento, consulte os seguintes documentos e/ou sites:
+
+* TR-4597: VMware vSphere for ONTAP link:vmware-vsphere-overview.html["https://docs.netapp.com/us-en/ontap-apps-dbs/vmware/vmware-vsphere-overview.html"]
+* TR-4400: VMware vSphere Virtual volumes com ONTAP link:vmware-vvols-overview.html["https://docs.netapp.com/us-en/ontap-apps-dbs/vmware/vmware-vvols-overview.html"]
+* TR-4015 Guia de práticas recomendadas de configuração do SnapMirror para ONTAP 9 link:https://www.netapp.com/media/17229-tr4015.pdf?v=127202175503P["https://www.netapp.com/media/17229-tr4015.pdf?v=127202175503P"]
+* Criador de usuários RBAC para ONTAP link:https://mysupport.netapp.com/site/tools/tool-eula/rbac["https://mysupport.netapp.com/site/tools/tool-eula/rbac"]
+* Ferramentas do ONTAP para recursos do VMware vSphere link:https://mysupport.netapp.com/site/products/all/details/otv/docsandkb-tab["https://mysupport.netapp.com/site/products/all/details/otv/docsandkb-tab"]
+* Documentação do VMware Site Recovery Manager link:https://docs.vmware.com/en/Site-Recovery-Manager/index.html["https://docs.vmware.com/en/Site-Recovery-Manager/index.html"]
+
+
+Consulte o link:http://mysupport.netapp.com/matrix["Ferramenta de Matriz de interoperabilidade (IMT)"]no site de suporte da NetApp para validar se as versões exatas de produtos e recursos descritas neste documento são compatíveis com o seu ambiente específico. O NetApp IMT define os componentes e versões do produto que podem ser usados para construir configurações compatíveis com o NetApp. Os resultados específicos dependem da instalação de cada cliente de acordo com as especificações publicadas.

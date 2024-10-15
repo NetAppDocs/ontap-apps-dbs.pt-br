@@ -1,0 +1,33 @@
+---
+section: postgres
+title: PostgreSQL
+entries:
+- title: Visão geral
+  url: "/postgres/postgres-overview.html"
+- title: Configuração do banco de dados
+  pdf-filename: Configuração de host para PostgreSQL
+  entries:
+  - title: Arquitetura
+    url: "/postgres/postgres-architecture.html"
+  - title: Inicialização
+    url: "/postgres/postgres-initialization.html"
+  - title: Definições
+    url: "/postgres/postgres-db-config.html"
+  - title: Tablespaces
+    url: "/postgres/postgres-tablespaces.html"
+- title: Configuração de armazenamento
+  pdf-filename: Configuração de armazenamento para PostgreSQL
+  entries:
+  - title: NFS
+    url: "/postgres/postgres-nfs-filesystems.html"
+  - title: SAN
+    url: "/postgres/postgres-san-filesystems.html"
+- title: Proteção de dados
+  pdf-filename: Proteção de dados para PostgreSQL
+  entries:
+  - title: Proteção de dados nativos
+    url: "/postgres/postgres-native-dp.html"
+  - title: Tecnologia Snapshot
+    url: "/postgres/postgres-snapshot-dp.html"
+  - title: Software de proteção de dados
+    url: "/postgres/postgres-snapcenter-dp.html"

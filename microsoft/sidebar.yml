@@ -1,0 +1,36 @@
+---
+section: Hyper-V
+title: Hyper-V
+entries:
+- title: Diretrizes de implantação e práticas recomendadas de storage
+  entries:
+  - title: Visão geral
+    url: "/microsoft/win_overview.html"
+  - title: Armazenamento NetApp e ambiente Windows Server
+    url: "/microsoft/win_environment.html"
+  - title: Provisionamento em ambientes SAN
+    url: "/microsoft/win_san.html"
+  - title: Provisionamento em ambientes SMB
+    url: "/microsoft/win_smb.html"
+  - title: Infraestrutura de storage Hyper-V no NetApp
+    url: "/microsoft/win_hyperv_infra.html"
+  - title: Eficiência de storage
+    url: "/microsoft/win_efficiency.html"
+  - title: Segurança
+    url: "/microsoft/win_security.html"
+  - title: Implante o Nano Server
+    url: "/microsoft/win_deploy_nano.html"
+  - title: Implantar o Hyper-V Cluster
+    url: "/microsoft/win_deploy_hyperv.html"
+  - title: Implante a migração ao vivo do Hyper-V em um ambiente em cluster
+    url: "/microsoft/win_deploy_hyperv_lmce.html"
+  - title: Implantar a migração do Hyper-V Live fora de um ambiente em cluster
+    url: "/microsoft/win_deploy_hyperv_lmoce.html"
+  - title: Implante a migração ao vivo do Hyper-V Storage
+    url: "/microsoft/win_deploy_hyperv_slm.html"
+  - title: Implantar a réplica do Hyper-V fora de um ambiente em cluster
+    url: "/microsoft/win_deploy_hyperv_replica_oce.html"
+  - title: Implantar a réplica do Hyper-V em um ambiente em cluster
+    url: "/microsoft/win_deploy_hyperv_replica_ce.html"
+  - title: Onde encontrar informações adicionais
+    url: "/microsoft/win_additional_information.html"

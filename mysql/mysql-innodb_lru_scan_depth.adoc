@@ -1,0 +1,20 @@
+---
+sidebar: sidebar 
+permalink: mysql/mysql-innodb_lru_scan_depth.html 
+keywords: MySQL,MariaDB,innodb_lru_scan_depth 
+summary: MySQL e innodb_lru_Scan_Depth 
+---
+= innodb_lru_scan_depth
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+O `innodb_lru_scan_depth` parâmetro influencia os algoritmos e heurísticas da operação de flush para o pool de buffers InnoDB.
+
+Esse parâmetro é do interesse principal dos especialistas em performance que ajustam workloads com uso intenso de e/S. Para cada instância de pool de buffer, este parâmetro especifica o quão abaixo na lista de páginas menos usadas recentemente (LRU) o thread de limpeza de páginas deve continuar a digitalizar, procurando páginas sujas para serem flush. Esta operação em segundo plano é executada uma vez por segundo.
+
+Você pode ajustar o valor para cima ou para baixo para minimizar o número de páginas livres. Não defina o valor muito maior do que o necessário, porque as digitalizações podem ter um custo de desempenho significativo. Além disso, considere ajustar esse parâmetro ao alterar o número de instâncias do pool de buffers, `innodb_lru_scan_depth * innodb_buffer_pool_instances` porque define a quantidade de trabalho executada pelo thread de limpeza de páginas a cada segundo.
+
+Uma configuração menor do que o padrão é adequada para a maioria das cargas de trabalho. Considere aumentar o valor somente se você tiver capacidade de e/S sobressalente em uma carga de trabalho típica. Por outro lado, se uma carga de trabalho com uso intenso de gravação saturar a capacidade de e/S, diminua o valor, especialmente se você tiver um grande pool de buffers.

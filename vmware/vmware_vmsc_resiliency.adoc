@@ -1,0 +1,40 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware_vmsc_resiliency.html 
+keywords: VMware, Data protection, MetroCluster, SMBC, SnapMirror active sync, vMSC 
+summary: Saiba mais sobre o cluster de armazenamento do vSphere Metro com o ONTAP 
+---
+= Resiliência para eventos planejados e não planejados
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O NetApp MetroCluster e o SnapMirror ative Sync são ferramentas poderosas que melhoram a alta disponibilidade e as operações ininterruptas do hardware NetApp e do software ONTAP.
+
+Essas ferramentas fornecem proteção em todo o local para todo o ambiente de storage, garantindo que seus dados estejam sempre disponíveis. Se você estiver usando servidores autônomos, clusters de servidores de alta disponibilidade, contentores Docker ou servidores virtualizados, a tecnologia NetApp mantém perfeitamente a disponibilidade de armazenamento em caso de uma interrupção total devido à perda de energia, resfriamento ou conetividade de rede, desligamento de storage array ou erro operacional.
+
+O MetroCluster e o SnapMirror ative Sync oferecem três métodos básicos para a continuidade dos dados em caso de eventos planejados ou não planejados:
+
+* Componentes redundantes para proteção contra falha de componente único
+* Takeover de HA local para eventos que afetam um único controlador
+* Proteção completa do local – retomada rápida do serviço movendo o armazenamento e o acesso do cliente do cluster de origem para o cluster de destino
+
+
+Isso significa que as operações continuam sem problemas em caso de falha de um único componente e retornam automaticamente à operação redundante quando o componente com falha é substituído.
+
+Todos os clusters do ONTAP, exceto clusters de nó único (normalmente versões definidas por software, como o ONTAP Select, por exemplo), têm recursos de HA incorporados, chamados de takeover e giveback. Cada controlador no cluster é emparelhado com outro controlador, formando um par de HA. Esses pares garantem que cada nó esteja conetado localmente ao storage.
+
+O takeover é um processo automatizado no qual um nó assume o storage do outro para manter os serviços de dados. Giveback é o processo reverso que restaura a operação normal. O takeover pode ser planejado, como ao executar a manutenção de hardware ou atualizações de ONTAP, ou não planejado, resultante de um pânico de nó ou falha de hardware.
+
+Durante um takeover, as interfaces lógicas de storage conetadas à rede (LIFs nas) nas configurações do MetroCluster fazem failover automático. No entanto, os LIFs de rede de Área de armazenamento (SAN LIFs) não falham; eles continuarão a usar o caminho direto para os LUNs (Logical Unit Numbers).
+
+Para obter mais informações sobre a aquisição de HA e a giveback, consulte o https://docs.netapp.com/us-en/ontap/high-availability/index.html["Visão geral do gerenciamento do par HA"]. Vale a pena notar que essa funcionalidade não é específica para a sincronização ativa do MetroCluster ou do SnapMirror.
+
+O switchover do local com o MetroCluster ocorre quando um local está off-line ou como uma atividade planejada para manutenção em todo o local. O local restante assume a propriedade dos recursos de storage (discos e agregados) do cluster off-line, e os SVMs no site com falha são colocados on-line e reiniciados no local de desastre, preservando sua identidade completa para acesso ao cliente e ao host.
+
+Com a sincronização ativa do SnapMirror, uma vez que ambas as cópias são usadas ativamente simultaneamente, seus hosts existentes continuarão operando. O Mediador NetApp é necessário para garantir que o failover do site ocorra corretamente.

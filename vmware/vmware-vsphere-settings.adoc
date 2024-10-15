@@ -1,0 +1,154 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-vsphere-settings.html 
+keywords: VMware,vSphere,ESXi,settings,NFS,iSCSI,FC,FCP 
+summary: Este documento categoriza e enumera as configurações recomendadas de armazenamento e rede. 
+---
+= Host ESXi recomendado e outras configurações do ONTAP
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+A NetApp desenvolveu um conjunto de configurações de host ESXi ideais para protocolos NFS e Block. Orientações específicas também são fornecidas para configurações de multipathing e tempo limite de HBA para o comportamento adequado com o ONTAP com base nos testes internos do NetApp e VMware.
+
+Esses valores são facilmente definidos usando as ferramentas do ONTAP para VMware vSphere: No painel Resumo, clique em Editar configurações no portlet de sistemas host ou clique com o botão direito do Mouse no host no vCenter e navegue até Ferramentas do ONTAP > Definir valores recomendados.
+
+Aqui estão as configurações de host atualmente recomendadas com as versões 9,8-9,13.
+
+|===
+
+
+| * Configuração do host* | *Valor recomendado NetApp* | *Reinicialização necessária* 
+
+
+3+| *Configuração Avançada do ESXi* 
+
+
+| VMFS3.HardwareAcceleratedLocking | Manter padrão (1) | Não 
+
+
+| VMFS3.EnableBlockDelete | Mantenha o padrão (0), mas pode ser alterado se necessário. Para obter mais informações, consulte link:https://knowledge.broadcom.com/external/article?legacyId=2007427["VMware KB 2007427"] | Não 
+
+
+| VMFS3.EnableVMFS6Unmap | Mantenha a predefinição (1) para obter mais informações, consulte link:https://core.vmware.com/resource/vmware-vsphere-apis-array-integration-vaai#sec9426-sub4["VMware vSphere APIs: Integração de array (VAAI)"] | Não 
+
+
+3+| *Configurações NFS* 
+
+
+| NET.TcpipHeapSize | VSphere 6,0 ou posterior, definido como 32. Todas as outras configurações NFS, definidas como 30 | Sim 
+
+
+| NET.TcpipHeapMax | Defina como 512MB para a maioria das versões do vSphere 6.X. Defina como padrão (1024MB) para 6.5U3, 6.7U3 e 7,0 ou posterior. | Sim 
+
+
+| NFS.MaxVolumes | VSphere 6,0 ou posterior, defina como 256 todas as outras configurações NFS definidas como 64. | Não 
+
+
+| NFS41.MaxVolumes | VSphere 6,0 ou posterior, definido como 256. | Não 
+
+
+| 1 | VSphere 6,0 ou posterior, definido como 128 | Sim 
+
+
+| NFS.HeartbeatMaxFailures | Definido como 10 para todas as configurações NFS | Não 
+
+
+| Frequência NFS.HeartbeatFrequency | Definido como 12 para todas as configurações NFS | Não 
+
+
+| NFS.HeartbeatTimeout | Definido como 5 para todas as configurações NFS. | Não 
+
+
+| Descrição: Sunrpc.MaxConnPerIP | VSphere 7,0 ou posterior, definido como 128. | Não 
+
+
+3+| *Configurações FC/FCoE* 
+
+
+| Política de seleção de caminho | Defina como RR (round robin) quando os caminhos FC com ALUA são usados. Defina como FIXO para todas as outras configurações. Definir esse valor como RR ajuda a fornecer balanceamento de carga em todos os caminhos ativos/otimizados. O VALOR FIXO é para configurações mais antigas e não-ALUA e ajuda a impedir e/S de proxy Em outras palavras, ele ajuda a evitar que a e/S vá para o outro nó de um par de HA (high-availability) em um ambiente com Data ONTAP operando no modo 7D. | Não 
+
+
+| Disk.QFullSampleSize | Defina como 32 para todas as configurações. Definir este valor ajuda a evitar erros de e/S. | Não 
+
+
+| Disk.QFullThreshold | Defina como 8 para todas as configurações. Definir este valor ajuda a evitar erros de e/S. | Não 
+
+
+| Tempos limite Emulex FC HBA | Use o valor padrão. | Não 
+
+
+| Tempos limite do QLogic FC HBA | Use o valor padrão. | Não 
+
+
+3+| *Definições iSCSI* 
+
+
+| Política de seleção de caminho | Defina como RR (round robin) para todos os caminhos iSCSI. Definir esse valor como RR ajuda a fornecer balanceamento de carga em todos os caminhos ativos/otimizados. | Não 
+
+
+| Disk.QFullSampleSize | Defina como 32 para todas as configurações. Definir este valor ajuda a evitar erros de e/S | Não 
+
+
+| Disk.QFullThreshold | Defina como 8 para todas as configurações. Definir este valor ajuda a evitar erros de e/S. | Não 
+|===
+
+NOTE: 1 - opção de configuração avançada NFS o MaxQueueDepth pode não funcionar como esperado ao usar o VMware vSphere ESXi 7.0.1 e o VMware vSphere ESXi 7,0.2. Consulte link:https://kb.vmware.com/s/article/86331?lang=en_US["VMware KB 86331"] para obter mais informações.
+
+As ferramentas do ONTAP também especificam certas configurações padrão ao criar volumes e LUNs do ONTAP FlexVol:
+
+|===
+
+
+| *Ferramenta ONTAP* | *Predefinição* 
+
+
+| Reserva de snapshot (-percentagem-Snapshot-space) | 0 
+
+
+| Reserva fracionária (-reserva fracionária) | 0 
+
+
+| Atualização da hora de acesso (-atime-update) | Falso 
+
+
+| Leitura mínima (-min-readahead) | Falso 
+
+
+| Instantâneos programados | Nenhum 
+
+
+| Eficiência de storage | Ativado 
+
+
+| Garantia de volume | Nenhum (thin Provisioning) 
+
+
+| Tamanho automático do volume | grow_shrink 
+
+
+| Reserva de espaço LUN | Desativado 
+
+
+| Alocação de espaço LUN | Ativado 
+|===
+
+
+== Configurações de multipath para desempenho
+
+Embora não esteja configurado atualmente pelas ferramentas ONTAP disponíveis, o NetApp sugere estas opções de configuração:
+
+* Em ambientes de alto desempenho ou ao testar o desempenho com um único armazenamento de dados LUN, considere alterar a configuração de balanceamento de carga da política de seleção de caminho (PSP) round-robin (VMW_PSP_RR) da configuração padrão de IOPS de 1000 para um valor de 1. Consulte o KB da VMware https://kb.vmware.com/s/article/2069356["2069356"^] para obter mais informações.
+* Na Atualização 1 do vSphere 6,7, a VMware introduziu um novo mecanismo de balanceamento de carga de latência para a PSP Round Robin. A nova opção considera a largura de banda de e/S e a latência do caminho ao selecionar o caminho ideal para e/S. Você pode se beneficiar ao usá-lo em ambientes com conetividade de caminho não equivalente, como casos com mais saltos de rede em um caminho do que outro, ou ao usar um sistema de array NetApp All SAN. Consulte https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.storage.doc/GUID-B7AD0CA0-CBE2-4DB4-A22C-AD323226A257.html?hWord=N4IghgNiBcIA4Gc4AIJgC4FMB2BjAniAL5A["Plug-ins e políticas de seleção de caminho"^] para obter mais informações.
+
+
+
+
+== Documentação adicional
+
+Para FCP e iSCSI com vSphere, mais detalhes podem ser encontrados em para FCP e iSCSI com vSphere 8, mais detalhes podem ser encontrados em https://docs.netapp.com/us-en/ontap-sanhost/hu_vsphere_8.html["Use o VMware vSphere 8.x com o ONTAP"^] para NVMe-of com vSphere 7. Para NVMe-of com vSphere 8, mais detalhes podem ser encontrados em https://docs.netapp.com/us-en/ontap-sanhost/nvme_esxi_7.html["Para NVMe-of, mais detalhes podem ser encontrados em Configuração de host NVMe-of para ESXi 7.x com ONTAP"^] para NVMe-of com vSphere 7 https://docs.netapp.com/us-en/ontap-sanhost/hu_vsphere_7.html["Use o VMware vSphere 7.x com o ONTAP"^]. Mais detalhes podem ser encontrados em https://docs.netapp.com/us-en/ontap-sanhost/nvme_esxi_8.html["Para NVMe-of, mais detalhes podem ser encontrados em Configuração de host NVMe-of para ESXi 8.x com ONTAP"^]

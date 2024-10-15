@@ -1,0 +1,15 @@
+= Eficiência e thin Provisioning
+:allow-uri-read: 
+
+
+
+
+== Eficiência e thin Provisioning
+
+Os recursos de eficiência são formas de thin Provisioning. Por exemplo, um LUN de 100GB GB ocupando um volume de 100GB TB pode ser compactado para 50GB TB. Ainda não há economias reais realizadas porque o volume ainda é 100GB. O volume deve primeiro ser reduzido em tamanho para que o espaço guardado possa ser utilizado noutro local do sistema. Se as alterações posteriores ao LUN 100GBD resultarem em menos compressíveis os dados, o LUN crescerá em tamanho e o volume poderá ser preenchido.
+
+O thin Provisioning é altamente recomendado porque pode simplificar o gerenciamento e fornecer melhorias substanciais na capacidade utilizável com economias de custo associadas. O motivo é simples: Os ambientes de banco de dados geralmente incluem muito espaço vazio, um grande número de volumes e LUNs e dados compressíveis. O provisionamento thick resulta na reserva de espaço no storage para volumes e LUNs, caso eles se tornem 100% cheios e contenham dados 100% não compactáveis. É pouco provável que isso ocorra. O thin Provisioning permite que esse espaço seja recuperado e usado em outros lugares e permite que o gerenciamento de capacidade seja baseado no próprio sistema de storage, em vez de muitos volumes e LUNs menores.
+
+Alguns clientes preferem usar o provisionamento thick, seja para cargas de trabalho específicas ou, geralmente, com base em práticas operacionais e de aquisição estabelecidas.
+
+*Atenção:* se um volume for provisionado de forma grossa, deve-se ter cuidado para desativar completamente todos os recursos de eficiência para esse volume, incluindo descompressão e remoção de desduplicação usando o `sis undo` comando. O volume não deve aparecer `volume efficiency show` na saída. Se isso acontecer, o volume ainda será parcialmente configurado para recursos de eficiência. Como resultado, as garantias de substituição funcionam de forma diferente, o que aumenta a chance de que a configuração seja ultrapassada fazendo com que o volume fique inesperadamente sem espaço, resultando em erros de e/S do banco de dados.

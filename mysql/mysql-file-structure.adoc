@@ -1,0 +1,48 @@
+---
+sidebar: sidebar 
+permalink: mysql/mysql-file-structure.html 
+keywords: MySQL,MariaDB 
+summary: Estrutura de arquivos MySQL 
+---
+= MySQL e InnoDB
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+InnoDB atua como a camada intermediária entre o armazenamento e o servidor MySQL, ele armazena os dados nas unidades.
+
+image:mysql-file-structure1.png["Erro: Imagem gráfica não encontrada"]
+
+MySQL I/o é categorizado em dois tipos:
+
+* E/S de arquivo aleatório
+* E/S de arquivo sequencial
+
+
+image:mysql-file-structure2.png["Erro: Imagem gráfica não encontrada"]
+
+Os arquivos de dados são lidos e substituídos aleatoriamente, o que resulta em IOPS alto. Portanto, o armazenamento SSD é recomendado.
+
+Os arquivos de log de refazer e os arquivos de log binários são logs transacionais. Eles são escritos sequencialmente, para que você possa obter um bom desempenho em HDD com o cache de gravação. Uma leitura sequencial acontece na recuperação, mas raramente causa um problema de desempenho, porque o tamanho do arquivo de log geralmente é menor do que os arquivos de dados, e as leituras sequenciais são mais rápidas do que as leituras aleatórias (que ocorrem em arquivos de dados).
+
+O buffer de gravação dupla é um recurso especial do InnoDB. O InnoDB primeiro grava páginas apagadas no buffer de gravação dupla e, em seguida, grava as páginas em suas posições corretas nos arquivos de dados. Este processo impede a corrupção de página. Sem o buffer de gravação dupla, a página pode ficar corrompida se ocorrer uma falha de energia durante o processo de gravação em unidades. Como a gravação no buffer de gravação dupla é sequencial, ele é altamente otimizado para HDDs. Leituras sequenciais ocorrem na recuperação.
+
+Como o ONTAP NVRAM já fornece proteção contra gravação, o buffer de gravação dupla não é necessário. O MySQL tem um parâmetro, `skip_innodb_doublewrite`, para desativar o buffer de gravação dupla. Esse recurso pode melhorar substancialmente o desempenho.
+
+O buffer de inserção também é um recurso especial do InnoDB. Se blocos de índice secundários não exclusivos não estiverem na memória, o InnoDB insere entradas no buffer de inserção para evitar operações de e/S aleatórias. Periodicamente, o buffer de inserção é mesclado nas árvores de índice secundárias no banco de dados. O buffer de inserção reduz o número de operações de e/S mesclando solicitações de e/S para o mesmo bloco; operações de e/S aleatórias podem ser sequenciais. O buffer de inserção também é altamente otimizado para HDDs. As gravações e leituras sequenciais ocorrem durante operações normais.
+
+Os segmentos de desfazer são orientados por e/S aleatórias. Para garantir a simultaneidade de múltiplas versões (MVCC), o InnoDB deve Registrar imagens antigas nos segmentos de desfazer. A leitura de imagens anteriores dos segmentos de desfazer requer leituras aleatórias. Se você executar uma transação longa com leituras repetíveis (como mysqldump - transação única) ou executar uma consulta longa, leituras aleatórias podem ocorrer. Portanto, armazenar segmentos de desfazer em SSDs é melhor nessa instância. Se você executar apenas transações curtas ou consultas, as leituras aleatórias não são um problema.
+
+[TIP]
+====
+*A NetApp recomenda* o seguinte layout de design de armazenamento devido às caraterísticas de e/S do InnoDB.
+
+* Um volume para armazenar arquivos aleatórios e sequenciais orientados por e/S do MySQL
+* Outro volume para armazenar arquivos puramente sequenciais orientados por e/S do MySQL
+
+
+Esse layout também ajuda a projetar políticas e estratégias de proteção de dados.
+
+====

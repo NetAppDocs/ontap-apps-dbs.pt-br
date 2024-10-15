@@ -1,0 +1,69 @@
+---
+sidebar: sidebar 
+permalink: mssql/mssql-memory-configuration.html 
+keywords: MSSQL,SQL Server, memory 
+summary: Configuração de memória do Microsoft SQL Server 
+---
+= Configuração de memória do Microsoft SQL Server
+:allow-uri-read: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+A seção a seguir explica as configurações de memória do SQL Server necessárias para otimizar o desempenho do banco de dados.
+
+
+
+== Memória máx. Do servidor
+
+A opção Max Server Memory (memória máxima do servidor) define a quantidade máxima de memória que a instância do SQL Server pode usar. Geralmente é usado se vários aplicativos estiverem sendo executados no mesmo servidor em que o SQL Server está sendo executado e você deseja garantir que esses aplicativos tenham memória suficiente para funcionar corretamente.
+
+Algumas aplicações utilizam apenas qualquer memória disponível quando iniciam e não solicitam memória adicional, mesmo que estejam sob pressão de memória. É aí que entra em jogo a configuração de memória máxima do servidor.
+
+Em um cluster do SQL Server com várias instâncias do SQL Server, cada instância pode estar competindo por recursos. Definir um limite de memória para cada instância do SQL Server pode ajudar a garantir o melhor desempenho para cada instância.
+
+
+TIP: *A NetApp recomenda* deixando pelo menos 4GB GB a 6GB GB de RAM para o sistema operacional para evitar problemas de desempenho.
+
+image:mssql-max-server-memory.png["Erro: Imagem gráfica em falta"]
+
+
+
+=== Ajustando a memória mínima e máxima do servidor usando o SQL Server Management Studio.
+
+Usar o SQL Server Management Studio para ajustar a memória mínima ou máxima do servidor requer uma reinicialização do serviço SQL Server. Você também pode ajustar a memória do servidor usando Transact SQL (T-SQL) usando este código:
+
+....
+EXECUTE sp_configure 'show advanced options', 1
+GO
+EXECUTE sp_configure 'min server memory (MB)', 2048
+GO
+EXEC sp_configure 'max server memory (MB)', 120832
+GO
+RECONFIGURE WITH OVERRIDE
+....
+
+
+== Acesso à memória não uniforme
+
+O Acesso à memória não uniforme (NUMA) é uma tecnologia de otimização de acesso à memória que ajuda a evitar a carga extra no barramento do processador.
+
+Se O NUMA estiver configurado num servidor onde o SQL Server está instalado, não é necessária nenhuma configuração adicional porque o SQL Server tem UMA consciência NUMA e tem um bom desempenho no hardware NUMA.
+
+
+
+== Index criar memória
+
+A opção index create memory (criar memória) é outra opção avançada que normalmente não deve ser alterada a partir dos padrões.
+
+Ele controla a quantidade máxima de RAM inicialmente alocada para a criação de índices. O valor padrão para essa opção é 0, o que significa que ela é gerenciada automaticamente pelo SQL Server. No entanto, se você encontrar dificuldades para criar índices, considere aumentar o valor dessa opção.
+
+
+
+== Memória mínima por consulta
+
+Quando uma consulta é executada, o SQL Server tenta alocar a quantidade ideal de memória para ser executado com eficiência.
+
+Por padrão, a configuração de memória mínima por consulta aloca > 1024KB para cada consulta ser executada. É uma prática recomendada é deixar essa configuração no valor padrão para permitir que o SQL Server gerencie dinamicamente a quantidade de memória alocada para operações de criação de índice. No entanto, se o SQL Server tiver mais RAM do que precisa para ser executado de forma eficiente, o desempenho de algumas consultas pode ser aumentado se você aumentar essa configuração. Portanto, desde que a memória esteja disponível no servidor que não está sendo usado pelo SQL Server, por quaisquer outros aplicativos ou pelo sistema operacional, então aumentar essa configuração pode ajudar o desempenho geral do SQL Server. Se não houver memória livre disponível, aumentar essa configuração pode prejudicar o desempenho geral.
+
+image:mssql-min-memory-per-query.png["Erro: Imagem gráfica em falta"]

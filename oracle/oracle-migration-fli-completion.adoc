@@ -1,0 +1,73 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-migration-fli-completion.html 
+keywords: migration, oracle, FLI 
+summary: Migração Oracle com FLI - conclusão 
+---
+= Migração Oracle com FLI - conclusão
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Do ponto de vista do host, a migração está concluída, mas a e/S ainda é atendida do array estrangeiro até que as relações de importação sejam excluídas.
+
+Antes de excluir os relacionamentos, confirme se o processo de migração está concluído para todos os LUNs.
+
+....
+Cluster01::*> lun import show -vserver vserver1 -fields foreign-disk,path,operational-state
+vserver   foreign-disk path              operational-state
+--------- ------------ ----------------- -----------------
+vserver1 800DT$HuVWB/ /vol/new_asm/LUN4 completed
+vserver1 800DT$HuVWBW /vol/new_asm/LUN0 completed
+vserver1 800DT$HuVWBX /vol/new_asm/LUN1 completed
+vserver1 800DT$HuVWBY /vol/new_asm/LUN2 completed
+vserver1 800DT$HuVWBZ /vol/new_asm/LUN3 completed
+vserver1 800DT$HuVWBa /vol/new_asm/LUN5 completed
+vserver1 800DT$HuVWBb /vol/new_asm/LUN6 completed
+vserver1 800DT$HuVWBc /vol/new_asm/LUN7 completed
+vserver1 800DT$HuVWBd /vol/new_asm/LUN8 completed
+vserver1 800DT$HuVWBe /vol/new_asm/LUN9 completed
+vserver1 800DT$HuVWBf /vol/new_lvm/LUN0 completed
+vserver1 800DT$HuVWBg /vol/new_lvm/LUN1 completed
+vserver1 800DT$HuVWBh /vol/new_lvm/LUN2 completed
+vserver1 800DT$HuVWBi /vol/new_lvm/LUN3 completed
+vserver1 800DT$HuVWBj /vol/new_lvm/LUN4 completed
+vserver1 800DT$HuVWBk /vol/new_lvm/LUN5 completed
+vserver1 800DT$HuVWBl /vol/new_lvm/LUN6 completed
+vserver1 800DT$HuVWBm /vol/new_lvm/LUN7 completed
+vserver1 800DT$HuVWBn /vol/new_lvm/LUN8 completed
+vserver1 800DT$HuVWBo /vol/new_lvm/LUN9 completed
+20 entries were displayed.
+....
+
+
+== Eliminar relações de importação
+
+Quando o processo de migração estiver concluído, exclua a relação de migração. Depois de fazer isso, e/S é servido exclusivamente a partir das unidades no ONTAP.
+
+....
+Cluster01::*> lun import delete -vserver vserver1 -path /vol/new_asm/LUN0
+Cluster01::*> lun import delete -vserver vserver1 -path /vol/new_asm/LUN1
+...
+Cluster01::*> lun import delete -vserver vserver1 -path /vol/new_lvm/LUN8
+Cluster01::*> lun import delete -vserver vserver1 -path /vol/new_lvm/LUN9
+....
+
+
+== Anular o registo de LUNs estranhos
+
+Finalmente, modifique o disco para remover a `is-foreign` designação.
+
+....
+Cluster01::*> storage disk modify {-serial-number 800DT$HuVWBW} -is-foreign false
+Cluster01::*> storage disk modify {-serial-number 800DT$HuVWBX} -is-foreign false
+...
+Cluster01::*> storage disk modify {-serial-number 800DT$HuVWBn} -is-foreign false
+Cluster01::*> storage disk modify {-serial-number 800DT$HuVWBo} -is-foreign false
+Cluster01::*>
+....

@@ -1,0 +1,29 @@
+---
+sidebar: sidebar 
+permalink: postgres/postgres-architecture.html 
+keywords: PostgreSQL,database,postgres 
+summary: Arquitetura PostgreSQL 
+---
+= Arquitetura PostgreSQL
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+PostgreSQL é um RDBMS baseado na arquitetura cliente e servidor. Uma instância do PostgreSQL é conhecida como um cluster de banco de dados, que é uma coleção de bancos de dados em vez de uma coleção de servidores.
+
+image:postgresql-architecture.png["Erro: Gráfico não encontrado"]
+
+Há três elementos principais em um banco de dados PostgreSQL: O postmaster, o front-end (cliente) e o back-end O cliente envia solicitações para o postmaster com informações como protocolo IP e a que banco de dados se conetar. O postmaster autentica a conexão e a passa para o processo de back-end para comunicação adicional. O processo back-end executa a consulta e envia resultados diretamente para o front-end (cliente).
+
+Uma instância do PostgreSQL é baseada em um modelo multiprocesso em vez de um modelo multithread. Ele gera vários processos para diferentes trabalhos, e cada processo tem sua própria funcionalidade. Os principais processos incluem o processo do cliente, o processo do escritor DE WAL, o processo do escritor de fundo, e o processo do checkpointer:
+
+* Quando um processo de cliente (primeiro plano) envia solicitações de leitura ou gravação para a instância do PostgreSQL, ele não lê ou grava dados diretamente no disco. Primeiro, ele armazena os dados em buffers compartilhados e buffers de log write-ahead (WAL).
+* Um processo de escritor WAL manipula o conteúdo dos buffers compartilhados e buffers WAL para escrever nos logs DO WAL. Os logs WAL são normalmente Registros de transações do PostgreSQL e são sequencialmente escritos. Portanto, para melhorar o tempo de resposta do banco de dados, o PostgreSQL primeiro grava nos logs de transação e reconhece o cliente.
+* Para colocar o banco de dados em um estado consistente, o processo de gravação em segundo plano verifica o buffer compartilhado periodicamente para páginas sujas. Em seguida, ele limpa os dados para os arquivos de dados armazenados em volumes NetApp ou LUNs.
+* O processo de checkpointer também é executado periodicamente (com menos frequência do que o processo em segundo plano) e impede qualquer modificação nos buffers. Ele sinaliza para o processo de gravação WAL para escrever e lavar o Registro do ponto de verificação para o final dos logs DO WAL que são armazenados no disco NetApp. Ele também sinaliza o processo de gravação em segundo plano para escrever e lavar todas as páginas sujas para o disco.
+

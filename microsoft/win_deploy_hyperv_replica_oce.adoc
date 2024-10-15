@@ -1,0 +1,89 @@
+---
+sidebar: sidebar 
+permalink: microsoft/win_deploy_hyperv_replica_oce.html 
+keywords: Windows,Hyper-V,VHDX,VM,Virtual 
+summary: Este apêndice descreve a implantação da réplica do Hyper-V fora de um ambiente em cluster. 
+---
+= Implantar a réplica do Hyper-V fora de um ambiente em cluster
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Este apêndice descreve a implantação da réplica do Hyper-V fora de um ambiente em cluster.
+
+
+
+== Pré-requisitos
+
+* Você precisa de servidores Hyper-V autônomos localizados nas mesmas localizações geográficas ou separadas, servindo como servidores primários e de réplica.
+* Se forem usados sites separados, o firewall em cada site deve ser configurado para permitir a comunicação entre os servidores principal e de réplica.
+* O servidor de réplica deve ter espaço suficiente para armazenar as cargas de trabalho replicadas.
+
+
+
+
+== Implantação
+
+. Configure o servidor de réplica.
++
+.. Para que as regras de firewall de entrada permitam tráfego de replicação de entrada, execute o seguinte cmdlet do PowerShell:
++
+ Enable-Netfirewallrule -displayname "Hyper-V Replica HTTP Listener (TCP-In)"
+.. Abra o Gerenciador do Hyper-V na seção Ferramentas do Gerenciador de servidores.
+.. Clique em Configurações do Hyper-V em ações.
+.. Clique em Configuração de replicação e selecione Ativar este computador como um servidor de réplica.
+.. Na seção Autenticação e portas, selecione o método e a porta de autenticação.
+.. Na seção autorização e armazenamento, especifique o local para armazenar as VMs e arquivos replicados.
+
+
+. Habilite a replicação de VM para VMs no servidor primário. A replicação da VM é ativada por VM e não para todo o servidor Hyper-V.
++
+.. No Hyper-V Manager, clique com o botão direito do rato numa VM e clique em Ativar replicação para abrir o assistente Ativar replicação.
+.. Forneça o nome do servidor de réplica em que a VM deve ser replicada.
+.. Forneça o tipo de autenticação e a porta do servidor de réplica que foi configurada para receber tráfego de replicação no servidor de réplica.
+.. Selecione os VHDs a serem replicados.
+.. Escolha a frequência (duração) em que as alterações são enviadas para o servidor de réplica.
+.. Configure os pontos de recuperação para especificar o número de pontos de recuperação a serem mantidos no servidor de réplica.
+.. Escolha método de replicação inicial para especificar o método para transferir a cópia inicial dos dados da VM para o servidor de réplica.
+.. Reveja o resumo e clique em concluir.
+.. Esse processo cria uma réplica de VM no servidor de réplica.
+
+
+
+
+
+
+== Replicação
+
+. Execute um failover de teste para garantir que a réplica VM funcione corretamente no servidor de réplica. O teste cria uma VM temporária no servidor de réplica.
++
+.. Faça login no servidor de réplica.
+.. No Gerenciador do Hyper-V, clique com o botão direito em uma réplica VM, clique em replicação e clique em failover de teste.
+.. Escolha o ponto de recuperação a utilizar.
+.. Este processo cria uma VM com o mesmo nome anexado com -Test.
+.. Verifique a VM para se certificar de que tudo funciona bem.
+.. Após o failover, a VM de teste de réplica é excluída se você selecionar Parar failover de teste para ela.
+
+
+. Execute um failover planejado para replicar as alterações mais recentes na VM principal para a VM réplica.
++
+.. Inicie sessão no servidor principal.
+.. Desligue a VM para falha.
+.. No Gerenciador do Hyper-V, clique com o botão direito do Mouse na VM desativada, clique em replicação e clique em failover planejado.
+.. Clique em failover para transferir as alterações mais recentes da VM para o servidor de réplica.
+
+
+. Executar um failover não planejado no caso de falha de VM principal.
++
+.. Faça login no servidor de réplica.
+.. No Hyper-V Manager, clique com o botão direito do Mouse em uma réplica VM, clique em replicação e clique em failover.
+.. Escolha o ponto de recuperação a utilizar.
+.. Clique em failover para fazer failover na VM.
+
+
+

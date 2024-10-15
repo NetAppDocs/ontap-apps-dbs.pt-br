@@ -1,0 +1,103 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dp-planning.html 
+keywords: data protection, DR, snapshots, CG 
+summary: Planejamento de proteção de dados para bancos de dados Oracle 
+---
+= Planejamento de proteção de dados para bancos de dados Oracle
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+A arquitetura certa de proteção de dados do banco de dados Oracle depende dos requisitos de negócios relacionados à retenção de dados, capacidade de recuperação e tolerância a interrupções durante vários eventos.
+
+Por exemplo, considere o número de aplicações, bancos de dados e conjuntos de dados importantes no escopo. Criar uma estratégia de backup para um único conjunto de dados que garanta a conformidade com SLAs típicos é bastante simples, pois não há muitos objetos para gerenciar. À medida que o número de conjuntos de dados aumenta, o monitoramento se torna mais complicado e os administradores podem ser forçados a gastar um tempo cada vez maior lidando com falhas de backup. À medida que um ambiente atinge a nuvem e o provedor de serviços dimensiona, é necessária uma abordagem totalmente diferente.
+
+O tamanho do conjunto de dados também afeta a estratégia. Por exemplo, existem muitas opções para backup e recuperação com um banco de dados 100GB porque o conjunto de dados é tão pequeno. A simples cópia de dados de Mídia de backup com ferramentas tradicionais normalmente fornece um rto suficiente para recuperação. Um banco de dados 100TB normalmente precisa de uma estratégia completamente diferente, a menos que o rto permita uma interrupção de vários dias, caso em que um procedimento tradicional de backup e recuperação baseado em cópia pode ser aceitável.
+
+Finalmente, existem fatores fora do próprio processo de backup e recuperação. Por exemplo, existem bancos de dados que suportam atividades críticas de produção, tornando a recuperação um evento raro que só é realizado por DBAs qualificados? Alternativamente, os bancos de dados fazem parte de um grande ambiente de desenvolvimento em que a recuperação é uma ocorrência frequente e gerenciada por uma EQUIPE DE TI generalista?
+
+
+
+== Um instantâneo é um backup?
+
+Uma objeção comumente levantada ao uso de snapshots como estratégia de proteção de dados é o fato de que os dados "reais" e os dados instantâneos estão localizados nas mesmas unidades. A perda dessas unidades resultaria na perda dos dados primários e do backup.
+
+Este é um problema válido. Os snapshots locais são usados para necessidades diárias de backup e recuperação e, nesse aspeto, o snapshot é um backup. Cerca de 99% de todos os cenários de recuperação em ambientes NetApp dependem de snapshots para atender até aos requisitos mais agressivos de rto.
+
+No entanto, os snapshots locais nunca devem ser a única estratégia de backup. É por isso que a NetApp oferece tecnologia como replicação SnapMirror para replicar snapshots para um conjunto independente de unidades de maneira rápida e eficiente. Em uma solução de arquitetura adequada com snapshots e replicação de snapshot, o uso da fita pode ser minimizado para talvez um arquivamento trimestral ou eliminado totalmente.
+
+
+
+== Backups de grupos de consistência
+
+Um backup de grupo de consistência envolve a captura do estado de um conjunto de dados (ou vários conjuntos de dados) em um único ponto atômico no tempo. Como exemplo de banco de dados, isso inclui todos os componentes do banco de dados, como datafiles, arquivos de log e outros arquivos diretamente associados ao banco de dados. Isso funciona com quase todos os produtos de banco de dados relacionais, incluindo Oracle RDBMS, Microsoft SQL Server, SAP HANA, PostgreSQL, MySQL e MariaDB. Proteger uma configuração VMware com um backup de grupo de consistência seria semelhante - capturar todos os datastores e, potencialmente, os LUNs de inicialização do ESX em um único ponto atômico no tempo.
+
+A criação de um snapshot desse grupo de consistência basicamente simula uma falha, e é por isso que esses backups são frequentemente chamados de backups consistentes com falhas. Às vezes há preocupações com o suporte para cenários de recuperação, mas é importante entender que nenhum procedimento de recuperação é geralmente necessário. Quando o aplicativo é iniciado depois de restaurar um backup de grupo de consistência, ele executa os processos de recuperação de log usuais, replays de diário do sistema de arquivos e outras tarefas para reproduzir qualquer e/S que estava em andamento no ponto do backup. O aplicativo então começa como de costume.
+
+Essencialmente, qualquer aplicativo que possa suportar uma falha de energia ou falha do servidor sem corrupção de dados pode ser protegido dessa maneira. O fato de que isso funciona também pode ser demonstrado pelo grande número de aplicativos protegidos com produtos de espelhamento síncrono e assíncrono de muitos fornecedores diferentes. Se um desastre de repente atinge o local principal, o site de réplica contém uma imagem consistente do ambiente original no momento em que o desastre ocorreu. Mais uma vez, nenhum procedimento especial de recuperação é necessário.
+
+O RPO para essa abordagem geralmente é limitado ao ponto do backup. Como regra geral, o RPO mínimo para snapshots de volume único é de uma hora. Por exemplo, 48 snapshots por hora mais outros 30 dias de snapshots noturnos são razoáveis e não exigiriam a retenção de um número excessivo de snapshots. Torna-se mais difícil alcançar um RPO inferior a uma hora. Não é recomendável primeiro consultar os Serviços profissionais da NetApp para entender os requisitos de ambiente, escala e proteção de dados.
+
+Normalmente, o rto pode ser medido em segundos. Um aplicativo é desligado, os volumes são restaurados e o aplicativo é reiniciado.
+
+A abordagem mais simples é colocar todos os arquivos ou LUNs em um único grupo de consistência de volume, o que permite que uma criação de snapshot seja agendada diretamente no ONTAP. Quando um conjunto de dados deve abranger volumes, é necessário um snapshot de grupo de consistência (cg-snapshot). Isso pode ser configurado usando chamadas de API RESTful ou Gerenciador de sistema. Além disso, o SnapCenter é capaz de criar um snapshot de grupo de consistência simples em uma lista definida de volumes.
+
+
+
+== Arquitetura de replicação e recuperação de desastres
+
+Esta seção aborda a proteção de dados remota, para a qual os dados são replicados para um local remoto para fins de armazenamento externo seguro e recuperação de desastres. Observe que essas tabelas não abordam a proteção de dados de espelhamento síncrono. Para este requisito, consulte a documentação do NetApp MetroCluster, link:oracle-dr-mcc-failover.html["MetroCluster"] incluindo e. link:oracle-dr-smas-overview.html["Sincronização ativa do SnapMirror"]
+
+O DR RPO é limitado pela largura de banda da rede disponível e pelo tamanho total dos dados protegidos. Depois que a transferência inicial da linha de base é criada, as atualizações são baseadas apenas nos dados alterados, o que geralmente é uma porcentagem baixa do espaço físico total dos dados, embora existam exceções.
+
+Por exemplo, um banco de dados 10TB com uma taxa de mudança semanal de 10% é de aproximadamente 6GB por hora do total de alterações. Com 10Gb GB de conetividade, esse banco de dados requer aproximadamente seis minutos para ser transferido. A taxa de alteração varia de acordo com a variação na taxa de alteração do banco de dados, mas, no geral, um intervalo de atualização de 15 minutos e, portanto, um RPO de 15 minutos deve ser alcançado. Se houver 100 desses bancos de dados, então 600 minutos serão necessários para transferir os dados. Portanto, um RPO de uma hora não é possível. Da mesma forma, uma réplica de um único banco de dados de tamanho 100TB com uma taxa de alteração semanal de 10% não pode ser atualizada de forma confiável em uma hora.
+
+Fatores adicionais podem afetar a replicação, como sobrecarga de replicação e limitações no número de operações de replicação simultâneas. No entanto, o Planejamento geral para uma estratégia de replicação de volume único pode ser baseado na largura de banda disponível, e um RPO de replicação de uma hora geralmente é possível. Torna-se mais difícil alcançar um RPO inferior a uma hora, e só deve ser realizado após consulta aos Serviços profissionais da NetApp. Em alguns casos, 15 minutos é viável com uma conetividade de rede local-a-local muito boa. No entanto, no geral, quando um RPO abaixo de uma hora é necessário, a arquitetura de repetição de logs em vários volumes produz melhores resultados.
+
+O rto com replicação de grupo de consistência em um cenário de recuperação de desastres é excelente, normalmente medido em segundos do ponto de vista de storage. A abordagem mais simples é simplesmente quebrar o espelho, e o banco de dados está pronto para ser iniciado. O tempo de inicialização do banco de dados geralmente é de cerca de 10 segundos, mas bancos de dados muito grandes com muitas transações registradas podem levar alguns minutos.
+
+O fator mais importante para determinar o rto não é o sistema de storage, mas sim a aplicação e o sistema operacional host no qual ele é executado. Por exemplo, os dados replicados podem ser disponibilizados em um segundo ou dois, mas isso representa apenas os dados. Também deve haver um sistema operacional corretamente configurado com binários de aplicativos que esteja disponível para usar os dados.
+
+Em alguns casos, os clientes prepararam instâncias de recuperação de desastres com antecedência com o storage pré-descoberto em sistemas operacionais. Nesses casos, ativar o cenário de recuperação de desastres não pode exigir nada mais do que quebrar um espelho e iniciar o aplicativo. Em outros casos, o sistema operacional e os aplicativos associados podem ser espelhados ao lado do banco de dados como um disco de máquina virtual ESX (VMDK). Nesses casos, o RPO é determinado pelo quanto um cliente investiu na automação para inicializar rapidamente o VMDK para que os aplicativos possam ser iniciados.
+
+O tempo de retenção é controlado em parte pelo limite do instantâneo. Por exemplo, os volumes no ONTAP têm um limite de 1024 snapshots. Em alguns casos, os clientes multiplexaram a replicação para aumentar o limite. Por exemplo, se forem necessários 2000 dias de backups, uma fonte pode ser replicada para dois volumes com atualizações ocorrendo em dias alternados. Isso requer um aumento no espaço inicial necessário, mas ainda representa uma abordagem muito mais eficiente do que um sistema de backup tradicional, que envolve vários backups completos.
+
+
+
+=== Grupo de consistência de volume único
+
+A abordagem mais simples é colocar todos os arquivos ou LUNs em um único grupo de consistência de volume, o que permite que as atualizações do SnapMirror e do SnapVault sejam agendadas diretamente no sistema de storage. Nenhum software externo é necessário.
+
+
+
+=== Grupo de consistência de vários volumes
+
+Quando um banco de dados precisa abranger volumes, é necessário um snapshot de grupo de consistência (cg-snapshot). Como mencionado acima, isso pode ser configurado usando chamadas do Gerenciador de sistema ou API RESTful, além de o SnapCenter ser capaz de criar um snapshot de grupo de consistência simples em uma lista definida de volumes.
+
+Há também uma consideração adicional sobre o uso de snapshots consistentes e multivolumes para fins de recuperação de desastres. Ao executar uma atualização de vários volumes, é possível que um desastre possa ocorrer enquanto uma transferência ainda estiver em andamento. O resultado seria um conjunto de volumes que não são consistentes uns com os outros. Se isso aconteceu, alguns dos volumes devem ser restaurados para um estado de snapshot anterior para entregar uma imagem de banco de dados consistente com falhas e pronta para uso.
+
+
+
+== Recuperação de desastres: Ativação
+
+
+
+=== NFS
+
+O processo de ativação da cópia de recuperação de desastres depende do tipo de armazenamento. Com o NFS, os sistemas de arquivos podem ser pré-montados no servidor de recuperação de desastres. Eles estão em um estado somente leitura e se tornam leitura-escrita quando o espelho é quebrado. Isso fornece um RPO extremamente baixo, e o processo geral de recuperação de desastres é mais confiável porque há menos peças para gerenciar.
+
+
+
+=== SAN
+
+Ativar configurações SAN em caso de recuperação de desastres se torna mais complicado. A opção mais simples geralmente é quebrar temporariamente os espelhos e montar os recursos SAN, incluindo etapas como descobrir a configuração do LVM (incluindo recursos específicos do aplicativo, como o Oracle Automatic Storage Management [ASM]) e adicionar entradas ao /etc/fstab.
+
+O resultado é que os caminhos do dispositivo LUN, os nomes dos grupos de volume e outros caminhos do dispositivo são conhecidos pelo servidor de destino. Esses recursos podem então ser desligados e, depois, os espelhos podem ser restaurados. O resultado é um servidor que está em um estado que pode rapidamente colocar o aplicativo on-line. As etapas para ativar grupos de volumes, montar sistemas de arquivos ou iniciar bancos de dados e aplicativos são facilmente automatizadas.
+
+É preciso ter cuidado para garantir que o ambiente de recuperação de desastres esteja atualizado. Por exemplo, é provável que novos LUNs sejam adicionados ao servidor de origem, o que significa que os novos LUNs devem ser pré-descobertos no destino para garantir que o plano de recuperação de desastres funcione conforme o esperado.

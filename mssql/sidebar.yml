@@ -1,0 +1,62 @@
+---
+section: mssql
+title: Microsoft SQL Server
+entries:
+- title: Visão geral
+  url: "/mssql/mssql-overview.html"
+- title: Configuração do banco de dados
+  pdf-filename: Configuração de banco de dados para Microsoft SQL Server
+  entries:
+  - title: Configuração CPU
+    url: "/mssql/mssql-cpu-configuration.html"
+  - title: Configuração da memória
+    url: "/mssql/mssql-memory-configuration.html"
+  - title: Instância compartilhada versus instância dedicada
+    url: "/mssql/mssql-shared-vs-dedicated.html"
+- title: Configuração de armazenamento
+  pdf-filename: Configuração de armazenamento para Microsoft SQL Server
+  entries:
+  - title: Visão geral
+    url: "/mssql/mssql-storage-considerations.html"
+  - title: Arquivos de banco de dados e grupos de arquivos
+    url: "/mssql/mssql-files-and-filegroups.html"
+  - title: Diretório de log
+    url: "/mssql/mssql-log-directory.html"
+  - title: Arquivos tempdb
+    url: "/mssql/mssql-tempdb.html"
+  - title: Eficiência de storage
+    url: "/mssql/mssql-storage-efficiency.html"
+- title: Proteção de dados
+  url: "/mssql/mssql-data-protection.html"
+- title: Recuperação de desastres
+  entries:
+  - title: Visão geral
+    url: "/mssql/mssql-disaster-recovery.html"
+  - title: SnapMirror
+    url: "/mssql/mssql-dr-snapmirror.html"
+  - title: MetroCluster
+    entries:
+    - title: Arquitetura da MetroCluster
+      url: "/mssql/mssql-dr-mcc-overview.html"
+    - title: SQL Server com MetroCluster
+      url: "/mssql/mssql-dr-mcc-sql.html"
+  - title: Sincronização ativa do SnapMirror
+    entries:
+    - title: Visão geral
+      url: "/mssql/mssql-dr-smas-overview.html"
+    - title: ONTAP Mediador
+      url: "/mssql/mssql-dr-smas-mediator.html"
+    - title: Site preferido
+      url: "/mssql/mssql-dr-smas-preferred-site.html"
+    - title: Topologia de rede
+      entries:
+      - title: Acesso uniforme
+        url: "/mssql/mssql-dr-smas-uniform.html"
+      - title: Acesso não uniforme
+        url: "/mssql/mssql-dr-smas-nonuniform.html"
+    - title: SQL Server com SM-as
+      url: "/mssql/mssql-dr-smas-sql.html"
+    - title: Cenários de falha
+      url: "/mssql/mssql-dr-smas-failure-scenarios.html"
+- title: Segurança dos dados
+  url: "/mssql/mssql-data-security.html"

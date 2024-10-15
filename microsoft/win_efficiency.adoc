@@ -1,0 +1,68 @@
+---
+sidebar: sidebar 
+permalink: microsoft/win_efficiency.html 
+keywords: Windows,Hyper-V,VHDX,VM,Virtual 
+summary: Eficiência de storage da ONTAP com Microsoft Hyper-V. 
+---
+= Eficiência de storage
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O ONTAP fornece eficiência de storage líder do setor para ambientes virtualizados, incluindo o Microsoft Hyper-V. o NetApp também oferece programas de garantia de eficiência de storage.
+
+
+
+== Deduplicação da NetApp
+
+A deduplicação do NetApp funciona removendo blocos duplicados no nível do volume de storage, armazenando apenas uma cópia física, independentemente de quantas cópias lógicas estejam presentes. Portanto, a deduplicação cria a ilusão de que existem inúmeras cópias desse bloco. A deduplicação remove automaticamente blocos de dados duplicados em um nível de bloco de 4KB U em todo o volume. Esse processo recupera o storage para obter economia de espaço e potencial de desempenho, reduzindo o número de gravações físicas no disco. A deduplicação pode proporcionar mais de 70% de economia de espaço em ambientes Hyper-V.
+
+
+
+== Thin Provisioning
+
+O thin Provisioning é uma maneira eficiente de provisionar storage porque o storage não é pré-alocado de antemão. Em outras palavras, quando um volume ou LUN é criado usando thin Provisioning, o espaço no sistema de storage não é usado. O espaço permanece não utilizado até que os dados sejam gravados no LUN ou volume e apenas o espaço necessário para armazenar os dados é usado. A NetApp recomenda ativar o provisionamento de thin Provisioning no volume e desativar a reserva de LUN.
+
+
+
+== Qualidade do serviço
+
+A QoS de storage no Clustered ONTAP permite agrupar objetos de storage e definir limites de taxa de transferência no grupo. A QoS de storage pode ser usada para limitar a taxa de transferência a workloads e monitorar a performance de workload. Com isso, um administrador de storage pode separar workloads por organização, aplicação, unidade de negócios ou ambientes de produção ou desenvolvimento.
+
+Em ambientes empresariais, a QoS de storage ajuda a conseguir o seguinte:
+
+* Impede que os workloads do usuário afetem uns aos outros.
+* Protege aplicações críticas que têm tempos de resposta específicos que precisam ser atendidos em AMBIENTES DE TI como serviço (ITaaS).
+* Impede que os inquilinos se afetem.
+* Evita a degradação do desempenho com a adição de cada novo inquilino.
+
+
+O QoS permite limitar a quantidade de e/S enviada para um SVM, um volume flexível, um LUN ou um arquivo. A e/S pode ser limitada pelo número de operações ou pela taxa de transferência bruta.
+
+A figura a seguir ilustra o SVM com sua própria política de QoS que impõe um limite máximo de taxa de transferência.
+
+image:win_image13.png["Máquina virtual de armazenamento com sua própria política de QoS, largura de 319 mm, altura de 341 mm"]
+
+Para configurar um SVM com sua própria política de QoS e monitorar o grupo de políticas, execute os seguintes comandos no cluster do ONTAP:
+
+....
+# create a new policy group pg1 with a maximum throughput of 5,000 IOPS
+cluster::> qos policy-group create pg1 -vserver vs1 -max-throughput 5000iops
+....
+....
+# create a new policy group pg2 without a maximum throughput
+cluster::> qos policy-group create pg2 -vserver vs2
+....
+....
+# monitor policy group performance
+cluster::> qos statistics performance show
+....
+....
+# monitor workload performance
+cluster::> qos statistics workload performance show
+....

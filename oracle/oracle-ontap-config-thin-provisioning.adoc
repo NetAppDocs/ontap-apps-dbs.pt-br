@@ -1,0 +1,84 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-ontap-config-thin-provisioning.html 
+keywords: thin provisioning, oracle 
+summary: Thin Provisioning Oracle e ONTAP 
+---
+= Thin Provisioning com bancos de dados Oracle
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O thin Provisioning para um banco de dados Oracle requer um Planejamento cuidadoso, pois o resultado é configurar mais espaço em um sistema de armazenamento do que necessariamente está fisicamente disponível. Vale muito a pena o esforço porque, quando feito corretamente, o resultado é uma significativa economia de custos e melhorias na capacidade de gerenciamento.
+
+O thin Provisioning vem em várias formas e é parte integrante de muitos recursos que a ONTAP oferece a um ambiente de aplicações empresariais. O provisionamento de thin também está intimamente relacionado às tecnologias de eficiência pelo mesmo motivo: Os recursos de eficiência permitem que mais dados lógicos sejam armazenados do que o que existe tecnicamente no sistema de storage.
+
+Quase qualquer uso de snapshots envolve thin Provisioning. Por exemplo, um banco de dados 10TB típico no storage NetApp inclui cerca de 30 dias de snapshots. Esse arranjo resulta em aproximadamente 10TB GB de dados visíveis no sistema de arquivos ativo e 300TB dedicados a snapshots. O total de 310TB TB de storage geralmente reside em aproximadamente 12TB a 15TB TB de espaço. O banco de dados ativo consome 10TB, e os 300TB restantes de dados requerem apenas 2TB a 5TB GB de espaço porque apenas as alterações aos dados originais são armazenadas.
+
+A clonagem também é um exemplo de thin Provisioning. Um grande cliente da NetApp criou 40 clones de um banco de dados 80TB para uso por desenvolvimento. Se todos os desenvolvedores do 40 que usam esses clones sobrescrevessem cada bloco em cada arquivo de dados, mais de 3,2PB GB de armazenamento seriam necessários. Na prática, a rotatividade é baixa e a exigência de espaço coletivo está mais próxima de 40TB, porque apenas as alterações são armazenadas nas unidades.
+
+
+
+== Gerenciamento de espaço
+
+Alguns cuidados devem ser tomados com o thin Provisioning de um ambiente de aplicativo porque as taxas de alteração de dados podem aumentar inesperadamente. Por exemplo, o consumo de espaço devido a snapshots pode crescer rapidamente se as tabelas do banco de dados forem reindexadas ou se aplicar patches em larga escala aos convidados VMware. Um backup perdido pode gravar uma grande quantidade de dados em um tempo muito curto. Finalmente, pode ser difícil recuperar alguns aplicativos se um sistema de arquivos ficar sem espaço livre inesperadamente.
+
+Felizmente, esses riscos podem ser resolvidos com uma configuração cuidadosa de `volume-autogrow` políticas e `snapshot-autodelete`. Como os nomes deles implicam, essas opções permitem que um usuário crie políticas que desobstruam automaticamente o espaço consumido por snapshots ou aumentem um volume para acomodar dados adicionais. Muitas opções estão disponíveis e as necessidades variam de acordo com o cliente.
+
+Consulte o link:https://docs.netapp.com/us-en/ontap/volumes/index.html["documentação de gerenciamento de storage lógico"] para obter uma discussão completa sobre esses recursos.
+
+
+
+== Reservas fracionárias
+
+A reserva fracionária refere-se ao comportamento de um LUN em um volume com relação à eficiência do espaço. Quando a opção `fractional-reserve` é definida para 100%, todos os dados no volume podem experimentar 100% de rotatividade com qualquer padrão de dados sem esgotar espaço no volume.
+
+Por exemplo, considere um banco de dados em um único LUN 250GB em um volume 1TB. Criar um instantâneo resultaria imediatamente na reserva de 250GBMB de espaço adicional no volume para garantir que o volume não fique sem espaço por qualquer motivo. O uso de reservas fracionárias geralmente é desperdiçado porque é extremamente improvável que cada byte no volume do banco de dados precise ser substituído. Não há razão para reservar espaço para um evento que nunca acontece. Ainda assim, se um cliente não puder monitorar o consumo de espaço em um sistema de armazenamento e tiver certeza de que o espaço nunca se esgote, reservas fracionárias de 100% seriam necessárias para usar snapshots.
+
+
+
+== Compactação e deduplicação
+
+Compactação e deduplicação são ambas formas de thin Provisioning. Por exemplo, um espaço físico de dados de 50TB GB pode ser compactado para 30TB GB, resultando em uma economia de 20TB GB. Para que a compactação possa gerar quaisquer benefícios, alguns desses 20TB precisam ser usados para outros dados, ou o sistema de storage precisa ser adquirido com menos de 50TB TB. O resultado é o armazenamento de mais dados do que o tecnicamente disponível no sistema de armazenamento. Do ponto de vista dos dados, há 50TB TB de dados, embora ocupe apenas 30TB TB nas unidades.
+
+Há sempre a possibilidade de que a compressibilidade de um conjunto de dados mude, o que resultaria em aumento do consumo de espaço real. Esse aumento no consumo significa que a compactação deve ser gerenciada como com outras formas de thin Provisioning em termos de monitoramento e uso `volume-autogrow` e `snapshot-autodelete`.
+
+A compactação e a deduplicação são discutidas em mais detalhes na seção link:efficiency.html
+
+
+
+=== Compressão e reservas fracionárias
+
+A compactação é uma forma de thin Provisioning. Reservas fracionárias afetam o uso da compressão, com uma nota importante; o espaço é reservado antes da criação do snapshot. Normalmente, a reserva fracionária só é importante se existir um instantâneo. Se não houver instantâneo, a reserva fracionária não é importante. Este não é o caso da compressão. Se um LUN for criado em um volume com compactação, o ONTAP preservará espaço para acomodar um snapshot. Esse comportamento pode ser confuso durante a configuração, mas é esperado.
+
+Por exemplo, considere um volume de 10GB TB com um LUN de 5GB GB que foi comprimido até 2,5GB TB sem instantâneos. Considere estes dois cenários:
+
+* A reserva fracionária é de 100 resultados na utilização de 7,5GB
+* A reserva fracionária é de 0 resultados na utilização de 2,5GB
+
+
+O primeiro cenário inclui 2,5GB GB de consumo de espaço para dados atuais e 5GB GB de espaço para representar 100% de rotatividade da fonte em antecipação ao uso de instantâneos. O segundo cenário não reserva espaço extra.
+
+Embora esta situação possa parecer confusa, é improvável que seja encontrada na prática. A compactação implica thin Provisioning, e thin Provisioning em um ambiente LUN requer reservas fracionárias. É sempre possível que os dados compatados sejam sobrescritos por algo não compressível, o que significa que um volume deve ser thin Provisioning para compactação para resultar em qualquer economia.
+
+[TIP]
+====
+*A NetApp recomenda* as seguintes configurações de reserva:
+
+* Defina `fractional-reserve` como 0 quando o monitoramento de capacidade básica estiver em vigor, juntamente com `volume-autogrow` e `snapshot-autodelete`.
+* Defina `fractional-reserve` para 100 se não houver capacidade de monitorização ou se for impossível esgotar o espaço em qualquer circunstância.
+
+
+====
+
+
+== Espaço livre e alocação de espaço LVM
+
+A eficiência do thin Provisioning de LUNs ativos em um ambiente de sistema de arquivos pode ser perdida com o tempo, à medida que os dados são excluídos. A menos que os dados excluídos sejam sobrescritos com zeros (veja também link:oracle-storage-san-config-asmru.html["ASMRU"] ou o espaço seja liberado com recuperação de espaço de recorte/DESMAPEAMENTO, os dados "apagados" ocupam mais e mais espaço em branco não alocado no sistema de arquivos. Além disso, o thin Provisioning de LUNs ativos é de uso limitado em muitos ambientes de banco de dados porque os arquivos de dados são inicializados em seu tamanho total no momento da criação.
+
+Um Planejamento cuidadoso da configuração do LVM pode melhorar a eficiência e minimizar a necessidade de provisionamento de armazenamento e redimensionamento de LUN. Quando um LVM, como Veritas VxVM ou Oracle ASM, é usado, os LUNs subjacentes são divididos em extensões que só são usadas quando necessário. Por exemplo, se um conjunto de dados começar com 2TB TB de tamanho, mas puder crescer para 10TB TB com o tempo, esse conjunto de dados poderá ser colocado em 10TB PB de LUNs provisionados, organizados em um grupo de discos LVM. Ele ocuparia apenas 2TBMB de espaço no momento da criação e só reivindicaria espaço adicional, pois as extensões são alocadas para acomodar o crescimento dos dados. Este processo é seguro, desde que o espaço seja monitorado.

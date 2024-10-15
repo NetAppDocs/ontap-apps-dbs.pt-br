@@ -1,0 +1,15 @@
+---
+sidebar: sidebar 
+permalink: epic/epic-example-aggregates.html 
+keywords: epic,cache,iris 
+summary: Implementação de exemplo épica em ONTAP - agregados 
+---
+= Implementação de exemplo épica em ONTAP - agregados
+:allow-uri-read: 
+
+
+[role="lead"]
+Para obter a documentação mais recente sobre o provisionamento de agregados, clique link:https://docs.netapp.com/us-en/ontap/disks-aggregates/manage-local-tiers-overview-concept.html["aqui"^]em .
+
+
+NOTE: As configurações padrão otimizam o desempenho e a capacidade. Um agregado grande é criado por nó.
