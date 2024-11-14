@@ -22,16 +22,25 @@ A tecnologia SnapMirror oferece uma solução empresarial rápida e flexível pa
 
 
 
-== NetApp MetroCluster
+== Sincronização ativa do NetApp MetroCluster e do SnapMirror
 
-As configurações do MetroCluster ajudam a fornecer soluções de storage sem perda de dados e alta disponibilidade para aplicações, bancos de dados e plataformas de virtualização. A solução é implementada com a combinação de clustering baseado em array e replicação síncrona que fornece uma camada adicional de proteção para todo o ambiente de storage e host.
+Para muitos clientes, a recuperação de desastres requer mais do que apenas a posse de uma cópia remota de dados. Para isso, ela exige a capacidade de usar esses dados rapidamente. A NetApp oferece duas tecnologias que atendem a essa necessidade: MetroCluster e SnapMirror ative Sync
+
+O MetroCluster se refere ao ONTAP em uma configuração de hardware que inclui armazenamento de baixo nível espelhado e vários recursos adicionais. Soluções integradas, como o MetroCluster, simplificam as infraestruturas de virtualização, aplicações e banco de dados complicadas e com escalabilidade horizontal atuais. Ele substitui vários produtos e estratégias de proteção de dados externos por um storage array simples e central. Ele também fornece backup integrado, recuperação, recuperação de desastres e alta disponibilidade (HA) em um único sistema de storage em cluster.
+
+A sincronização ativa do SnapMirror é baseada no SnapMirror síncrono. Com o MetroCluster, cada controlador ONTAP é responsável por replicar os dados da unidade para um local remoto. Com o SnapMirror active Sync, você tem essencialmente dois sistemas ONTAP diferentes que mantêm cópias independentes dos seus dados LUN, mas cooperam para apresentar uma única instância desse LUN. Do ponto de vista do host, é uma única entidade LUN.
 
 
 
-== SnapMirror ative Sync (anteriormente SnapMirror Business Continuity)
+== Comparação de SM-as e MCC
 
-A sincronização ativa do SnapMirror é baseada no SnapMirror Synchronous e sua funcionalidade de replicar vários LUNs para o storage de réplicas, mantendo a consistência da ordem de gravação. Com o MetroCluster, o controlador ONTAP, incluindo a configuração de rede, deve ser idêntico entre os locais. Com o SnapMirror active Sync, você tem essencialmente dois sistemas ONTAP diferentes que mantêm cópias independentes dos seus dados LUN, mas cooperam para apresentar uma única instância desse LUN. Do ponto de vista do host, é uma única entidade LUN.
+O SM-as e o MetroCluster são semelhantes na funcionalidade geral, mas há diferenças importantes na maneira como a replicação RPO-0 foi implementada e como ela é gerenciada. O SnapMirror assíncrono e síncrono também pode ser usado como parte de um plano de recuperação de desastres, mas não foram desenvolvidos como tecnologias de repliação de HA.
 
-A principal diferença entre o MetroCluster e o SnapMirror active Sync é granularidade e escalabilidade. Se você só precisa selecionar workloads específicos para serem replicados síncronos ou LUNs devem estar disponíveis em ambos os locais para operação de leitura/gravação, a sincronização ativa do SnapMirror é a melhor opção. Se você precisa replicar ambientes inteiros ou até mesmo data centers, o MetroCluster é uma opção melhor. No momento, a sincronização ativa do SnapMirror é somente SAN, enquanto o MetroCluster é multiprotocolo, incluindo SAN, NFS e SMB.
+* Uma configuração do MetroCluster é mais como um cluster integrado com nós distribuídos entre locais. O SM-as se comporta como dois clusters independentes que estão cooperando no fornecimento de LUNs replicados de forma síncrona RPO igual a 0.
+* Os dados em uma configuração do MetroCluster só podem ser acessados de um determinado site a qualquer momento. Uma segunda cópia dos dados está presente no site oposto, mas os dados são passivos. Ele não pode ser acessado sem um failover do sistema de storage.
+* O espelhamento de desempenho MetroCluster e SM-as ocorre em níveis diferentes. O espelhamento MetroCluster é executado na camada RAID. Os dados de baixo nível são armazenados em um formato espelhado usando SyncMirror. O uso do espelhamento é praticamente invisível nas camadas de LUN, volume e protocolo.
+* Em contraste, o espelhamento SM-as ocorre na camada de protocolo. Os dois clusters são, no geral, clusters independentes. Depois que as duas cópias dos dados estiverem sincronizadas, os dois clusters só precisam espelhar gravações. Quando ocorre uma gravação em um cluster, ela é replicada para o outro cluster. A gravação só é reconhecida para o host quando a gravação for concluída em ambos os sites. Além desse comportamento de divisão de protocolo, os dois clusters são, de outra forma, clusters ONTAP normais.
+* A função principal do MetroCluster é a replicação em grande escala. É possível replicar um array inteiro com RPO igual a 0 e rto quase zero. Isso simplifica o processo de failover porque há apenas uma "coisa" a fazer failover e é dimensionado extremamente bem em termos de capacidade e IOPS.
+* Um dos principais casos de uso para SM-as é a replicação granular. Às vezes, você não quer replicar todos os dados como uma única unidade ou precisa ser capaz de falhar seletivamente em determinados workloads.
+* Outro importante caso de uso para SM-as é para operações ativas-ativas, em que você deseja que cópias totalmente utilizáveis de dados estejam disponíveis em dois clusters diferentes localizados em dois locais diferentes com características de desempenho idênticas e, se desejado, não é necessário estender a SAN entre locais. Você pode ter suas aplicações já em execução em ambos os locais, o que reduz o rto geral durante operações de failover.
 
-Para obter mais informações sobre o SnapMirror, link:https://www.netapp.com/pdf.html?item=/media/17229-tr4015pdf.pdf["TR-4015: Guia de práticas recomendadas e configuração do SnapMirror para ONTAP 9"^]consulte .
