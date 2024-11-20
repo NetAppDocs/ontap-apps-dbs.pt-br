@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: mysql/mysql-file-structure.html 
 keywords: MySQL,MariaDB 
 summary: Estrutura de arquivos MySQL 
+searchtitle: Estrutura de arquivos MySQL e InnoDB 
 ---
-= MySQL e InnoDB
+= Estrutura de ficheiros
 :allow-uri-read: 
 :icons: font
 :imagesdir: ../media/

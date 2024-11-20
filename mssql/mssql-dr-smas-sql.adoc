@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: mssql/mssql-dr-smas-sql.html 
 keywords: MSSQL,SQL Server, SnapMirror active sync, ONTAP, SMBC, SMas, SnapMirror Business Continuity 
 summary: Sincronização ativa do Microsoft SQL Server e do SnapMirror 
+searchtitle: Microsoft SQL Server com sincronização ativa do SnapMirror 
 ---
-= Microsoft SQL Server com sincronização ativa do SnapMirror
+= Visão geral
 :allow-uri-read: 
 :imagesdir: ../media/
 

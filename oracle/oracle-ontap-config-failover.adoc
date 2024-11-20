@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-ontap-config-failover.html 
 keywords: failover, switchover 
 summary: É necessário entender as funções de takeover e switchover do storage para garantir que as operações do banco de dados Oracle não sejam interrompidas por essas operações. Além disso, os argumentos usados pelas operações de aquisição e comutação podem afetar a integridade dos dados se usados incorretamente. 
+searchtitle: Failover/switchover do controlador ONTAP e dos bancos de dados Oracle 
 ---
-= Failover/switchover do controlador ONTAP e dos bancos de dados Oracle
+= Failover/switchover da ONTAP
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

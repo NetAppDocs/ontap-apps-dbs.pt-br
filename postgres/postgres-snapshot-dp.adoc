@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: postgres/postgres-snapshot-dp.html 
 keywords: PostgreSQL,database,postgres 
 summary: Bancos de dados PostgreSQL e snapshots de armazenamento 
+searchtitle: Bancos de dados PostgreSQL e snapshots de armazenamento 
 ---
-= Bancos de dados PostgreSQL e snapshots de armazenamento
+= Instantâneos
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

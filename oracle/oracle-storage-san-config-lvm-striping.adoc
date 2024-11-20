@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-storage-san-config-lvm-striping.html 
 keywords: SAN, ASM, LVM 
 summary: Configuração de distribuição LVM para bancos de dados Oracle 
+searchtitle: LVM striping com bancos de dados Oracle 
 ---
-= LVM striping com bancos de dados Oracle
+= LVM striping (distribuição LVM)
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

@@ -3,6 +3,7 @@ sidebar: sidebar
 permalink: oracle/oracle-dp-slas.html 
 keywords: SLA, data protection, RPO, RTO 
 summary: SLAs de proteção de dados de banco de dados Oracle 
+searchtitle: Planejamento de rto, RPO e SLA 
 ---
 = Planejamento de rto, RPO e SLA
 :hardbreaks:

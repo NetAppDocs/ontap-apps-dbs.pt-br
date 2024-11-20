@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: mssql/mssql-dr-smas-nonuniform.html 
 keywords: MSSQL,SQL Server, SnapMirror active sync, SMBC, overview 
 summary: Microsoft SQL Server e SM-as acesso não uniforme 
+searchtitle: Microsoft SQL Server e SM-as acesso não uniforme 
 ---
-= Microsoft SQL Server e SM-as acesso não uniforme
+= Acesso não uniforme
 :allow-uri-read: 
 :imagesdir: ../media/
 

@@ -2,9 +2,10 @@
 sidebar: sidebar 
 permalink: mysql/mysql-file-descriptors.html 
 keywords: MySQL,MariaDB,file descriptors 
-summary: Descrição do arquivo MySQL 
+summary: Descritores de arquivo MySQL 
+searchtitle: Descritores de arquivo MySQL 
 ---
-= Descritores de arquivo MySQL
+= Descritores de arquivo
 :allow-uri-read: 
 :icons: font
 :imagesdir: ../media/

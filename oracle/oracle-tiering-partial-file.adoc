@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-tiering-partial-file.html 
 keywords: tiering, fabricpool 
 summary: Disposição em camadas do Oracle Partial File FabricPool 
+searchtitle: Disposição em camadas do Oracle Partial File FabricPool 
 ---
-= Disposição em camadas do Oracle Partial File FabricPool
+= Disposição em camadas de arquivos parcial
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: postgres/postgres-tablespaces.html 
 keywords: PostgreSQL,database,postgres 
 summary: PostgreSQL tablespaces 
+searchtitle: PostgreSQL tablespaces 
 ---
-= PostgreSQL tablespaces
+= Tablespaces
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

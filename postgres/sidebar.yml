@@ -27,7 +27,7 @@ entries:
   entries:
   - title: Proteção de dados nativos
     url: "/postgres/postgres-native-dp.html"
-  - title: Tecnologia Snapshot
+  - title: Instantâneos
     url: "/postgres/postgres-snapshot-dp.html"
   - title: Software de proteção de dados
     url: "/postgres/postgres-snapcenter-dp.html"

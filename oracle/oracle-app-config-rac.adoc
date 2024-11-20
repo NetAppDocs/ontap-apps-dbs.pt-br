@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-app-config-rac.html 
 keywords: oracle, database, ontap, rac, disktimeout, misscount 
 summary: Tempos limite do Oracle RAC 
+searchtitle: Os clusters de aplicações do Oracle Real são cronometrados 
 ---
-= Tempos limite do Oracle Real Application clusters (RAC)
+= Tempos limite do RAC
 :allow-uri-read: 
 
 

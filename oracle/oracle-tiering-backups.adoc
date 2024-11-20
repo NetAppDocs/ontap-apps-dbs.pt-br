@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-tiering-backups.html 
 keywords: tiering, fabricpool 
 summary: Disposição em camadas do backup do Oracle 
+searchtitle: Disposição em camadas do backup de banco de dados Oracle 
 ---
-= Disposição em camadas do backup de banco de dados Oracle
+= Disposição em camadas do backup
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

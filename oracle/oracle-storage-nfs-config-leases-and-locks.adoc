@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-storage-nfs-config-leases-and-locks.html 
 keywords: NFS, lease 
 summary: Locações e bloqueios de bancos de dados Oracle e NFS 
+searchtitle: Locações e bloqueios de bancos de dados Oracle e NFS 
 ---
-= Locações e bloqueios de bancos de dados Oracle e NFS
+= Locações e bloqueios de NFS
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: mssql/mssql-dr-mcc-overview.html 
 keywords: MSSQL,SQL Server, MetroCluster, Disaster recovery 
 summary: Microsoft SQL Server e NetApp MetroCluster 
+searchtitle: Microsoft SQL Server e NetApp MetroCluster 
 ---
-= Visão geral e arquitetura do MetroCluster
+= Arquitetura
 :allow-uri-read: 
 :imagesdir: ../media/
 

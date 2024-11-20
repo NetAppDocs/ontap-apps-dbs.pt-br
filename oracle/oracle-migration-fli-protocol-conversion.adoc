@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-migration-fli-protocol-conversion.html 
 keywords: migration, oracle, FLI 
 summary: Migração Oracle com FLI - conversão de protocolo 
+searchtitle: Migração Oracle com FLI - conversão de protocolo 
 ---
-= Migração Oracle com FLI - conversão de protocolo
+= Conversão de protocolo
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

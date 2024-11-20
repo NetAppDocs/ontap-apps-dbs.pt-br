@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-migration-fli-completion.html 
 keywords: migration, oracle, FLI 
 summary: Migração Oracle com FLI - conclusão 
+searchtitle: Migração Oracle com FLI - conclusão 
 ---
-= Migração Oracle com FLI - conclusão
+= Conclusão
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

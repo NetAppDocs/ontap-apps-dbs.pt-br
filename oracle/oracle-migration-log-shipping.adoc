@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-migration-log-shipping.html 
 keywords: migration, oracle, log shipping 
 summary: Migração Oracle via envio de log 
+searchtitle: Migração de banco de dados Oracle via envio de log 
 ---
-= Migração de banco de dados Oracle via envio de log
+= Registrar envio
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

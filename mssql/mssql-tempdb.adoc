@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: mssql/mssql-tempdb.html 
 keywords: MSSQL,SQL Server, tempdb, ONTAP 
 summary: Colocação de tempdb no ONTAP 
+searchtitle: Icrosoft SQL Server tempdb arquivos 
 ---
-= Arquivos tempdb do Microsoft SQL Server
+= Arquivos tempdb
 :allow-uri-read: 
 :imagesdir: ../media/
 

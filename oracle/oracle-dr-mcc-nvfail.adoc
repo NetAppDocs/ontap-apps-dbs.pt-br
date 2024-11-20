@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-dr-mcc-nvfail.html 
 keywords: metrocluster, nvfail, switchover 
 summary: Oracle, MetroCluster e NVFAIL 
+searchtitle: Bancos de dados Oracle, MetroCluster e NVFAIL 
 ---
-= Bancos de dados Oracle, MetroCluster e NVFAIL
+= MetroCluster e NVFAIL
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

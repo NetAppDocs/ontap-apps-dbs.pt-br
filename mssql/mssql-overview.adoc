@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: mssql/mssql-overview.html 
 keywords: MSSQL,SQL Server,TR-4590, SnapCenter, ONTAP 
 summary: Microsoft SQL Server no ONTAP 
+searchtitle: Microsoft SQL Server no ONTAP 
 ---
-= Microsoft SQL Server no ONTAP
+= Visão geral
 :allow-uri-read: 
 :imagesdir: ../media/
 

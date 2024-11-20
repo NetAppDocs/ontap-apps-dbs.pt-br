@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-host-config-windows.html 
 keywords: oracle, database, ontap, windows 
 summary: Bancos de dados Oracle com Microsoft Windows 
+searchtitle: Bancos de dados Oracle com Microsoft Windows 
 ---
-= Bancos de dados Oracle com Microsoft Windows
+= Microsoft Windows
 :allow-uri-read: 
 
 

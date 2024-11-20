@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-tiering-logs.html 
 keywords: tiering, fabricpool 
 summary: Disposição em camadas do log de arquivamento do Oracle 
+searchtitle: Disposição em camadas do log de arquivamento de banco de dados Oracle 
 ---
-= Disposição em camadas do log de arquivamento de banco de dados Oracle
+= Disposição em camadas do log de arquivamento
 :allow-uri-read: 
 :nofooter: 
 :icons: font

@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-tiering-snapshots.html 
 keywords: tiering, fabricpool 
 summary: Disposição em camadas de snapshot do Oracle e FabricPool 
+searchtitle: Oracle com disposição em camadas de snapshot do FabricPool 
 ---
-= Oracle com disposição em camadas de snapshot do FabricPool
+= Disposição do Snapshot em camadas
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

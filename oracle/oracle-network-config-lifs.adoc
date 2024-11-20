@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-network-config-lifs.html 
 keywords: LIF, multipath, multipathing 
 summary: Design de interface lógica para bancos de dados Oracle 
+searchtitle: Design de interface lógica para bancos de dados Oracle 
 ---
-= Design de interface lógica para bancos de dados Oracle
+= Interfaces lógicas
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

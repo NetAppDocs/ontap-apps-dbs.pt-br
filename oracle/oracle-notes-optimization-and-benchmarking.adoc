@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-notes-optimization-and-benchmarking.html 
 keywords: oracle, database, ontap, performance, hammerdb, swingbench, calibrate_io, slob2, orion, slob, benchmarking, benchmark 
 summary: Teste de desempenho de banco de dados Oracle 
+searchtitle: Otimização e benchmarking de desempenho de banco de dados Oracle 
 ---
-= Procedimentos de otimização e benchmarking de desempenho de banco de dados Oracle
+= Otimização de desempenho e benchmarking
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

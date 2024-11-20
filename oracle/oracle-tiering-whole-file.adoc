@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-tiering-whole-file.html 
 keywords: tiering, fabricpool 
 summary: Disposição em camadas do FabricPool de arquivo completo do banco de dados Oracle 
+searchtitle: Disposição em camadas do FabricPool de arquivo completo do banco de dados Oracle 
 ---
-= Disposição em camadas do FabricPool de arquivo completo do banco de dados Oracle
+= Disposição completa de arquivos em categorias
 :allow-uri-read: 
 
 

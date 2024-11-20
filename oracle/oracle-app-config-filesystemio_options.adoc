@@ -3,8 +3,9 @@ permalink: oracle/oracle-app-config-filesystemio_options.html
 sidebar: sidebar 
 keywords: oracle, database, ontap, filesystemio_options, filesystemio, async, directio 
 summary: Parâmetros do banco de dados Oracle - filestimio_options 
+searchtitle: Parâmetros do banco de dados Oracle - filestimio_options 
 ---
-= Parâmetros do banco de dados Oracle: Filestimio_options
+= sistema de arquivos_options
 :allow-uri-read: 
 
 

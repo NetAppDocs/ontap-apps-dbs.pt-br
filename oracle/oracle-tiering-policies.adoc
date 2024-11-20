@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-tiering-policies.html 
 keywords: tiering, fabricpool 
 summary: Políticas de disposição em camadas do Oracle Database FabricPool 
+searchtitle: Políticas de disposição em camadas do Oracle Database FabricPool 
 ---
-= Políticas de disposição em camadas do Oracle Database FabricPool
+= Políticas de disposição em camadas
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

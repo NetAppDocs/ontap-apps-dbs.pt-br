@@ -2,9 +2,10 @@
 permalink: oracle/oracle-tiering-overview.html 
 sidebar: sidebar 
 keywords: tiering, fabricpool 
-summary: Oracle Database FabricPool classificação em camadas 
+summary: Visão geral da disposição em camadas do Oracle Database FabricPool 
+searchtitle: Visão geral da disposição em camadas do Oracle Database FabricPool 
 ---
-= Visão geral da disposição em camadas do Oracle Database FabricPool
+= Visão geral
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: postgres/postgres-snapcenter-dp.html 
 keywords: PostgreSQL,database,postgres 
 summary: Software de proteção de dados PostgreSQL 
+searchtitle: Software de proteção de dados PostgreSQL 
 ---
-= Software de proteção de dados PostgreSQL
+= Software de proteção de dados
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

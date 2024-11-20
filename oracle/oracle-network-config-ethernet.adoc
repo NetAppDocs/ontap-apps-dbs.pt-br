@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-network-config-ethernet.html 
 keywords: ethernet, jumbo frames, MTU 
 summary: Configuração Oracle e TCP/IP e ethernet 
+searchtitle: Configuração TCP/IP e ethernet para bancos de dados Oracle 
 ---
-= Configuração TCP/IP e ethernet para bancos de dados Oracle
+= Configuração TCP/IP e ethernet
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

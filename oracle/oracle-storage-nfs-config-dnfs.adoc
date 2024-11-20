@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-storage-nfs-config-dnfs.html 
 keywords: oracle, database, ontap, nfs, ADR, dNFS 
 summary: Oracle Direct NFS 
+searchtitle: Oracle Direct NFS 
 ---
-= Oracle directNFS
+= Oracle Direct NFS (DNFS)
 :allow-uri-read: 
 
 
@@ -38,6 +39,8 @@ Não use DNFS com qualquer tipo de resolução de nome de round-robin, incluindo
 O Oracle DNFS pode trabalhar com o NFSv3 sem necessidade de configuração além de ativar a biblioteca DNFS (consulte a documentação Oracle para o comando específico necessário), mas se o DNFS não conseguir estabelecer conetividade, ele pode reverter silenciosamente para o cliente NFS do kernel. Se isso acontecer, o desempenho pode ser gravemente afetado.
 
 Se você deseja usar a multiplexação DNFS em várias interfaces, com NFSv4.X, ou usar criptografia, você deve configurar um arquivo oranfstab. A sintaxe é extremamente rigorosa. Pequenos erros no arquivo podem resultar em suspensão de inicialização ou ignorar o arquivo oranfstab.
+
+No momento da escrita, o multipathing DNFS não funciona com o NFSv4,1 com versões recentes do Oracle Database. Um arquivo oranfstab que especifica NFSv4,1 como um protocolo só pode usar uma instrução de caminho único para uma determinada exportação. O motivo é que o ONTAP não oferece suporte ao entroncamento ClientID. Patches do banco de dados Oracle para resolver essa limitação podem estar disponíveis no futuro.
 
 A única maneira de ter certeza de que o DNFS está operando como esperado é consultar as tabelas dnfs.
 

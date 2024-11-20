@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-dr-smas-fail-interconnect.html 
 keywords: Oracle, SnapMirror active sync, SMBC, failover 
 summary: Failover de sincronização ativa do Oracle e do SnapMirror 
+searchtitle: SnapMirror ative Sync - perda da replicação do Oracle RAC 
 ---
-= SnapMirror ative Sync - perda da replicação do Oracle RAC
+= Falha na interconexão RAC
 :allow-uri-read: 
 :imagesdir: ../media/
 

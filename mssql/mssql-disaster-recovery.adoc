@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: mssql/mssql-disaster-recovery.html 
 keywords: MSSQL,SQL Server, disaster recovery, snapmirror 
 summary: Recuperação de desastres do Microsoft SQL Server com o ONTAP 
+searchtitle: Recuperação de desastres do Microsoft SQL Server com o ONTAP 
 ---
-= Recuperação de desastres do Microsoft SQL Server com o ONTAP
+= Recuperação de desastres
 :allow-uri-read: 
 :imagesdir: ../media/
 

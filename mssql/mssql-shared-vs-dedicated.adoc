@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: mssql/mssql-shared-vs-dedicated.html 
 keywords: MSSQL,SQL Server, multiple instances, dedicated instance, ONTAP 
 summary: Implantação de instância do Microsoft SQL Server 
+searchtitle: Instância compartilhada do Microsoft SQL Server versus instância dedicada 
 ---
-= Instância compartilhada do Microsoft SQL Server versus instância dedicada
+= Instância compartilhada versus instância dedicada
 :allow-uri-read: 
 :imagesdir: ../media/
 

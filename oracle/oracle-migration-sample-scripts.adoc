@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-migration-sample-scripts.html 
 keywords: oracle, Scripts 
 summary: Scripts de exemplo para automatizar operações de migração Oracle 
+searchtitle: Exemplos de scripts de procedimento de migração Oracle 
 ---
-= Exemplos de scripts de procedimento de migração Oracle
+= Exemplos de scripts
 :allow-uri-read: 
 
 

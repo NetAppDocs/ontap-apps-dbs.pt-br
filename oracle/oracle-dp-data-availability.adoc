@@ -3,8 +3,9 @@ sidebar: sidebar
 permalink: oracle/oracle-dp-data-availability.html 
 keywords: data protection, availability, takeover, giveback, switchover, switchback 
 summary: Maximizar a disponibilidade com o banco de dados Oracle no ONTAP 
+searchtitle: Disponibilidade de banco de dados Oracle com ONTAP 
 ---
-= Disponibilidade de banco de dados Oracle com ONTAP
+= Disponibilidade do banco de dados
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 
