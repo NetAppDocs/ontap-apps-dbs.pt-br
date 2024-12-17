@@ -66,4 +66,4 @@ O SnapMirror ative Sync também pode ser implantado de duas maneiras diferentes.
 
 image::../media/vmsc_1_2.png[Diagrama vMSC com MCC,624,485]
 
- https://docs.netapp.com/us-en/ontap/smbc/index.html["Documentos do NetApp"]Consulte para obter informações específicas sobre design e implementação para sincronização ativa do SnapMirror.
+Para obter mais informações sobre as vantagens do design e implantação simétricos ou assimétricos, consulte o https://docs.netapp.com/us-en/ontap/smbc/index.html["Documentação de sincronização ativa do SnapMirror"].
