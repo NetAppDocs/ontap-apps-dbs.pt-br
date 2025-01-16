@@ -3,7 +3,7 @@ sidebar: sidebar
 permalink: mssql/mssql-tempdb.html 
 keywords: MSSQL,SQL Server, tempdb, ONTAP 
 summary: Colocação de tempdb no ONTAP 
-searchtitle: Icrosoft SQL Server tempdb arquivos 
+searchtitle: Arquivos tempdb do Microsoft SQL Server 
 ---
 = Arquivos tempdb
 :allow-uri-read: 
@@ -11,15 +11,16 @@ searchtitle: Icrosoft SQL Server tempdb arquivos
 
 
 [role="lead"]
-O banco de dados tempdb pode ser muito utilizado. Além do posicionamento ideal de arquivos de banco de dados de usuários no ONTAP, o posicionamento de datafiles tempdb também é fundamental para reduzir a contenção de alocação
+O banco de dados tempdb pode ser muito utilizado. Além do posicionamento ideal de arquivos de banco de dados de usuários no ONTAP, o posicionamento de datafiles tempdb também é fundamental para reduzir a contenção de alocação. Tempdb deve ser colocado em disco separado e não compartilhado com datafiles do usuário.
 
 A contenção de páginas pode ocorrer nas páginas mapa de alocação global (GAM), mapa de alocação global compartilhado (SGAM) ou espaço livre de páginas (PFS) quando o SQL Server deve gravar em páginas especiais do sistema para alocar novos objetos. Os trincos bloqueiam estas páginas na memória. Em uma instância ocupada do SQL Server, pode levar muito tempo para obter uma trava em uma página do sistema no tempdb. Isso resulta em tempos de execução de consulta mais lentos e é conhecido como contenção de trava. Veja as práticas recomendadas a seguir para criar arquivos de dados tempdb:
 
 * Para 8 núcleos: Arquivos de dados tempdb: Número de núcleos
 * Para > 8 núcleos: 8 arquivos de dados tempdb
+* O arquivo de dados tempdb deve ser criado com tamanho igual
 
 
-O script de exemplo a seguir modifica tempdb criando oito arquivos tempdb e movendo tempdb para o ponto de montagem `C:\MSSQL\tempdb` do SQL Server 2012 e posterior.
+O script de exemplo a seguir modifica tempdb criando oito arquivos tempdb de tamanho igual e movendo tempdb para o ponto de montagem `C:\MSSQL\tempdb` do SQL Server 2012 e posterior.
 
 ....
 use master
