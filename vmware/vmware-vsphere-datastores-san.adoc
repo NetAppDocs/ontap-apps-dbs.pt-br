@@ -14,13 +14,11 @@ summary: Esta página descreve as práticas recomendadas para a implementação 
 
 
 [role="lead"]
-O ONTAP fornece storage de bloco de classe empresarial para o VMware vSphere usando iSCSI, Fibre Channel Protocol (FCP ou FC em resumo) e NVMe over Fabrics (NVMe-of). Veja a seguir as práticas recomendadas para a implementação de protocolos de bloco para storage de VM com o vSphere e o ONTAP.
-
 No vSphere, há três maneiras de usar LUNs de armazenamento em bloco:
 
 * Com datastores VMFS
 * Com mapeamento de dispositivo bruto (RDM)
-* Como um LUN acessado e controlado por um iniciador de software de um sistema operacional convidado VM
+* Como um LUN conetado iSCSI ou namespace NVMe/TCP acessado e controlado por um iniciador de software de um sistema operacional convidado VM
 
 
 O VMFS é um sistema de arquivos em cluster de alto desempenho que fornece datastores que são pools de armazenamento compartilhado. Armazenamentos de dados VMFS podem ser configurados com LUNs acessados usando FC, iSCSI, FCoE ou namespaces NVMe acessados usando os protocolos NVMe/FC ou NVMe/TCP. O VMFS permite que o armazenamento seja acessado simultaneamente por cada servidor ESX em um cluster. O tamanho máximo de LUN é geralmente 128TB, começando com ONTAP 9.12.1P2 (e anterior com sistemas ASA); portanto, um datastore VMFS 5 ou 6 de tamanho máximo de 64TB pode ser criado usando um único LUN.
@@ -29,7 +27,10 @@ O vSphere inclui suporte integrado para vários caminhos para dispositivos de ar
 
 Tanto o NMP quanto o ONTAP suportam o Acesso lógico assimétrico (ALUA) para negociar caminhos otimizados e não otimizados. No ONTAP, um caminho otimizado para ALUA segue um caminho de dados direto, usando uma porta de destino no nó que hospeda o LUN que está sendo acessado. O ALUA é ativado por padrão no vSphere e no ONTAP. O NMP reconhece o cluster ONTAP como ALUA e usa o plug-in tipo array de armazenamento ALUA (`VMW_SATP_ALUA`) e seleciona o plug-in de seleção de caminho round robin (`VMW_PSP_RR`).
 
-O ESXi 6 suporta até 256 LUNs e até 1.024 caminhos totais para LUNs. O ESXi não vê LUNs ou caminhos além desses limites. Assumindo o número máximo de LUNs, o limite de caminho permite quatro caminhos por LUN. Em um cluster ONTAP maior, é possível alcançar o limite de caminho antes do limite de LUN. Para lidar com essa limitação, o ONTAP oferece suporte ao mapa de LUN seletivo (SLM) na versão 8,3 e posterior.
+ESXi 6 adicionou suporte para até 256 LUNs e até 1.024 caminhos totais para LUNs. O ESXi não vê LUNs ou caminhos além desses limites. Assumindo o número máximo de LUNs, o limite de caminho permite quatro caminhos por LUN. Em um cluster ONTAP maior, é possível alcançar o limite de caminho antes do limite de LUN. Para lidar com essa limitação, o ONTAP oferece suporte ao mapa de LUN seletivo (SLM) na versão 8,3 e posterior.
+
+
+NOTE: Consulte a link:https://configmax.broadcom.com/guest?vmwareproduct=vSphere&release=vSphere%208.0&categories=2-0["Ferramenta VMware Configuration Maximums"^]para obter os limites suportados mais atualizados no ESXi.
 
 O SLM limita os nós que anunciam caminhos para um determinado LUN. É uma prática recomendada do NetApp ter pelo menos um LIF por nó por SVM e usar o SLM para limitar os caminhos anunciados para o nó que hospeda o LUN e seu parceiro de HA. Embora existam outros caminhos, eles não são anunciados por padrão. É possível modificar os caminhos anunciados com os argumentos adicionar e remover nó de relatório dentro do SLM. Observe que os LUNs criados em versões anteriores a 8,3 anunciam todos os caminhos e precisam ser modificados para anunciar apenas os caminhos para o par de HA de hospedagem. Para obter mais informações sobre o SLM, consulte a seção 5,9 do https://www.netapp.com/pdf.html?item=/media/10680-tr4080pdf.pdf["TR-4080"^]. O método anterior de portsets também pode ser usado para reduzir ainda mais os caminhos disponíveis para um LUN. Os Portsets ajudam reduzindo o número de caminhos visíveis através dos quais os iniciadores em um iggroup podem ver LUNs.
 
@@ -41,6 +42,7 @@ Os protocolos de bloqueio (iSCSI, FC e FCoE) acessam LUNs usando IDs de LUN e n�
 
 Outras práticas recomendadas a considerar:
 
+* Verifique link:vmware-vsphere-settings.html["Host ESXi recomendado e outras configurações do ONTAP"^]as configurações recomendadas pelo NetApp em colaboração com a VMware.
 * Certifique-se de que é criada uma interface lógica (LIF) para cada SVM em cada nó no cluster do ONTAP para obter disponibilidade e mobilidade máximas. A prática recomendada de SAN ONTAP é usar duas portas físicas e LIFs por nó, uma para cada malha. O ALUA é usado para analisar caminhos e identificar caminhos otimizados ativos (diretos) versus caminhos não otimizados ativos. O ALUA é usado para FC, FCoE e iSCSI.
 * Para redes iSCSI, use várias interfaces de rede VMkernel em sub-redes de rede diferentes com agrupamento NIC quando vários switches virtuais estiverem presentes. Você também pode usar várias NICs físicas conetadas a vários switches físicos para fornecer HA e maior taxa de transferência. A figura a seguir fornece um exemplo de conectividade multipath. No ONTAP, configure um grupo de interface de modo único para failover com dois ou mais links conetados a dois ou mais switches ou use LACP ou outra tecnologia de agregação de links com grupos de interface multimodo para fornecer HA e os benefícios da agregação de links.
 * Se o CHAP (Challenge-Handshake Authentication Protocol) for usado no ESXi para autenticação de destino, ele também deve ser configurado no ONTAP usando a CLI (`vserver iscsi security create`) ou com o Gerenciador de sistema (edite a segurança do iniciador em armazenamento > SVMs > Configurações da SVM > Protocolos > iSCSI).

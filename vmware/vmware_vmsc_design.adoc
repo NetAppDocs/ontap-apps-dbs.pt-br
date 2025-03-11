@@ -20,17 +20,19 @@ Este documento descreve as diretrizes de design e implementação do vMSC com si
 
 == Configuração de armazenamento NetApp
 
-As instruções de configuração para NetApp MetroCluster (referidas como uma configuração MCC) estão disponíveis em https://docs.netapp.com/us-en/ontap-metrocluster/["Documentação do MetroCluster"]. As instruções para a sincronização ativa do SnapMirror também estão disponíveis em https://docs.netapp.com/us-en/ontap/smbc/index.html["Visão geral da continuidade dos negócios da SnapMirror"].
+As instruções de configuração para NetApp MetroCluster (referidas como uma configuração MCC) estão disponíveis em https://docs.netapp.com/us-en/ontap-metrocluster/["Documentação do MetroCluster"]. As instruções para a sincronização ativa do SnapMirror (SMA) também estão disponíveis em https://docs.netapp.com/us-en/ontap/smbc/index.html["Visão geral da continuidade dos negócios da SnapMirror"].
 
 Depois de configurar o MetroCluster, administrá-lo é como gerenciar um ambiente ONTAP tradicional. É possível configurar máquinas virtuais de storage (SVMs) usando várias ferramentas, como a interface de linha de comando (CLI), o System Manager ou o Ansible. Uma vez configurados os SVMs, crie interfaces lógicas (LIFs), volumes e números de unidades lógicas (LUNs) no cluster que será usado para operações normais. Esses objetos serão replicados automaticamente para o outro cluster usando a rede de peering de cluster.
 
-Se não estiver usando o MetroCluster, você poderá usar o SnapMirror active Sync, que fornece proteção granular do armazenamento de dados e acesso ativo-ativo em vários clusters ONTAP em diferentes domínios de falha. O SnapMirror ative Sync usa grupos de consistência para garantir a consistência da ordem de gravação entre um ou mais datastores e você pode criar vários grupos de consistência, dependendo dos requisitos do aplicativo e do armazenamento de dados. Os grupos de consistência são especialmente úteis para aplicativos que exigem sincronização de dados entre vários datastores. A sincronização ativa do SnapMirror também suporta RDMs (Mapeamentos de dispositivo brutos) e armazenamento conetado ao convidado com iniciadores iSCSI in-Guest. Você pode aprender mais sobre grupos de consistência em https://docs.netapp.com/us-en/ontap/consistency-groups/index.html["Visão geral dos grupos de consistência"].
+Se não estiver usando o MetroCluster, você poderá usar o SnapMirror active Sync, que fornece proteção granular do armazenamento de dados e acesso ativo-ativo em vários clusters ONTAP em diferentes domínios de falha. O SMA usa grupos de consistência (CGS) para garantir a consistência da ordem de gravação entre um ou mais datastores e você pode criar vários CGS dependendo dos requisitos do aplicativo e do datastore. Os grupos de consistência são especialmente úteis para aplicativos que exigem sincronização de dados entre vários datastores. O SMA também suporta RDMs (Mapeamentos de dispositivo brutos) e armazenamento conetado a convidados com iniciadores iSCSI in-Guest. Você pode aprender mais sobre grupos de consistência em https://docs.netapp.com/us-en/ontap/consistency-groups/index.html["Visão geral dos grupos de consistência"].
 
-Há alguma diferença no gerenciamento de uma configuração vmsc com a sincronização ativa do SnapMirror quando comparada a um MetroCluster. Primeiro, essa é uma configuração somente SAN, nenhum datastores NFS pode ser protegido com a sincronização ativa do SnapMirror. Em segundo lugar, você deve mapear ambas as cópias dos LUNs para os hosts ESXi para que eles acessem os datastores replicados em ambos os domínios de falha.
+As ferramentas do ONTAP agora fornecem uma maneira simples de configurar a sincronização ativa do SnapMirror para vmsc. Você pode usar o plug-in do vCenter Tools do ONTAP para criar e gerenciar relações de sincronização ativa do SnapMirror entre dois clusters do ONTAP. O plug-in fornece uma interface simples e intuitiva para criar e gerenciar relações de sincronização ativa do SnapMirror entre dois clusters do ONTAP. Você pode saber mais sobre o plugin do vCenter Tools do ONTAP em https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/index.html["Ferramentas do ONTAP para VMware vSphere"], ou ir direto para https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/configure/protect-cluster.html["Proteger usando a proteção do cluster de host"]o .
+
+Há alguma diferença no gerenciamento de uma configuração vmsc com a sincronização ativa do SnapMirror quando comparada a um MetroCluster. Primeiro, SMA é uma configuração somente SAN, nenhum datastores NFS pode ser protegido com a sincronização ativa do SnapMirror. Em segundo lugar, você deve mapear ambas as cópias dos LUNs para os hosts ESXi para que eles acessem os datastores replicados em ambos os domínios de falha.
 
 
 
-== VMware vSphere HA
+== Configuração do VMware vSphere
 
 
 
@@ -39,7 +41,7 @@ Há alguma diferença no gerenciamento de uma configuração vmsc com a sincroni
 A criação de um cluster do vSphere HA é um processo de várias etapas totalmente documentado em https://docs.vmware.com/en/VMware-vSphere/8.0/vsphere-vcenter-esxi-management/GUID-F7818000-26E3-4E2A-93D2-FCDCE7114508.html["Como criar e configurar clusters no vSphere Client em docs.vmware.com"]. Em suma, primeiro você deve criar um cluster vazio e, usando o vCenter, você deve adicionar hosts e especificar o vSphere HA e outras configurações do cluster.
 
 
-NOTE: Nada neste documento substitui https://core.vmware.com/resource/vmware-vsphere-metro-storage-cluster-recommended-practices["Práticas recomendadas do VMware vSphere Metro Storage Cluster"]
+NOTE: Nada neste documento substitui https://www.vmware.com/docs/vmw-vmware-vsphere-metro-storage-cluster-recommended-practices["Práticas recomendadas do VMware vSphere Metro Storage Cluster"]. Este conteúdo é fornecido para fácil referência e não substitui a documentação oficial da VMware.
 
 Para configurar um cluster de HA, execute as seguintes etapas:
 
@@ -133,8 +135,6 @@ image::../media/vmsc_3_6.png[Uma captura de tela de uma Descrição do computado
 
 === Configurar opções avançadas
 
-*Detecção de falha do host*
-
 Os eventos de isolamento ocorrem quando os hosts dentro de um cluster de HA perdem a conetividade com a rede ou com outros hosts no cluster. Por padrão, o vSphere HA usará o gateway padrão para sua rede de gerenciamento como endereço de isolamento padrão. No entanto, você pode especificar endereços de isolamento adicionais para o host fazer ping para determinar se uma resposta de isolamento deve ser acionada. Adicione dois IPs de isolamento que podem fazer ping, um por local. Não utilize o IP do gateway. A configuração avançada do vSphere HA usada é das.isolationaddress. Você pode usar endereços IP do ONTAP ou Mediator para esse fim.
 
  https://core.vmware.com/resource/vmware-vsphere-metro-storage-cluster-recommended-practices#sec2-sub5["core.vmware.com"]Consulte para obter mais informações___.__
@@ -149,18 +149,13 @@ Afinidade do VMware DRS para NetApp MetroCluster
 
 Nesta seção, criamos grupos DRS para VMs e hosts para cada site/cluster no ambiente MetroCluster. Em seguida, configuramos regras VM/Host para alinhar a afinidade do host da VM com os recursos de armazenamento local. Por exemplo, as VMs do Site A pertencem ao grupo VM sitea_vms e os hosts do Site A pertencem ao grupo de hosts sitea_hosts. Em seguida, nas regras VM/Host, declaramos que o sitea_vms deve ser executado em hosts no sitea_hosts.
 
-
-
-=== _Melhor prática_
-
+[TIP]
+====
 * O NetApp recomenda altamente a especificação *deve ser executada em hosts no Grupo* em vez da especificação *deve ser executada em hosts no Grupo*. No caso de uma falha de host de um local, as VMs do local A precisam ser reiniciadas em hosts no local B por meio do vSphere HA, mas a última especificação não permite que o HA reinicie VMs no local B porque é uma regra geral. A especificação anterior é uma regra suave e será violada em caso de HA, permitindo assim disponibilidade em vez de desempenho.
+* Você pode criar um alarme baseado em eventos que é acionado quando uma máquina virtual viola uma regra de afinidade VM-Host. No vSphere Client, adicione um novo alarme para a máquina virtual e selecione "VM está violando a regra de afinidade VM-Host" como o gatilho do evento. Para obter mais informações sobre como criar e editar alarmes, link:https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/vsphere-monitoring-and-performance-8-0.html["Monitoramento e desempenho do vSphere"^]consulte a documentação.
 
 
-*[NOTA]
-
-* Você pode criar um alarme baseado em eventos que é acionado quando uma máquina virtual viola uma regra de afinidade VM-Host. No vSphere Client, adicione um novo alarme para a máquina virtual e selecione "VM está violando a regra de afinidade VM-Host" como o gatilho do evento. Para obter mais informações sobre como criar e editar alarmes, http://pubs.vmware.com/vsphere-51/topic/com.vmware.ICbase/PDF/vsphere-esxi-vcenter-server-51-monitoring-performance-guide.pdf["Monitoramento e desempenho do vSphere"] consulte a documentação.
-
-
+====
 
 
 === Crie grupos de hosts DRS
@@ -219,33 +214,25 @@ image::../media/vmsc_3_8.png[Uma captura de tela de uma Descrição do computado
 
 
 
-== VMware vSphere Storage DRS for NetApp MetroCluster
-
-
-
-=== Crie clusters de armazenamento de dados
+== Crie clusters de datastore, se necessário
 
 Para configurar um cluster de datastore para cada site, execute as seguintes etapas:
 
 . Usando o cliente da Web vSphere, navegue até o data center em que o cluster HA reside em Storage.
 . Clique com o botão direito do rato no objeto do data center e selecione armazenamento > novo cluster do datastore.
-. Selecione a opção Ativar o Storage DRS e clique em Avançar.
-. Defina todas as opções como sem automação (modo manual) e clique em Avançar.
 
 
+[TIP]
+====
+*Ao usar o armazenamento ONTAP, é recomendável desativar o DRS de armazenamento.
+
+* O DRS de armazenamento geralmente não é necessário ou recomendado para uso com sistemas de armazenamento ONTAP.
+* O ONTAP oferece seus próprios recursos de eficiência de storage, como deduplicação, compressão e compactação, que podem ser afetados pelo Storage DRS.
+* Se você estiver usando snapshots do ONTAP, o storage vMotion deixaria para trás a cópia da VM no snapshot, aumentando potencialmente a utilização do storage e pode afetar aplicativos de backup, como o NetApp SnapCenter, que rastreiam VMs e seus snapshots do ONTAP.
 
 
-==== _Melhor prática_
-
-* O NetApp recomenda que o DRS de armazenamento seja configurado no modo manual, para que o administrador possa decidir e controlar quando as migrações precisam acontecer.
-
-
+====
 image::../media/vmsc_3_9.png[Armazenamento DRS,528,94]
-
-. Verifique se a caixa de verificação Ativar métricas de e/S para recomendações de SDRS está marcada; as configurações de métrica podem ser deixadas com os valores padrão.
-
-
-image::../media/vmsc_3_10.png[Recomendações DE SDRS,624,241]
 
 . Selecione o cluster HA e clique em Next (seguinte).
 

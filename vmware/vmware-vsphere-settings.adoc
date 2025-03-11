@@ -18,7 +18,7 @@ A NetApp desenvolveu um conjunto de configurações de host ESXi ideais para pro
 
 Esses valores são facilmente definidos usando as ferramentas do ONTAP para VMware vSphere: No painel Resumo, clique em Editar configurações no portlet de sistemas host ou clique com o botão direito do Mouse no host no vCenter e navegue até Ferramentas do ONTAP > Definir valores recomendados.
 
-Aqui estão as configurações de host atualmente recomendadas com as versões 9,8-9,13.
+Aqui estão as configurações de host recomendadas para todas as versões atualmente suportadas do ONTAP.
 
 |===
 
@@ -32,7 +32,7 @@ Aqui estão as configurações de host atualmente recomendadas com as versões 9
 | VMFS3.HardwareAcceleratedLocking | Manter padrão (1) | Não 
 
 
-| VMFS3.EnableBlockDelete | Mantenha o padrão (0), mas pode ser alterado se necessário. Para obter mais informações, consulte link:https://knowledge.broadcom.com/external/article?legacyId=2007427["VMware KB 2007427"] | Não 
+| VMFS3.EnableBlockDelete | Mantenha o padrão (0), mas pode ser alterado se necessário. Para obter mais informações, consulte link:https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/vsphere-storage-8-0/storage-provisioning-and-space-reclamation-in-vsphere/storage-space-reclamation-in-vsphere/space-reclamation-for-guest-operating-systems.html["Recuperação de espaço para VMFS5 máquinas virtuais"] | Não 
 
 
 | VMFS3.EnableVMFS6Unmap | Mantenha a predefinição (1) para obter mais informações, consulte link:https://core.vmware.com/resource/vmware-vsphere-apis-array-integration-vaai#sec9426-sub4["VMware vSphere APIs: Integração de array (VAAI)"] | Não 
@@ -143,12 +143,12 @@ As ferramentas do ONTAP também especificam certas configurações padrão ao cr
 
 Embora não esteja configurado atualmente pelas ferramentas ONTAP disponíveis, o NetApp sugere estas opções de configuração:
 
-* Em ambientes de alto desempenho ou ao testar o desempenho com um único armazenamento de dados LUN, considere alterar a configuração de balanceamento de carga da política de seleção de caminho (PSP) round-robin (VMW_PSP_RR) da configuração padrão de IOPS de 1000 para um valor de 1. Consulte o KB da VMware https://kb.vmware.com/s/article/2069356["2069356"^] para obter mais informações.
-* Na Atualização 1 do vSphere 6,7, a VMware introduziu um novo mecanismo de balanceamento de carga de latência para a PSP Round Robin. A nova opção considera a largura de banda de e/S e a latência do caminho ao selecionar o caminho ideal para e/S. Você pode se beneficiar ao usá-lo em ambientes com conetividade de caminho não equivalente, como casos com mais saltos de rede em um caminho do que outro, ou ao usar um sistema de array NetApp All SAN. Consulte https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.storage.doc/GUID-B7AD0CA0-CBE2-4DB4-A22C-AD323226A257.html?hWord=N4IghgNiBcIA4Gc4AIJgC4FMB2BjAniAL5A["Plug-ins e políticas de seleção de caminho"^] para obter mais informações.
+* Em ambientes de alto desempenho ou ao testar o desempenho com um único armazenamento de dados LUN, considere alterar a configuração de balanceamento de carga da política de seleção de caminho (PSP) round-robin (VMW_PSP_RR) da configuração padrão de IOPS de 1000 para um valor de 1. link:https://knowledge.broadcom.com/external/article?legacyId=2069356["VMware KB 2069356"^]Consulte para obter mais informações.
+* Na Atualização 1 do vSphere 6,7, a VMware introduziu um novo mecanismo de balanceamento de carga de latência para a PSP Round Robin. A nova opção considera a largura de banda de e/S e a latência do caminho ao selecionar o caminho ideal para e/S. Você pode se beneficiar ao usá-lo em ambientes com conetividade de caminho não equivalente, como casos com mais saltos de rede em um caminho que outro, ou ao usar um sistema NetApp All SAN Array (ASA). Consulte https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/vsphere-storage-8-0/understanding-multipathing-and-failover-in-the-esxi-environment/viewing-and-managing-storage-paths-on-esxi-hosts.html#GUID-1940AE9E-04CF-40BE-BB71-398621F0642E-en["Alterar parâmetros padrão para latência Round Robin"^] para obter mais informações.
 
 
 
 
 == Documentação adicional
 
-Para FCP e iSCSI com vSphere, mais detalhes podem ser encontrados em para FCP e iSCSI com vSphere 8, mais detalhes podem ser encontrados em https://docs.netapp.com/us-en/ontap-sanhost/hu_vsphere_8.html["Use o VMware vSphere 8.x com o ONTAP"^] para NVMe-of com vSphere 7. Para NVMe-of com vSphere 8, mais detalhes podem ser encontrados em https://docs.netapp.com/us-en/ontap-sanhost/nvme_esxi_7.html["Para NVMe-of, mais detalhes podem ser encontrados em Configuração de host NVMe-of para ESXi 7.x com ONTAP"^] para NVMe-of com vSphere 7 https://docs.netapp.com/us-en/ontap-sanhost/hu_vsphere_7.html["Use o VMware vSphere 7.x com o ONTAP"^]. Mais detalhes podem ser encontrados em https://docs.netapp.com/us-en/ontap-sanhost/nvme_esxi_8.html["Para NVMe-of, mais detalhes podem ser encontrados em Configuração de host NVMe-of para ESXi 8.x com ONTAP"^]
+Para FCP e iSCSI com vSphere, mais detalhes podem ser encontrados em para FCP e iSCSI com vSphere 8, mais detalhes podem ser encontrados em link:https://docs.netapp.com/us-en/ontap-sanhost/hu_vsphere_8.html["Use o VMware vSphere 8.x com o ONTAP"^]para NVMe-of com vSphere 7. Para NVMe-of com vSphere 8, mais detalhes podem ser encontrados em link:https://docs.netapp.com/us-en/ontap-sanhost/nvme_esxi_7.html["Para NVMe-of, mais detalhes podem ser encontrados em Configuração de host NVMe-of para ESXi 7.x com ONTAP"^] para NVMe-of com vSphere 7link:https://docs.netapp.com/us-en/ontap-sanhost/hu_vsphere_7.html["Use o VMware vSphere 7.x com o ONTAP"^]. Mais detalhes podem ser encontrados em link:https://docs.netapp.com/us-en/ontap-sanhost/nvme_esxi_8.html["Para NVMe-of, mais detalhes podem ser encontrados em Configuração de host NVMe-of para ESXi 8.x com ONTAP"^]

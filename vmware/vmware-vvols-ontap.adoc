@@ -14,19 +14,23 @@ summary: Este documento discute a segurança do produto para as ferramentas do O
 
 
 [role="lead"]
-A chave para usar o vVols com o ONTAP é o software provedor VASA incluído como parte das ferramentas do ONTAP para o dispositivo virtual VMware vSphere.
+A chave para usar o vVols com o NetApp são as ferramentas do ONTAP para VMware vSphere, que servidores como a interface do provedor VASA (vSphere API for Storage Awareness) para os sistemas ONTAP 9 da NetApp.
 
-As ferramentas do ONTAP também incluem as extensões de IU do vCenter, o servidor de API REST, o adaptador de replicação de armazenamento para o Gerenciador de recuperação de site da VMware, as ferramentas de configuração de monitoramento e host e uma matriz de relatórios que ajudam você a gerenciar melhor seu ambiente VMware.
+As ferramentas do ONTAP também incluem extensões de IU do vCenter, serviços de API REST, adaptadores de replicação de armazenamento para VMware Site Recovery Manager / Live Site Recovery, ferramentas de monitoramento e configuração de host e uma série de relatórios que ajudam você a gerenciar melhor seu ambiente VMware.
 
 
 
 == Produtos e Documentação
 
-A licença ONTAP FlexClone (incluída no ONTAP One) e o dispositivo ONTAP Tools são os únicos produtos adicionais necessários para usar vVols com o ONTAP. Versões recentes das ferramentas ONTAP são fornecidas como um único dispositivo unificado que é executado no ESXi, fornecendo a funcionalidade do que anteriormente eram três dispositivos e servidores diferentes. Para vVols, é importante usar as ferramentas do ONTAP vCenter UI Extensions ou REST APIs como ferramentas gerais de gerenciamento e interfaces de usuário para funções do ONTAP com o vSphere, juntamente com o provedor VASA, que fornece funcionalidade específica do vVols. O componente SRA está incluído nos datastores tradicionais, mas o VMware Site Recovery Manager não usa o SRA para vVols, em vez disso, implementando novos serviços no SRM 8,3 e posterior que utilizam o provedor VASA para replicação vVols.
+A licença do ONTAP One inclui todo o licenciamento necessário para utilizar vVols com sistemas ONTAP. O único requisito adicional é o OVA de ferramentas ONTAP gratuitas, que atua como o provedor VASA. Em um ambiente vVols, o software VASA Provider traduz recursos de array em atributos orientados a políticas que podem ser aproveitados por meio das APIs VASA sem que o administrador do vSphere precise saber como os recursos são gerenciados nos bastidores. Isso permite o consumo dinâmico da capacidade de storage alocada com base na política, eliminando a necessidade de criar manualmente armazenamentos de dados tradicionais e gerenciar suas taxas de consumo de storage individuais. Em resumo, o vVols elimina toda a complexidade do gerenciamento do storage empresarial e o abstrai do administrador do vSphere para que eles possam se concentrar na camada de virtualização.
+
+Para clientes que usam o VMware Cloud Foundation com VSAN, o vVols pode ser adicionado a qualquer domínio de gerenciamento ou workload como storage complementar. O vVols se integra perfeitamente ao VSAN por meio de uma estrutura de gerenciamento comum baseada em políticas de storage.
+
+A próxima geração da família de versões do ONTAP Tools 10 moderniza os recursos anteriores com uma arquitetura escalável, em contentor, baseada em microsserviços, que é implementável através de um simples dispositivo de formato OVA no ESXi. O ONTAP Tools 10 combina todas as funcionalidades de três dispositivos e produtos antigos em uma única implantação. Para o gerenciamento do vVols, você usará as extensões intuitivas da IU do vCenter ou as APIs REST para as ferramentas do provedor VASA da ONTAP. Observe que o componente SRA é para datastores tradicionais; o VMware Site Recovery Manager não usa o SRA para vVols.
 
 
 
-=== Arquitetura do provedor VASA ao usar iSCSI ou FCP ONTAP
+=== Arquitetura do provedor VASA ao usar iSCSI ou FCP com sistemas unificados ONTAP
 
 image:vvols-image5.png["ONTAP Tools arquitetura do provedor VASA, 240"]
 
@@ -34,11 +38,18 @@ image:vvols-image5.png["ONTAP Tools arquitetura do provedor VASA, 240"]
 
 === Instalação do produto
 
-Para novas instalações, implante o dispositivo virtual em seu ambiente vSphere. As versões atuais das ferramentas do ONTAP se registrarão automaticamente no vCenter e habilitarão o provedor VASA por padrão. Além das informações do host ESXi e do vCenter Server, você também precisará dos detalhes de configuração do endereço IP do dispositivo. Como já foi dito anteriormente, o Fornecedor VASA requer que a licença ONTAP FlexClone já esteja instalada em quaisquer clusters ONTAP que você planeja usar para vVols. O dispositivo tem um watchdog integrado para garantir a disponibilidade e, como prática recomendada, deve ser configurado com recursos VMware High Availability e, opcionalmente, com tolerância a falhas. Consulte a secção 4,1 para obter mais detalhes. Não instale nem mova o dispositivo ONTAP Tools ou o vCenter Server Appliance (VCSA) para o storage vVols, pois isso pode impedir que os dispositivos sejam reiniciados.
+Para novas instalações, implante o dispositivo virtual em seu ambiente vSphere. Depois de implantado, você pode fazer login na IU do gerente ou usar as APIS REST para escalar ou escalar sua implantação, vCenters integrados (isso Registra o plug-in com o vCenter), sistemas de armazenamento integrados e associar sistemas de storage aos seus vCenters. A integração de sistemas de storage na IU do Gerenciador de ferramentas do ONTAP e a associação de clusters com vCenters só é necessária se você planeja usar a alocação segura a vários clientes com SVMs dedicadas. Caso contrário, você pode simplesmente integrar o(s) cluster(s) de storage desejado(s) nas extensões de IU do ONTAP Tools vCenter ou usar as APIs REST.
 
-As atualizações no local das ferramentas do ONTAP são suportadas usando o arquivo ISO de atualização disponível para download no site de suporte da NetApp (NSS). Siga as instruções do Guia de implementação e configuração para atualizar o dispositivo.
+Consulte link:vmware-vvols-deploy.html["Implantando o storage vVols"^]neste documento, ou https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/index.html["Ferramentas do ONTAP para documentação do VMware vSphere"^].
 
-Para dimensionar seu dispositivo virtual e entender os limites de configuração, consulte este artigo da base de conhecimento: https://kb.netapp.com/Advice_and_Troubleshooting/Data_Storage_Software/VSC_and_VASA_Provider/OTV%3A_Sizing_Guide_for_ONTAP_tools_for_VMware_vSphere["Guia de dimensionamento das ferramentas do ONTAP para VMware vSphere"^]
+[TIP]
+====
+A prática recomendada é armazenar suas ferramentas do ONTAP e dispositivos vCenter em datastores NFS ou VMFS tradicionais para evitar qualquer conflito de interdependência. Como as ferramentas do vCenter e do ONTAP precisam se comunicar entre si durante as operações do vVols, não instale nem mova os dispositivos de ferramentas do ONTAP ou os dispositivos do vCenter Server (VCSA) para o storage do vVols que estão gerenciando. Se isso acontecer, reinicializar os dispositivos de ferramentas do vCenter ou do ONTAP pode resultar em uma interrupção do acesso ao plano de controle e na incapacidade de inicializar o dispositivo.
+
+====
+As atualizações no local das ferramentas do ONTAP são suportadas usando o arquivo ISO de atualização disponível para download no https://mysupport.netapp.com/site/products/all/details/otv10/downloads-tab["Ferramentas do ONTAP para VMware vSphere 10 - Downloads"] site de suporte da NetApp (NSS - login necessário). Siga as https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/upgrade/upgrade-ontap-tools.html["Atualize das ferramentas do ONTAP para o VMware vSphere 10.x para o 10,3"] instruções do guia para atualizar o aparelho. Também é possível fazer uma atualização lado a lado das ferramentas ONTAP 9,13 para 10,3.  https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/migrate/migrate-to-latest-ontaptools.html["Migrar das ferramentas do ONTAP para o VMware vSphere 9.x para o 10,3"]Consulte para obter um mergulho mais profundo sobre esse assunto.
+
+Para dimensionar seu dispositivo virtual e entender os limites de configuração, consulte https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/deploy/prerequisites.html#configuration-limits-to-deploy-ontap-tools-for-vmware-vsphere["Limites de configuração para implantar as ferramentas do ONTAP para o VMware vSphere"^]
 
 
 
@@ -46,100 +57,56 @@ Para dimensionar seu dispositivo virtual e entender os limites de configuração
 
 A documentação a seguir está disponível para ajudá-lo a implantar ferramentas do ONTAP.
 
-https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/index.html["Para obter o repositório de documentação completo nº 44; visite este link para docs.NetApp.com"^]
+https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/index.html["Ferramentas do ONTAP para documentação do VMware vSphere"^]
 
 
 
 ==== Comece agora
 
-* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/release_notes.html["Notas de lançamento"^]
-* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/concepts/concept_virtual_storage_console_overview.html["Saiba mais sobre as ferramentas do ONTAP para VMware vSphere"^]
-* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/qsg.html["Ferramentas ONTAP Início rápido"^]
-* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/deploy/task_deploy_ontap_tools.html["Implantar ferramentas do ONTAP"^]
-* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/deploy/task_upgrade_to_the_9_8_ontap_tools_for_vmware_vsphere.html["Atualizar as ferramentas do ONTAP"^]
+* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/release-notes/release-notes.html["Notas de lançamento"^]
+* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/concepts/ontap-tools-overview.html["Visão geral das ferramentas do ONTAP para VMware vSphere"^]
+* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/deploy/ontap-tools-deployment.html["Implantar ferramentas do ONTAP"^]
+* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/upgrade/upgrade-ontap-tools.html["Atualizar as ferramentas do ONTAP"^]
 
 
 
 
 ==== Use as ferramentas do ONTAP
 
-* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/configure/task_provision_datastores.html["Provisionar armazenamentos de dados tradicionais"^]
-* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/configure/task_provision_vvols_datastores.html["Provisione armazenamentos de dados vVols"^]
-* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/concepts/concept_vcenter_server_role_based_access_control_features_in_vsc_for_vmware_vsphere.html["Configurar controles de acesso baseados em função"^]
-* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/manage/task_configure_vasa_provider_to_use_ssh_for_remote_diag_access.html["Configure o diagnóstico remoto"^]
-* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/concepts/concept_configure_high_availability_for_ontap_tools_for_vmware_vsphere.html["Configurar a alta disponibilidade"^]
+* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/configure/create-vvols-datastore.html["Provisionar armazenamentos de dados"^]
+* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/configure/configure-user-role-and-privileges.html["Configurar controles de acesso baseados em função"^]
+* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/manage/edit-appliance-settings.html["Configurar a alta disponibilidade"^]
+* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/manage/edit-esxi-host-settings.html["Modifique as configurações do host ESXi"^]
 
 
 
 
 ==== Proteja e gerencie armazenamentos de dados
 
-* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/protect/task_enable_storage_replication_adapter.html["Proteger armazenamentos de dados tradicionais"^] Com SRM
-* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/protect/concept_configure_replication_for_vvols_datastore.html["Proteja máquinas virtuais baseadas em vVols"^] Com SRM
-* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/manage/task_monitor_datastores_using_the_traditional_dashboard.html["Monitore armazenamentos de dados tradicionais e máquinas virtuais"^]
-* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere/manage/task_monitor_vvols_datastores_and_virtual_machines_using_vvols_dashboard.html["Monitore armazenamentos de dados e máquinas virtuais do vVols"^]
-
-
-Além da documentação do produto, existem artigos da base de conhecimento de suporte que podem ser úteis.
-
-* https://kb.netapp.com/mgmt/OTV/NetApp_VASA_Provider/How_to_perform_a_VASA_Provider_Disaster_Recovery_-_Resolution_Guide["Como executar uma recuperação de desastres do provedor VASA - Guia de resolução"^]
+* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/configure/protect-cluster.html["Configure o vSphere Metro Storage Cluster (vmsc) usando as ferramentas do ONTAP e a sincronização ativa do SnapMirror"^]
+* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/protect/enable-storage-replication-adapter.html["Proteja máquinas virtuais"^] Com SRM
+* https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/manage/reports.html["Monitore clusters, armazenamentos de dados e máquinas virtuais"^]
 
 
 
 
 === Painel do Fornecedor VASA
 
-O provedor VASA inclui um painel com informações de desempenho e capacidade para VMs vVols individuais. Essas informações são fornecidas diretamente do ONTAP para os arquivos e LUNs da VEV, incluindo latência, IOPS, taxa de transferência e tempo de atividade das 5 principais VMs, além de latência e IOPS para os 5 principais datastores. Ele é habilitado por padrão ao usar o ONTAP 9.7 ou posterior. Pode levar até 30 minutos para que os dados iniciais sejam recuperados e exibidos no painel de instrumentos.
+O provedor VASA inclui um painel com informações de desempenho e capacidade para VMs vVols individuais. Essas informações são fornecidas diretamente do ONTAP para arquivos e LUNs da VEV, incluindo latência, IOPS, taxa de transferência e muito mais. Ele é habilitado por padrão ao usar todas as versões atualmente suportadas do ONTAP 9. Observe que, após a configuração inicial, os dados podem levar até 30 minutos para preencher o painel.
 
 
 
-==== Painel do ONTAP Tools vVols
-
-image:vvols-image6.png["ONTAP Tools vVols dashboard,400"]
-
-
-
-== Práticas recomendadas
+== Outras práticas recomendadas
 
 O uso do ONTAP vVols com o vSphere é simples e segue os métodos do vSphere publicados (consulte trabalhando com volumes virtuais no vSphere Storage na documentação da sua versão do ESXi). Aqui estão algumas práticas adicionais a serem consideradas em conjunto com o ONTAP.
 
 *Limites*
 
-Em geral, o ONTAP oferece suporte aos limites do vVols conforme definido pela VMware (consulte publicado https://configmax.esp.vmware.com/guest?vmwareproduct=vSphere&release=vSphere%207.0&categories=8-0["Máximos de configuração"^]). A tabela a seguir resume limites específicos de ONTAP em tamanho e número de vVols. Verifique sempre o https://hwu.netapp.com/["NetApp Hardware Universe"^] para obter limites atualizados sobre números e tamanhos de LUNs e arquivos.
-
-*Limites do ONTAP vVols*
-
-|===
-| Capacidade/recurso | SAN (SCSI ou NVMe-of) | NFS 
-
-
-| Tamanho máximo de vVols | 62 TIB* | 62 TIB* 
-
-
-| Número máximo de vVols por FlexVol volume | 1024 | 2 bilhões 
-
-
-| Número máximo de vVols por nó ONTAP | Até 12.288** | 50 bilhões 
-
-
-| Número máximo de vVols por par ONTAP | Até 24.576** | 50 bilhões 
-
-
-| Número máximo de vVols por cluster ONTAP | Até 98.304** | Sem limite específico do cluster 
-
-
-| Máximo de objetos QoS (grupo de políticas compartilhadas e nível de serviço vVols individuais) | 12.000 até ONTAP 9.3; 40.000 com ONTAP 9.4 e posterior |  
-|===
-* Limite de tamanho com base em sistemas ASA ou em sistemas AFF e FAS que executam o ONTAP 9.12.1P2 e posterior.
-+
-** O número de vVols SAN (namespaces NVMe ou LUNs) varia de acordo com a plataforma. Verifique sempre o https://hwu.netapp.com/["NetApp Hardware Universe"^] para obter limites atualizados sobre números e tamanhos de LUNs e arquivos.
-
-
-
+Em geral, o ONTAP oferece suporte aos limites do vVols conforme definido pela VMware (consulte publicado https://configmax.esp.vmware.com/guest?vmwareproduct=vSphere&release=vSphere%207.0&categories=8-0["Máximos de configuração"^]). Verifique sempre o https://hwu.netapp.com/["NetApp Hardware Universe"^] para obter limites atualizados sobre números e tamanhos de LUNs, namespaces e arquivos.
 
 *Use as ferramentas do ONTAP para extensões de IU do VMware vSphere ou APIs REST para provisionar armazenamentos de dados vVols* *e Protocol Endpoints*.*
 
-Embora seja possível criar armazenamentos de dados vVols com a interface geral do vSphere, o uso de ferramentas do ONTAP criará automaticamente pontos de extremidade do protocolo conforme necessário e criará volumes FlexVol usando as práticas recomendadas do ONTAP e em conformidade com os perfis de funcionalidades de storage definidos. Basta clicar com o botão direito do Mouse no host/cluster/data center e selecionar _ONTAP Tools_ e _provision datastore_. A partir daí, basta escolher as opções vVols desejadas no assistente.
+Embora seja possível criar armazenamentos de dados vVols com a interface geral do vSphere, o uso de ferramentas do ONTAP criará automaticamente pontos de extremidade de protocolo conforme necessário e criará volumes FlexVol (não necessários com o ASA R2) usando as práticas recomendadas do ONTAP. Basta clicar com o botão direito do Mouse no host/cluster/data center e selecionar _ONTAP Tools_ e _provision datastore_. A partir daí, basta escolher as opções vVols desejadas no assistente.
 
 *Nunca armazene o dispositivo ONTAP Tools ou o vCenter Server Appliance (VCSA) em um datastore vVols que eles estejam gerenciando.*
 
@@ -149,7 +116,7 @@ Isso pode resultar em uma "situação de frango e ovo" se você precisar reinici
 
 Funcionalidades de storage compatíveis, como QoS, personalidade e muito mais, mudaram em várias versões do fornecedor VASA, e algumas dependem do lançamento do ONTAP. Usar versões diferentes em um cluster ONTAP ou mover vVols entre clusters com versões diferentes pode resultar em alarmes de conformidade ou comportamento inesperado.
 
-*Marque sua malha Fibre Channel antes de usar o NVMe/FC ou FCP para vVols.*
+*Marque sua malha Fibre Channel antes de usar FCP para vVols.*
 
 O fornecedor de ferramentas ONTAP VASA cuida do gerenciamento de grupos FCP e iSCSI, bem como subsistemas NVMe no ONTAP com base em iniciadores descobertos de hosts ESXi gerenciados. No entanto, ele não se integra com switches Fibre Channel para gerenciar o zoneamento. O zoneamento deve ser feito de acordo com as melhores práticas antes que qualquer provisionamento possa ocorrer. O seguinte é um exemplo de zoneamento de iniciador único para quatro sistemas ONTAP:
 
@@ -165,21 +132,15 @@ https://www.netapp.com/pdf.html?item=/media/10681-tr4684.pdf["_TR-4684 implement
 
 *Planeie o seu apoio FlexVols de acordo com as suas necessidades.*
 
-Pode ser desejável adicionar vários volumes de backup ao armazenamento de dados vVols para distribuir a carga de trabalho no cluster ONTAP, oferecer suporte a diferentes opções de política ou aumentar o número de LUNs ou arquivos permitidos. No entanto, se for necessária eficiência máxima de storage, coloque todos os volumes de backup em um único agregado. Ou, se for necessária a performance máxima de clonagem, considere usar um único FlexVol volume e manter seus modelos ou biblioteca de conteúdo no mesmo volume. O fornecedor VASA descarrega muitas operações de storage vVols para o ONTAP, incluindo migração, clonagem e snapshots. Quando isso é feito em um único FlexVol volume, clones de arquivo com uso eficiente de espaço são usados e ficam quase instantaneamente disponíveis. Quando isso é feito em volumes do FlexVol, as cópias ficam rapidamente disponíveis e usam deduplicação e compactação in-line, mas a eficiência máxima de storage não pode ser recuperada até que as tarefas em segundo plano sejam executadas em volumes usando deduplicação e compactação em segundo plano. Dependendo da origem e destino, alguma eficiência pode ser degradada.
+Para sistemas que não sejam ASA R2, pode ser desejável adicionar vários volumes de backup ao armazenamento de dados vVols para distribuir a carga de trabalho pelo cluster ONTAP, dar suporte a diferentes opções de política ou aumentar o número de LUNs ou arquivos permitidos. No entanto, se for necessária eficiência máxima de storage, coloque todos os volumes de backup em um único agregado. Ou, se for necessária a performance máxima de clonagem, considere usar um único FlexVol volume e manter seus modelos ou biblioteca de conteúdo no mesmo volume. O fornecedor VASA descarrega muitas operações de storage vVols para o ONTAP, incluindo migração, clonagem e snapshots. Quando isso é feito em um único FlexVol volume, clones de arquivo com uso eficiente de espaço são usados e ficam quase instantaneamente disponíveis. Quando isso é feito em volumes do FlexVol, as cópias ficam rapidamente disponíveis e usam deduplicação e compactação in-line, mas a eficiência máxima de storage não pode ser recuperada até que as tarefas em segundo plano sejam executadas em volumes usando deduplicação e compactação em segundo plano. Dependendo da origem e destino, alguma eficiência pode ser degradada.
 
-*Mantenha os Perfis de capacidade de armazenamento (SCPs) simples.*
-
-Evite especificar recursos que não são necessários definindo-os como nenhum. Isso minimizará os problemas ao selecionar ou criar volumes FlexVol. Por exemplo, com o provedor VASA 7,1 e anteriores, se a compressão for deixada na configuração padrão SCP de não, ela tentará desativar a compressão, mesmo em um sistema AFF.
-
-*Use os SCPs padrão como modelos de exemplo para criar seus próprios.*
-
-Os SCPs incluídos são adequados para a maioria dos usos gerais, mas seus requisitos podem ser diferentes.
+Com os sistemas ASA R2, essa complexidade é removida, pois o conceito de um volume ou agregado é abstraído do usuário. O posicionamento dinâmico é Tratado automaticamente e os endpoints do protocolo são criados conforme necessário. Endpoints de protocolo adicionais podem ser criados automaticamente em tempo real se for necessária uma escala adicional.
 
 *Considere usar o máximo de IOPS para controlar VMs desconhecidas ou testar.*
 
 Disponível pela primeira vez no provedor VASA 7,1, o IOPS máximo pode ser usado para limitar as IOPS a uma evolução específica para uma carga de trabalho desconhecida, a fim de evitar impactos em outras cargas de trabalho mais críticas. Consulte a Tabela 4 para obter mais informações sobre o gerenciamento de desempenho.
 
-*Certifique-se de ter LIFs de dados suficientes.* Crie pelo menos dois LIFs por nó por par de HA. Pode ser necessário mais com base na sua carga de trabalho.
+*Certifique-se de ter LIFs de dados suficientes.* link:vmware-vvols-deploy.html["Implantando o storage vVols"^]Consulte a .
 
 *Siga todas as melhores práticas de protocolo.*
 

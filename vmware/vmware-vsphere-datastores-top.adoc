@@ -26,7 +26,7 @@ Seis protocolos são usados para conetar o VMware vSphere a datastores em um sis
 
 FCP, NVMe/FC, NVMe/TCP e iSCSI são protocolos de bloco que usam o vSphere Virtual Machine File System (VMFS) para armazenar VMs dentro de LUNs ONTAP ou namespaces NVMe contidos em um ONTAP FlexVol volume. O NFS é um protocolo de arquivos que coloca as VMs em armazenamentos de dados (que são simplesmente volumes ONTAP) sem a necessidade de VMFS. SMB (CIFS), iSCSI, NVMe/TCP ou NFS também podem ser usados diretamente de um sistema operacional convidado para o ONTAP.
 
-As tabelas a seguir apresentam recursos tradicionais de datastore compatíveis com o vSphere com o ONTAP. Essas informações não se aplicam aos armazenamentos de dados vVols, mas geralmente se aplicam ao vSphere 6.x e versões posteriores usando versões compatíveis do ONTAP. Você também pode consultar link:https://www.vmware.com/support/pubs/["Valores máximos de configuração da VMware"^]versões específicas do vSphere para confirmar limites específicos.
+As tabelas a seguir apresentam recursos tradicionais de datastore compatíveis com o vSphere com o ONTAP. Essas informações não se aplicam aos armazenamentos de dados vVols, mas geralmente se aplicam ao vSphere 6.x e versões posteriores usando versões compatíveis do ONTAP. Você também pode consultar o link:https://configmax.broadcom.com/guest?vmwareproduct=vSphere&release=vSphere%208.0&categories=2-0["Ferramenta VMware Configuration Maximums"^] para versões específicas do vSphere para confirmar limites específicos.
 
 |===
 | Capacidade/funcionalidade | FC | ISCSI | NVMe-of | NFS 
@@ -127,9 +127,9 @@ A tabela a seguir lista os recursos de backup suportados.
 
 | Granularidade NDMP | Armazenamento de dados | Armazenamento de dados | Armazenamento de dados | Datastore ou VM 
 |===
-*1 *a NetApp recomenda* o uso de iSCSI in-Guest para clusters da Microsoft em vez de VMDKs habilitados para vários gravadores em um armazenamento de dados VMFS. Essa abordagem é totalmente suportada pela Microsoft e VMware, oferece grande flexibilidade com o ONTAP (sistemas SnapMirror para ONTAP no local ou na nuvem), é fácil de configurar e automatizar e pode ser protegido com o SnapCenter. O vSphere 7 adiciona uma nova opção de VMDK em cluster. Isso é diferente dos VMDKs habilitados para vários gravadores, o que requer um armazenamento de dados apresentado por meio do protocolo FC que tem o suporte do VMDK em cluster habilitado. Aplicam-se outras restrições. Consulte a documentação da VMware https://docs.vmware.com/en/VMware-vSphere/7.0/vsphere-esxi-vcenter-server-70-setup-wsfc.pdf["Configuração para Cluster de failover do Windows Server"^] para obter diretrizes de configuração.
+*1 *a NetApp recomenda* o uso de iSCSI in-Guest para clusters da Microsoft em vez de VMDKs habilitados para vários gravadores em um armazenamento de dados VMFS. Essa abordagem é totalmente suportada pela Microsoft e VMware, oferece grande flexibilidade com o ONTAP (sistemas SnapMirror para ONTAP no local ou na nuvem), é fácil de configurar e automatizar e pode ser protegido com o SnapCenter. O vSphere 7 adiciona uma nova opção de VMDK em cluster. Isso é diferente dos VMDKs habilitados para vários gravadores, o que requer um armazenamento de dados apresentado por meio do protocolo FC que tem o suporte do VMDK em cluster habilitado. Aplicam-se outras restrições. Consulte a documentação da VMware link:https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/setup-for-windows-server-failover-clustering.html["Configuração para Cluster de failover do Windows Server"^]para obter diretrizes de configuração.
 
-2 os armazenamentos de dados usando NVMe-of e NFS v4,1 exigem replicação do vSphere. A replicação baseada em array não é suportada pelo SRM.
+2 os armazenamentos de dados usando NVMe-of e NFS v4,1 exigem replicação do vSphere. A replicação baseada em array para NFS v4,1 não é atualmente suportada pelo SRM. Atualmente, a replicação baseada em array com NVMe-of não é compatível com as ferramentas do ONTAP para o adaptador de replicação de armazenamento (SRA) do VMware vSphere.
 
 
 
