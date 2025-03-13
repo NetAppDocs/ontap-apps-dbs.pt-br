@@ -4773,7 +4773,6 @@
   <block id="1b50110aedae4d8d2043a4eb9beb20af" category="cell">VMFS3.EnableBlockDelete</block>
   <block id="316084648bbafe451240702bd19c6ee9" category="cell">VMFS3.EnableVMFS6Unmap</block>
   <block id="befd90cd01403237f6fdf296822efbee" category="inline-link-macro">VMware vSphere APIs: Integração de array (VAAI)</block>
-  <block id="e385d2442208cc1e23ca841b1f217380" category="cell">Mantenha a predefinição (1) para obter mais informações, consulte <block ref="d124e203790e5f214a195f69cd068c6d" category="inline-link-macro-rx"></block></block>
   <block id="571cc1d48c6d1ff3cf7e3a54cb035753" category="cell">*Configurações NFS*</block>
   <block id="c3b49a515dd0046685e06092642aa139" category="cell">NET.TcpipHeapSize</block>
   <block id="875f6b98e20edfecb56f9013d00987f6" category="cell">VSphere 6,0 ou posterior, definido como 32. Todas as outras configurações NFS, definidas como 30</block>
@@ -5102,8 +5101,6 @@
   <block id="f2c634ca704e26f96be1723db6dda32a" category="image-alt">Uma captura de tela de uma Descrição do computador gerada automaticamente</block>
   <block id="1d2b14769d080b9214d9e407dfc92a64" category="section-title">Configurar opções avançadas</block>
   <block id="a9316d69e5abcfaffc56fc8f5e645412" category="paragraph">Os eventos de isolamento ocorrem quando os hosts dentro de um cluster de HA perdem a conetividade com a rede ou com outros hosts no cluster. Por padrão, o vSphere HA usará o gateway padrão para sua rede de gerenciamento como endereço de isolamento padrão. No entanto, você pode especificar endereços de isolamento adicionais para o host fazer ping para determinar se uma resposta de isolamento deve ser acionada. Adicione dois IPs de isolamento que podem fazer ping, um por local. Não utilize o IP do gateway. A configuração avançada do vSphere HA usada é das.isolationaddress. Você pode usar endereços IP do ONTAP ou Mediator para esse fim.</block>
-  <block id="102d7879ceca393c309ef492c958e19d" category="inline-link">core.vmware.com</block>
-  <block id="27e2292ff6db48ed2e6d50b256eae43e" category="paragraph"><block ref="43057df4f3a6b5f2fffe8b7c5a490646" category="inline-link-rx"></block>Consulte para obter mais informações___.__</block>
   <block id="3f44bb4a3b9420d495e400b9afbda2c7" category="paragraph">Adicionar uma configuração avançada chamada das.heartbeatDsPerHost pode aumentar o número de datastores de heartbeat. Use quatro datastores de heartbeat (HB DSS) - dois por local. Use a opção "Selecionar a partir da lista, mas elogio". Isso é necessário porque, se um local falhar, você ainda precisará de dois DSS HB. No entanto, eles não precisam ser protegidos com MCC ou sincronização ativa do SnapMirror.</block>
   <block id="eaa1dfe3982e06655ce64e240c139b81" category="paragraph">Afinidade do VMware DRS para NetApp MetroCluster</block>
   <block id="e32221c52eb3b0bbeb3ca79aad6c90f6" category="paragraph">Nesta seção, criamos grupos DRS para VMs e hosts para cada site/cluster no ambiente MetroCluster. Em seguida, configuramos regras VM/Host para alinhar a afinidade do host da VM com os recursos de armazenamento local. Por exemplo, as VMs do Site A pertencem ao grupo VM sitea_vms e os hosts do Site A pertencem ao grupo de hosts sitea_hosts. Em seguida, nas regras VM/Host, declaramos que o sitea_vms deve ser executado em hosts no sitea_hosts.</block>
@@ -5152,7 +5149,6 @@
   <block id="d3e911c902a6b066f9c31d471d16fb21" category="paragraph">Para criar um cluster VMware HA/DRS em dois locais, os hosts ESXi são usados e gerenciados por um vCenter Server Appliance (VCSA). As redes de gerenciamento vSphere, vMotion e máquinas virtuais são conetadas por meio de uma rede redundante entre os dois sites. O vCenter Server que gerencia o cluster HA/DRS pode se conetar aos hosts ESXi em ambos os sites e deve ser configurado usando o vCenter HA.</block>
   <block id="da76be2bc20d4e043d9a2019b817214f" category="inline-link">Como criar e configurar clusters no vSphere Client</block>
   <block id="e02f3e9258a23204655bd512ec53911d" category="paragraph"><block ref="c06ae090600e7aa086edfa28514435e7" category="inline-link-rx"></block>Consulte para configurar o vCenter HA.</block>
-  <block id="bdd88c75f085534f6e2cdc7726cf1dd6" category="paragraph">Você também deve se referir<block ref="3a8301f60ad04eb873ae8dea15ee0495" category="inline-link-rx"></block> a .</block>
   <block id="7564f732469e12963d8b416572cf4efb" category="section-title">O que é o vSphere Metro Storage Cluster?</block>
   <block id="38910d3dab2318849fd5f1a1dfbe0152" category="inline-link">Guia de compatibilidade do VMware Storage</block>
   <block id="838b66b875df1b432ac420a98cba3db6" category="paragraph">Se você quiser obter mais informações sobre as diretrizes de design do vSphere Metro Storage Cluster, consulte a seguinte documentação:</block>
@@ -5684,7 +5680,6 @@
   <block id="18f5114f4a595ad26525bf20f301ce19" category="list-text"><block ref="20462cf0cb6f4e0f9c91cc66c831d98e" category="inline-link-rx"></block> As ferramentas ONTAP OVA, e se necessário, o arquivo SRA tar.gz.</block>
   <block id="aada29daee1d64ed0fe907043855cb7e" category="inline-image-macro">Dois</block>
   <block id="770c8023395525bc05b5a8fc2e6efa8b" category="list-title"><block ref="54f425ce8d89f4ed6b8a546561af5d60" category="inline-image-macro-rx" type="image"></block> Provisione endereços IP e Registros DNS</block>
-  <block id="b63e31bbf24a6eef701dc39672946405" category="list-text">Solicite as seguintes informações de IP da sua equipe de rede. Os três primeiros endereços IP são necessários; os nós dois e três são usados para implantações de alta disponibilidade (HA) com escalabilidade horizontal. Registros de host DNS são necessários e todos os endereços devem estar na mesma VLAN.</block>
   <block id="08b0c7e27d2f1780fce59893f12e7642" category="list-text">ONTAP Tools Endereço da aplicação "______________ . __________ . __________ . ___________</block>
   <block id="6bb090d29a0e3de8cc001d02c1e8a7b3" category="list-text">Endereço de Serviços internos '__________ . __________ . __________ . ___________</block>
   <block id="e32a9122e97bf17560b53c6993301629" category="list-text">Nome de host DNS do nó "____________________________________________________________</block>
@@ -5704,7 +5699,6 @@
   <block id="76841410d8f9a6881e0b96f150e9cedf" category="inline-link">Requisitos portuários</block>
   <block id="1cb44e38b7d534b49fb7ce15d6726cb0" category="list-text">Abra as portas necessárias para os endereços IP acima indicados no firewall de rede. <block ref="d75d54fbd8f18143d683ed6f5389e615" category="inline-link-rx"></block>Consulte para obter a atualização mais recente.</block>
   <block id="981b8fcee42e1e726a67a2b9a98ea6e9" category="inline-image-macro">Quatro</block>
-  <block id="fe2367acaa1f51e55b545df54a8794d7" category="list-title"><block ref="beadfa85a2fdca06b91edc1131c603e6" category="inline-image-macro-rx" type="image"></block> Configurar serviços de dispositivo (opcional)</block>
   <block id="640e990f06389e4b49f54086ba1aba46" category="inline-link">Edite as definições do aparelho e ative o serviço VASA</block>
   <block id="49b964c1f288e8e75650b3e86683914d" category="list-text">Para usar vVols, você deve primeiro<block ref="c9f7d482e0b51df808dc044e3e43f591" category="inline-link-rx"></block>. Ao mesmo tempo, revise os dois itens a seguir.</block>
   <block id="8ba46a1826b102cd1b8b0fb75a241176" category="inline-link">ative a alta disponibilidade</block>
@@ -5712,23 +5706,19 @@
   <block id="fddd8f455515e6a6de8e8d876641e0c5" category="inline-link">Ative os serviços SRA</block>
   <block id="777b715f4e7db3295048bd9409cb3a0f" category="list-text">Se você planeja usar o adaptador de replicação de armazenamento (SRA) das ferramentas do ONTAP para o Gerenciador de recuperação de Site da VMware ou recuperação de Site ao vivo,<block ref="9eb793199b56cb94f5df0c657a62ea9e" category="inline-link-rx"></block>.</block>
   <block id="e5d9de39f7ca1ba2637e5640af3ae8aa" category="inline-image-macro">Cinco</block>
-  <block id="fdf409c5a691a69cd744dfc08ae641b5" category="list-title"><block ref="99e8b2f00e172bfcff96afdce69907bc" category="inline-image-macro-rx" type="image"></block> Certificados (opcional)</block>
   <block id="e03ec7d1e46f44c47e1547f8c19fdbb5" category="list-text">De acordo com a VMware, os certificados assinados pela CA são necessários se estiverem usando vVols com vários vCenters.</block>
   <block id="777f90dea67a6de19d7e4287d6d65525" category="list-text">Serviços VASA__________________________________________________________________</block>
   <block id="50261e7dc97594e1ef47d1913fadd642" category="list-text">Os serviços administrativos '______________________________________________________</block>
   <block id="e6fbc0b9673f8c86726688d7607fc8f5" category="inline-image-macro">Seis</block>
-  <block id="45109aee8db55f9962ba496902ac47d1" category="list-title"><block ref="ef78558f80439832e0f51cc22cee8b8c" category="inline-image-macro-rx" type="image"></block> Armazenamento</block>
   <block id="96c44f7328270a7b9e72a07f78739ecf" category="list-text">É necessário um datastore em um dispositivo de armazenamento compartilhado. Opcionalmente, você pode usar uma biblioteca de conteúdo no mesmo armazenamento de dados do nó um para facilitar a clonagem rápida do modelo com o VAAI.</block>
   <block id="656b82abf6edc190097506cd4d1d585b" category="list-text">Biblioteca de conteúdo (apenas necessária para HA</block>
   <block id="99325facb7679dc357733bd909532cfc" category="list-text">Nó um datastore '______________________________________________________</block>
   <block id="f669e2c7e65edea7adca0c4006b6cf36" category="list-text">Nó dois datastore (opcional, mas recomendado para HA) '____________________________________________________</block>
   <block id="5ba1096fffa0ecfd4695651916c48133" category="list-text">Nó três datastore (opcional, mas recomendado para HA) '___________________________________________________________</block>
   <block id="12e67aac3e7f9227cc35f8f047d7dc74" category="inline-image-macro">Sete</block>
-  <block id="34e299878c510a313972dbf8e915aa70" category="list-title"><block ref="36915574c413876eaa75cbd48f69fd00" category="inline-image-macro-rx" type="image"></block> Implante os ÓVULOS</block>
   <block id="db5321854b38ff4107ff88c3d3fb2602" category="inline-link">Implante os ÓVULOS</block>
   <block id="62386ee2b40ea01fd147eb04a3da8b17" category="list-text"><block ref="2b093a8e786abd40836246bfb87e05bd" category="inline-link-rx"></block> Usando o cliente vSphere.</block>
   <block id="baca0ca6729684fd54206793ae4b5bd5" category="inline-image-macro">Oito</block>
-  <block id="3af4c2c51fab2d80844fbb6e10989de8" category="list-title"><block ref="430057c670c01688e904ed2ba129a0b5" category="inline-image-macro-rx" type="image"></block> Tarefas pós-implantação</block>
   <block id="d40a477cc61e319a78ef1bb36d8ea566" category="list-text">Crie regras antiafinidade para VMs em uma implantação de HA.</block>
   <block id="4695b076293ddedd5434ae5a73b57ae2" category="list-text">Se estiver usando HA, os nós vMotion do storage dois e três para separar armazenamentos de dados (opcional, mas recomendado).</block>
   <block id="fde3f7a850bbaaac2a3706bf8c7df54c" category="inline-link">Configurar as funções de usuário do ONTAP e o Privileges</block>
@@ -5738,10 +5728,7 @@
   <block id="6245e46af5a3bdaf57696763c4214c70" category="inline-link">Adicione instâncias do vCenter Server</block>
   <block id="427d083edfb4d6df118817492fea1fea" category="list-text"><block ref="9271e724c67dd3dffeb4e3ddaf43b80d" category="inline-link-rx"></block> No Gerenciador de ferramentas do ONTAP.</block>
   <block id="75299228e38c6c56354b3fbc53bd01db" category="inline-link">clusters integrados</block>
-  <block id="3a4a4867d2582a3fc7b55ad4df5113f7" category="list-text">Se estiver usando SVMs de vários locatários, em seguida<block ref="ea2efd531a0984091e8158139d5ccc0c" category="inline-link-rx"></block>, no Gerenciador de ferramentas do ONTAP e associá-los a vCenters.</block>
   <block id="0583aea4353aeb5998071022ebbb79ae" category="inline-link">SVMs integradas</block>
-  <block id="8ad9f2408218e1b63c20ae491c20ce60" category="list-text">Se estiver usando SVMs de vários locatários, em seguida<block ref="d765a6bb593f5e86f1e69993d841269b" category="inline-link-rx"></block>, no ONTAP Tools vCenter UI.</block>
-  <block id="d7788ac532a6f39741dcd93fd04481e6" category="list-text">Se *não* usar SVMs de vários locatários, então<block ref="ea2efd531a0984091e8158139d5ccc0c" category="inline-link-rx"></block> diretamente nas ferramentas do ONTAP vCenter UI. Alternativamente, neste cenário, é possível adicionar SVMs diretamente quando não estiver utilizando vVols.</block>
   <block id="4d5a9665c20fe0f045d612f3d7c14c3a" category="inline-link">Configure o SRA no VMware Live Site Recovery Appliance</block>
   <block id="74d3c40ee5d2741e75390e90d13a881a" category="list-text">Se você ativou o SRA para SRM/VLSR para proteger armazenamentos de dados tradicionais,<block ref="ae14a63430307f4358dbb1aa0a6215ef" category="inline-link-rx"></block>.</block>
   <block id="56b3d744b9b4be462a3690ae4544597f" category="inline-link">Perto de RPO zero</block>
@@ -5903,4 +5890,24 @@
   <block id="c50c3de11b39aab15ac6b3b860691105" category="paragraph">O recurso VMware Storage DRS permite a agregação de armazenamentos de dados em uma única unidade e equilibra discos de máquina virtual quando os limites de controle de e/S de armazenamento (SIOC) são excedidos.</block>
   <block id="a6389705a0010980a83767268763aa53" category="sidebar">Volumes virtuais (vVols) com as ferramentas do ONTAP 10</block>
   <block id="d858ab232a556e2be473d51d09bc0c3d" category="sidebar">Lista de verificação da instalação das ferramentas do ONTAP</block>
+  <block id="2e0a1393be1d4f990f277513b8384831" category="cell">Mantenha a predefinição (1) para obter mais informações, consulte <block ref="3b98534d1167689d42f2d1a533484036" category="inline-link-macro-rx"></block></block>
+  <block id="79a22fb066bcc86a371f557f30051d43" category="inline-link">configure o zoneamento</block>
+  <block id="b5d661217ddfecce129a41707ffa9fa9" category="list-text">Determine se você usará Fibre Channel (FC) para conectividade de storage. Em caso afirmativo, você<block ref="1ce5ae0107fd362eacaa4ef5b56c5d82" category="inline-link-rx"></block> precisará nos switches FC para habilitar a conectividade entre os hosts ESXi e os LIFs FC da SVM.</block>
+  <block id="49e1b0dac188727de519431ac2068825" category="list-text">Solicite as seguintes informações de IP da sua equipe de rede. Os três primeiros endereços IP são necessários; os nós dois e três são usados para implantações de alta disponibilidade (HA) com escalabilidade horizontal. Registros de host DNS são necessários e todos os nomes de nós e todos os endereços devem estar na mesma VLAN e sub-rede.</block>
+  <block id="7be8dd6dbcd142349f300df69f6a63d2" category="list-title"><block ref="beadfa85a2fdca06b91edc1131c603e6" category="inline-image-macro-rx" type="image"></block> Armazenamento</block>
+  <block id="829d9899725b36358387edfa5df0e486" category="list-title"><block ref="99e8b2f00e172bfcff96afdce69907bc" category="inline-image-macro-rx" type="image"></block> Implante os ÓVULOS</block>
+  <block id="2c63315a0e6899fa3f810f1b06553689" category="list-title"><block ref="ef78558f80439832e0f51cc22cee8b8c" category="inline-image-macro-rx" type="image"></block> Adicione vCenters às ferramentas do ONTAP</block>
+  <block id="0547f403694814dca82327ab77f95205" category="list-title"><block ref="36915574c413876eaa75cbd48f69fd00" category="inline-image-macro-rx" type="image"></block> Adicione backends de armazenamento às ferramentas do ONTAP</block>
+  <block id="3317c36267d6f484693b29dbd86b1e79" category="list-text">Se estiver usando a alocação a vários clientes de storage com SVMs</block>
+  <block id="5abf46747a299bb4d24d81d3a3f343aa" category="list-text"><block ref="40ea307f91b1c1591600230b15a0b728" category="inline-link-rx"></block> No Gerenciador de ferramentas do ONTAP e associá-las ao vCenters.</block>
+  <block id="e69b3c58a2b1480f291387c690bf92b4" category="list-text"><block ref="9f5477aac946ec407262cd052d80864d" category="inline-link-rx"></block> Nas ferramentas do ONTAP vCenter UI.</block>
+  <block id="1ca4d08fe4d0cced2e4ebb5629b6613c" category="list-text">Se *não* usando SVMs de vários locatários</block>
+  <block id="9e80f1d38a7781fc49c6800d20337ec2" category="list-text"><block ref="40ea307f91b1c1591600230b15a0b728" category="inline-link-rx"></block> Diretamente nas ferramentas do ONTAP vCenter UI. Alternativamente, neste cenário, é possível adicionar SVMs diretamente quando não estiver utilizando vVols.</block>
+  <block id="421bdf5be659af6d75aab31df92b7907" category="list-title"><block ref="430057c670c01688e904ed2ba129a0b5" category="inline-image-macro-rx" type="image"></block> Configurar serviços de dispositivo (opcional)</block>
+  <block id="24db11216549ee55172c33cf3def2f3f" category="inline-image-macro">Nove</block>
+  <block id="8a339db13a88428ad39d370cfdd1129a" category="list-title"><block ref="b37b448eff4f65237cf47b29bdd2817c" category="inline-image-macro-rx" type="image"></block> Certificados (opcional)</block>
+  <block id="a185c3c138dca5ef46afc33288a67d1f" category="inline-image-macro">Dez</block>
+  <block id="71fc21799db94f8cae72c8732659492c" category="list-title"><block ref="6097494f0af631df68e3dcb7a6da8d2a" category="inline-image-macro-rx" type="image"></block> Outras tarefas pós-implantação</block>
+  <block id="93da9d9a3842b9e17ab9de43211bf697" category="paragraph"><block ref="0802e50581eb79c07178f36fed073afc" category="inline-link-rx"></block>Consulte para obter mais informações___.__</block>
+  <block id="275507174f3ab21b1a65c1d5e8446001" category="paragraph">Você também deve se referir<block ref="0802e50581eb79c07178f36fed073afc" category="inline-link-rx"></block> a .</block>
 </blocks>

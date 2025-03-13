@@ -35,7 +35,7 @@ Aqui estão as configurações de host recomendadas para todas as versões atual
 | VMFS3.EnableBlockDelete | Mantenha o padrão (0), mas pode ser alterado se necessário. Para obter mais informações, consulte link:https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/vsphere-storage-8-0/storage-provisioning-and-space-reclamation-in-vsphere/storage-space-reclamation-in-vsphere/space-reclamation-for-guest-operating-systems.html["Recuperação de espaço para VMFS5 máquinas virtuais"] | Não 
 
 
-| VMFS3.EnableVMFS6Unmap | Mantenha a predefinição (1) para obter mais informações, consulte link:https://core.vmware.com/resource/vmware-vsphere-apis-array-integration-vaai#sec9426-sub4["VMware vSphere APIs: Integração de array (VAAI)"] | Não 
+| VMFS3.EnableVMFS6Unmap | Mantenha a predefinição (1) para obter mais informações, consulte link:https://www.vmware.com/docs/vmw-vmware-vsphere-apis-array-integration-vaai["VMware vSphere APIs: Integração de array (VAAI)"] | Não 
 
 
 3+| *Configurações NFS* 

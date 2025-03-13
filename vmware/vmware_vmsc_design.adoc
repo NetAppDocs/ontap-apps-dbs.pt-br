@@ -137,13 +137,13 @@ image::../media/vmsc_3_6.png[Uma captura de tela de uma Descrição do computado
 
 Os eventos de isolamento ocorrem quando os hosts dentro de um cluster de HA perdem a conetividade com a rede ou com outros hosts no cluster. Por padrão, o vSphere HA usará o gateway padrão para sua rede de gerenciamento como endereço de isolamento padrão. No entanto, você pode especificar endereços de isolamento adicionais para o host fazer ping para determinar se uma resposta de isolamento deve ser acionada. Adicione dois IPs de isolamento que podem fazer ping, um por local. Não utilize o IP do gateway. A configuração avançada do vSphere HA usada é das.isolationaddress. Você pode usar endereços IP do ONTAP ou Mediator para esse fim.
 
- https://core.vmware.com/resource/vmware-vsphere-metro-storage-cluster-recommended-practices#sec2-sub5["core.vmware.com"]Consulte para obter mais informações___.__
+ https://www.vmware.com/docs/vmw-vmware-vsphere-metro-storage-cluster-recommended-practices["Práticas recomendadas do VMware vSphere Metro Storage Cluster"]Consulte para obter mais informações___.__
 
 image::../media/vmsc_3_7.png[Uma captura de tela de uma Descrição do computador gerada automaticamente,624,545]
 
 Adicionar uma configuração avançada chamada das.heartbeatDsPerHost pode aumentar o número de datastores de heartbeat. Use quatro datastores de heartbeat (HB DSS) - dois por local. Use a opção "Selecionar a partir da lista, mas elogio". Isso é necessário porque, se um local falhar, você ainda precisará de dois DSS HB. No entanto, eles não precisam ser protegidos com MCC ou sincronização ativa do SnapMirror.
 
- https://core.vmware.com/resource/vmware-vsphere-metro-storage-cluster-recommended-practices#sec2-sub5["core.vmware.com"]Consulte para obter mais informações___.__
+ https://www.vmware.com/docs/vmw-vmware-vsphere-metro-storage-cluster-recommended-practices["Práticas recomendadas do VMware vSphere Metro Storage Cluster"]Consulte para obter mais informações___.__
 
 Afinidade do VMware DRS para NetApp MetroCluster
 
