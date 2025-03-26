@@ -3,10 +3,13 @@ sidebar: sidebar
 permalink: mssql/mssql-storage-efficiency.html 
 keywords: MSSQL,SQL Server, efficiency, compression, deduplication 
 summary: Eficiência de storage do Microsoft SQL Server e do ONTAP 
-searchtitle: Microsoft SQL Server e eficiência de storage 
+searchtitle: Eficiência de storage do Microsoft SQL Server e do ONTAP 
 ---
 = Eficiência de storage
+:hardbreaks:
 :allow-uri-read: 
+:icons: font
+:linkattrs: 
 :imagesdir: ../media/
 
 
@@ -94,13 +97,14 @@ O thin Provisioning é altamente recomendado porque pode simplificar o gerenciam
 
 Alguns clientes preferem usar o provisionamento thick, seja para cargas de trabalho específicas ou, geralmente, com base em práticas operacionais e de aquisição estabelecidas.
 
-*Atenção:* se um volume for provisionado de forma grossa, deve-se ter cuidado para desativar completamente todos os recursos de eficiência para esse volume, incluindo descompressão e remoção de desduplicação usando o `sis undo` comando. O volume não deve aparecer `volume efficiency show` na saída. Se isso acontecer, o volume ainda será parcialmente configurado para recursos de eficiência. Como resultado, as garantias de substituição funcionam de forma diferente, o que aumenta a chance de que a configuração seja ultrapassada fazendo com que o volume fique inesperadamente sem espaço, resultando em erros de e/S do banco de dados.
+
+CAUTION: Se um volume for provisionado de forma grossa, deve-se ter cuidado para desativar completamente todos os recursos de eficiência para esse volume, incluindo descompressão e remoção de deduplicação usando `sis undo` o comando. O volume não deve aparecer `volume efficiency show` na saída. Se isso acontecer, o volume ainda será parcialmente configurado para recursos de eficiência. Como resultado, as garantias de substituição funcionam de forma diferente, o que aumenta a chance de que a configuração seja ultrapassada fazendo com que o volume fique inesperadamente sem espaço, resultando em erros de e/S do banco de dados.
 
 
 
 == Práticas recomendadas de eficiência
 
-A NetApp recomenda o seguinte:
+*A NetApp recomenda* o seguinte:
 
 
 

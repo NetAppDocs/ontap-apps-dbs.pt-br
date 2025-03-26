@@ -10,39 +10,45 @@ Os instantâneos de armazenamento são réplicas pontuais dos dados de destino. 
 
 Em alguns casos, os snapshots podem ser agendados diretamente no ONTAP. Em outros casos, softwares como o SnapCenter podem ser necessários para orquestrar operações de aplicativos ou sistemas operacionais antes de criar snapshots. Qualquer que seja a melhor abordagem para seu workload, uma estratégia de snapshot agressiva pode fornecer segurança dos dados por meio de acesso frequente e fácil a backups de tudo, desde LUNs de inicialização a bancos de dados essenciais.
 
-*Nota*: Um volume flexível ONTAP, ou mais simplesmente, um volume não é sinônimo de LUN. Os volumes são contêineres de gerenciamento de dados, como arquivos ou LUNs. Por exemplo, um banco de dados pode ser colocado em um conjunto de distribuição de 8 LUN, com todos os LUNs contidos em um único volume.
+[NOTE]
+====
+Um volume flexível ONTAP, ou mais simplesmente, um volume não é sinônimo de LUN. Os volumes são contêineres de gerenciamento de dados, como arquivos ou LUNs. Por exemplo, um banco de dados pode ser colocado em um conjunto de distribuição de 8 LUN, com todos os LUNs contidos em um único volume.
 
-Para obter mais informações sobre instantâneos, clique em link:https://docs.netapp.com/us-en/ontap/data-protection/manage-local-snapshot-copies-concept.html["aqui."]
+====
+Para obter mais informações sobre instantâneos, consulte a. link:https://docs.netapp.com/us-en/ontap/data-protection/manage-local-snapshot-copies-concept.html["Documentação do ONTAP."]
 
 
 
 == Snapshots à prova de violações
 
-A partir do ONTAP 9.12,1, os instantâneos não são apenas de leitura, mas também podem ser protegidos contra exclusões acidentais ou intencionais. O recurso é chamado de Snapshots à prova de violações. Um período de retenção pode ser definido e aplicado por meio da política de snapshot. Os instantâneos resultantes não podem ser eliminados até que tenham atingido a data de validade. Não há substituições administrativas ou do centro de suporte.
+A partir do ONTAP 9.12.1, os instantâneos não são apenas de leitura, mas também podem ser protegidos contra exclusões acidentais ou intencionais. O recurso é chamado de instantâneos à prova de violações. Um período de retenção pode ser definido e aplicado por meio da política de snapshot. Os instantâneos resultantes não podem ser eliminados até que tenham atingido a data de validade. Não há substituições administrativas ou do centro de suporte.
 
 Isso garante que um intruso, um insider malicioso, ou mesmo um ataque de ransomware não seja capaz de comprometer os backups, mesmo que isso tenha resultado no acesso ao próprio sistema ONTAP. Quando combinado a uma programação de snapshot frequente, o resultado é uma proteção de dados extremamente poderosa com RPO muito baixo.
 
-Para obter mais informações sobre instantâneos à prova de violações, clique em link:https://docs.netapp.com/us-en/ontap/snaplock/snapshot-lock-concept.html["aqui."]
+
+NOTE: Os snapshots à prova de violações não podem ser dispostos em camadas usando o pool de malha.
+
+Para obter mais informações sobre instantâneos à prova de violações, consulte a. link:https://docs.netapp.com/us-en/ontap/snaplock/snapshot-lock-concept.html["Documentação do ONTAP."]
 
 
 
 == Replicação SnapMirror
 
-Os instantâneos também podem ser replicados para um sistema remoto. Isso inclui snapshots à prova de violações, onde o período de retenção é aplicado e aplicado no sistema remoto. O resultado são os mesmos benefícios de proteção de dados que os snapshots locais, mas eles ficam em um segundo storage array. Isso garante que a destruição do array original não comprometa os backups.
+Os instantâneos também podem ser replicados para um sistema remoto. Isso inclui instantâneos à prova de violações, onde o período de retenção é aplicado e aplicado no sistema remoto. O resultado são os mesmos benefícios de proteção de dados que os snapshots locais, mas eles ficam em um segundo storage array. Isso garante que a destruição do array original não comprometa os backups.
 
 Um segundo sistema também abre novas opções de segurança administrativa. Por exemplo, alguns clientes do NetApp segregam credenciais de autenticação para os sistemas de storage primário e secundário. Nenhum usuário administrativo tem acesso a ambos os sistemas, o que significa que um administrador mal-intencionado não pode excluir todas as cópias de dados.
 
-Para obter mais informações sobre o SnapMirror, clique em link:https://docs.netapp.com/us-en/ontap/data-protection/snapmirror-unified-replication-concept.html["aqui."]
+Para obter mais informações sobre o SnapMirror, consulte a. link:https://docs.netapp.com/us-en/ontap/data-protection/snapmirror-unified-replication-concept.html["Documentação do ONTAP."]
 
 
 
 == Máquinas virtuais de armazenamento
 
-Um sistema de armazenamento ONTAP recém-configurado é semelhante a um servidor VMware ESX recém-provisionado porque nenhum deles pode suportar qualquer usuário até que uma máquina virtual seja criada. Com o ONTAP, você cria uma máquina virtual de storage (SVM) que se torna a unidade mais básica de gerenciamento de storage. Cada SVM tem seus próprios recursos de storage, configurações de protocolo, endereços IP e WWNs FCP. Esta é a base da alocação de vários clientes da ONTAP.
+Um sistema de armazenamento ONTAP recém-configurado é semelhante a um servidor VMware ESX recém-provisionado porque nenhum deles pode suportar qualquer usuário até que uma máquina virtual seja criada. Com o ONTAP, você cria uma máquina virtual de storage (SVM) que se torna a unidade mais básica de gerenciamento de storage. Cada SVM tem seus próprios recursos de storage, configurações de protocolo, endereços IP e WWNs FCP. Esta é a base da alocação a vários clientes da ONTAP.
 
 Por exemplo, você pode configurar um SVM para workloads de produção críticos e um segundo SVM em um segmento de rede diferente para atividades de desenvolvimento. Dessa forma, você poderia restringir o acesso ao SVM de produção a certos administradores, enquanto concederia aos desenvolvedores um controle mais expansivo sobre os recursos de storage no SVM de desenvolvimento. Você também pode precisar fornecer um terceiro SVM para suas equipes financeiras e de RH para armazenar dados especialmente críticos apenas para os olhos.
 
-Para obter mais informações sobre SVMs, clique em link:https://docs.netapp.com/us-en/ontap/concepts/storage-virtualization-concept.html["aqui."]
+Para obter mais informações sobre SVMs, consulte a. link:https://docs.netapp.com/us-en/ontap/concepts/storage-virtualization-concept.html["Documentação do ONTAP."]
 
 
 
@@ -50,15 +56,15 @@ Para obter mais informações sobre SVMs, clique em link:https://docs.netapp.com
 
 O ONTAP oferece controle de acesso baseado em funções (RBAC) avançado para logins administrativos. Alguns administradores podem precisar de acesso total ao cluster, enquanto outros podem precisar de acesso a determinados SVMs. O pessoal avançado do helpdesk pode precisar da capacidade de aumentar o tamanho dos volumes. O resultado é que você pode conceder aos usuários administrativos o acesso necessário para desempenhar suas responsabilidades de trabalho, e nada mais. Além disso, você pode proteger esses logins usando PKI de vários fornecedores, restringir o acesso apenas a chaves ssh e impor bloqueios de tentativa de login com falha.
 
-Para obter mais informações sobre controle de acesso administrativo, clique em link:https://docs.netapp.com/us-en/ontap/authentication/manage-access-control-roles-concept.html["aqui."]
+Para obter mais informações sobre o controle de acesso administrativo, consulte link:https://docs.netapp.com/us-en/ontap/authentication/manage-access-control-roles-concept.html["Documentação do ONTAP."]
 
 
 
-== Autenticação Multfactor
+== Autenticação de vários fatores (MFA)
 
 A ONTAP e alguns outros produtos da NetApp agora oferecem suporte à autenticação multifator (MFA) usando diversos métodos. O resultado é que um nome de usuário/senha comprometidos por si só não é uma thread de segurança sem os dados do segundo fator, como um FOB ou um aplicativo de smartphone.
 
-Para obter mais informações, clique em link:https://docs.netapp.com/us-en/ontap/authentication/mfa-overview.html["aqui."]
+Para obter mais informações sobre autenticação multifator (MFA), consulte a. link:https://docs.netapp.com/us-en/ontap/authentication/mfa-overview.html["Documentação do ONTAP."]
 
 
 
@@ -66,7 +72,7 @@ Para obter mais informações, clique em link:https://docs.netapp.com/us-en/onta
 
 A automação requer chamadas de API, mas nem todas as ferramentas exigem acesso administrativo completo. Para ajudar a proteger os sistemas de automação, o RBAC também está disponível no nível da API. Você pode limitar as contas de usuário de automação às chamadas de API necessárias. Por exemplo, o software de monitoramento não precisa alterar o acesso, ele só requer acesso de leitura. Os fluxos de trabalho que provisionam o storage não precisam da capacidade de excluir o storage.
 
-Para saber mais, inicie chttps://docs.NetApp.com/US-en/ONTAP-Automation/REST/rbac_overview.html[here.]
+Para obter mais informações sobre API RBAC, consulte link:https://docs.netapp.com/us-en/ontap-automation/rest/rbac_overview.html["Documentação do ONTAP."]
 
 
 
@@ -74,4 +80,4 @@ Para saber mais, inicie chttps://docs.NetApp.com/US-en/ONTAP-Automation/REST/rba
 
 A autenticação multi "fator" pode ser levada ainda mais longe, exigindo que dois administradores diferentes, cada um com suas próprias credenciais, aprovem determinadas atividades. Isso inclui alterar permissões de login, executar comandos de diagnóstico e excluir dados.
 
-Para obter mais informações sobre a verificação multi-admin (MAV), clique em link:https://docs.netapp.com/us-en/ontap/multi-admin-verify/index.html["aqui"]
+Para obter mais informações sobre a verificação multi-admin (MAV), consulte link:https://docs.netapp.com/us-en/ontap/multi-admin-verify/index.html["Documentação do ONTAP."]

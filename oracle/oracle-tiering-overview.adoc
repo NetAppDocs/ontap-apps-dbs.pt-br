@@ -25,7 +25,7 @@ O FabricPool é uma tecnologia em camadas que classifica os blocos como ativos o
 
 Várias políticas de disposição em camadas estão disponíveis para controlar a classificação dos blocos como ativo ou inativo. Além disso, as políticas podem ser definidas por volume e alteradas conforme necessário. Somente os blocos de dados são movidos entre as categorias de performance e capacidade. Os metadados que definem a estrutura do sistema de arquivos e LUN sempre permanecem no nível de performance. Como resultado, o gerenciamento é centralizado no ONTAP. Os arquivos e LUNs não são diferentes dos dados armazenados em qualquer outra configuração do ONTAP. O controlador NetApp AFF ou FAS aplica as políticas definidas para mover dados para o nível apropriado.
 
-image:oracle-fp_image1.png["Erro: Imagem gráfica em falta"]
+image:../media/oracle-fp_image1.png["Disposição em camadas do FabricPool"]
 
 
 

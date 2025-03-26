@@ -37,7 +37,8 @@ Como medida geral de segurança, defina o `dr-force-nvfail` sinalizador em todos
 
 O resultado é como usar a `-force-nvfail-all` bandeira para switchovers manuais. No entanto, o número de volumes afetados pode ser limitado apenas aos volumes que devem ser protegidos de aplicativos ou sistemas operacionais com caches obsoletos.
 
-Há dois requisitos essenciais para um ambiente que não é usado `dr-force-nvfail` em volumes de aplicações:
+
+CAUTION: Há dois requisitos essenciais para um ambiente que não é usado `dr-force-nvfail` em volumes de aplicações:
 
 * Um switchover forçado não deve ocorrer mais de 30 segundos após a perda do local principal.
 * Um switchover não deve ocorrer durante as tarefas de manutenção ou quaisquer outras condições em que os plexos SyncMirror ou a replicação NVRAM estejam fora de sincronia. O primeiro requisito pode ser atendido usando o software tiebreaker configurado para executar um switchover em 30 segundos após uma falha no local. Esse requisito não significa que o switchover deve ser executado dentro de 30 segundos após a deteção de uma falha no local. Isso significa que não é mais seguro forçar uma mudança se tiverem decorrido 30 segundos desde que um local foi confirmado como operacional.

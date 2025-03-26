@@ -24,7 +24,7 @@ Sem configurações de proximidade, esse host usará ambos os sistemas de storag
 
 Com um sistema AFF, os caminhos aparecerão como mostrado abaixo quando a proximidade do host for configurada.
 
-image:smas-uniform-aff.png["SnapMirror ative Sync AFF rede uniforme"]
+image:../media/smas-uniform-aff.png["SnapMirror ative Sync AFF rede uniforme"]
 
 Em operação normal, todo o IO é IO local. Leituras e gravações são atendidas a partir do storage array local. É claro que o write IO também precisará ser replicado pelo controlador local para o sistema remoto antes de ser reconhecido, mas todas as IO de leitura serão atendidas localmente e não incorrerão latência extra ao atravessar o link SAN entre locais.
 
@@ -38,7 +38,7 @@ Há caminhos redundantes pelo cluster local que não são mostrados nesses diagr
 
 Os sistemas NetApp ASA oferecem multipathing ativo-ativo em todos os caminhos em um cluster. Isso também se aplica às configurações SM-as.
 
-image:smas-uniform-asa.png["SnapMirror ative Sync ASA rede uniforme"]
+image:../media/smas-uniform-asa.png["SnapMirror ative Sync ASA rede uniforme"]
 
 Uma configuração ASA com acesso não uniforme funcionaria em grande parte da mesma forma que faria com o AFF. Com acesso uniforme, o IO estaria atravessando a WAN. Isto pode ou não ser desejável.
 

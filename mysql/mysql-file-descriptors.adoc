@@ -6,8 +6,10 @@ summary: Descritores de arquivo MySQL
 searchtitle: Descritores de arquivo MySQL 
 ---
 = Descritores de arquivo
+:hardbreaks:
 :allow-uri-read: 
 :icons: font
+:linkattrs: 
 :imagesdir: ../media/
 
 

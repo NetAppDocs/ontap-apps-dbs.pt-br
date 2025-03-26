@@ -6,7 +6,10 @@ summary: Diretório de log do Microsoft SQL Server
 searchtitle: Diretório de log do Microsoft SQL Server 
 ---
 = Diretório de log
+:hardbreaks:
 :allow-uri-read: 
+:icons: font
+:linkattrs: 
 :imagesdir: ../media/
 
 

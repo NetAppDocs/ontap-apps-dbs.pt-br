@@ -24,7 +24,7 @@ O SyncMirror é uma tecnologia de espelhamento que aprimora, mas não substitui,
 . Cada conjunto de unidades em um determinado local é configurado automaticamente como um ou mais grupos RAID DP ou RAID-teC totalmente redundantes, independentemente do uso do espelhamento. Esse uso de RAID por baixo do espelhamento fornece proteção de dados mesmo após a perda de um site.
 
 
-image:syncmirror.png["Erro: Imagem gráfica em falta"]
+image:../media/syncmirror.png["Configuração do SyncMirror"]
 
 A figura acima ilustra um exemplo de configuração do SyncMirror. Um agregado de 24 unidades foi criado na controladora com 12 unidades de um compartimento alocado no local A e 12 unidades de um compartimento alocado no local B. as unidades foram agrupadas em dois grupos RAID espelhados. RAID grupo 0 inclui um Plex de 6 unidades no local Um espelhado para um Plex de 6 unidades no local B. da mesma forma, RAID grupo 1 inclui um Plex de 6 unidades no local Um espelhado para um Plex de 6 unidades no local B.
 
@@ -106,13 +106,14 @@ Um sistema MetroCluster só pode efetuar uma mudança automática em segurança 
 
 === Desempate MetroCluster com MetroCluster conectado à malha
 
- https://library.netapp.com/ecmdocs/ECMP12007400/html/GUID-3662A7CE-3AF2-4562-A11C-5C37DE0E3A87.html["Desempate de NetApp MetroCluster"^]O software pode ser executado em um terceiro local para monitorar a integridade do ambiente MetroCluster, enviar notificações e, opcionalmente, forçar um switchover em uma situação de desastre. Uma descrição completa do desempate pode ser encontrada no http://mysupport.netapp.com["Site de suporte da NetApp"^], mas o principal objetivo do desempate do MetroCluster é detetar a perda do local. Ele também deve discriminar entre a perda do local e a perda de conetividade. Por exemplo, o switchover não deve ocorrer porque o tiebreaker não conseguiu chegar ao local principal, e é por isso que o tiebreaker também monitora a capacidade do local remoto de entrar em Contato com o local principal.
+link:https://docs.netapp.com/us-en/ontap-metrocluster/install-ip/task_sw_config_configure_mediator.html["Desempate de NetApp MetroCluster"^]O software pode ser executado em um terceiro local para monitorar a integridade do ambiente MetroCluster, enviar notificações e, opcionalmente, forçar um switchover em uma situação de desastre. Uma descrição completa do desempate pode ser encontrada no link:http://mysupport.netapp.com["Site de suporte da NetApp"^], mas o principal objetivo do desempate do MetroCluster é detetar a perda do local. Ele também deve discriminar entre a perda do local e a perda de conetividade. Por exemplo, o switchover não deve ocorrer porque o tiebreaker não conseguiu chegar ao local principal, e é por isso que o tiebreaker também monitora a capacidade do local remoto de entrar em Contato com o local principal.
 
 O switchover automático com AUSO também é compatível com o MCTB. O AUSO reage muito rapidamente porque foi concebido para detetar eventos de falha específicos e, em seguida, invocar o switchover apenas quando os plexos NVRAM e SyncMirror estão em sincronia.
 
 Em contraste, o desempate está localizado remotamente e, portanto, deve esperar que um temporizador decorra antes de declarar um local morto. O tiebreaker eventualmente deteta o tipo de falha de controladora coberta pelo AUSO, mas, em geral, a AUSO já iniciou o switchover e possivelmente concluiu o switchover antes que o tiebreaker atue. O segundo comando de comutação resultante vindo do tiebreaker seria rejeitado.
 
-*Atenção: *O software MCTB não verifica se o NVRAM estava e/ou os plexos estão sincronizados ao forçar um switchover. O switchover automático, se configurado, deve ser desativado durante atividades de manutenção que resultem na perda de sincronização para NVRAM ou SyncMirror plexes.
+
+CAUTION: O software MCTB não verifica se o NVRAM estava e/ou os plexos estão em sincronia ao forçar um switchover. O switchover automático, se configurado, deve ser desativado durante atividades de manutenção que resultem na perda de sincronização para NVRAM ou SyncMirror plexes.
 
 Além disso, o MCTB pode não resolver um desastre contínuo que leva à seguinte sequência de eventos:
 
@@ -131,7 +132,7 @@ Além disso, o MCTB pode não resolver um desastre contínuo que leva à seguint
 
 === Mediador ONTAP com MetroCluster IP
 
-O Mediador ONTAP é usado com MetroCluster IP e outras soluções ONTAP. Ele funciona como um serviço de desempate tradicional, assim como o software de desempate do MetroCluster discutido acima, mas também inclui um recurso crítico: Executar switchover automatizado sem supervisão.
+O Mediador ONTAP é usado com MetroCluster IP e outras soluções ONTAP. Ele funciona como um serviço de desempate tradicional, assim como o software de desempate do MetroCluster discutido acima, mas também inclui um recurso crítico: Executar o switchover automatizado sem supervisão.
 
 Um MetroCluster conectado à malha tem acesso direto aos dispositivos de storage no local oposto. Isso permite que um controlador MetroCluster monitore a integridade dos outros controladores lendo dados de batimentos cardíacos das unidades. Isso permite que um controlador reconheça a falha de outro controlador e execute um switchover.
 
@@ -143,7 +144,7 @@ Em contraste, a arquitetura IP do MetroCluster roteia todas as I/o exclusivament
 
 O ClusterLion é um dispositivo avançado de monitoramento MetroCluster que funciona como um terceiro site virtual. Essa abordagem permite que o MetroCluster seja implantado com segurança em uma configuração de dois locais com recurso de switchover totalmente automatizado. Além disso, o ClusterLion pode executar um monitor de nível de rede adicional e executar operações pós-switchover. A documentação completa está disponível no ProLion.
 
-image:clusterlion.png["Erro: Imagem gráfica em falta"]
+image:../media/clusterlion.png["ClusterLion diagrama"]
 
 * Os dispositivos ClusterLion monitoram a integridade dos controladores com cabos Ethernet e seriais conetados diretamente.
 * Os dois aparelhos estão conetados entre si com conexões sem fio redundantes de 3G GHz.

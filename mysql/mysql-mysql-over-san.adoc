@@ -6,13 +6,17 @@ summary: MySQL com SAN
 searchtitle: MySQL com SAN 
 ---
 = SAN
+:hardbreaks:
 :allow-uri-read: 
 :icons: font
+:linkattrs: 
 :imagesdir: ../media/
+:firstname: [.lead]
+:author: [.lead]
+:authorinitials: [
+:authors: [.lead]
+:revdate: There are two options to configure MySQL with SAN using the usual two-volume model.
 
-
-[role="lead"]
-Existem duas opções para configurar o MySQL com SAN usando o modelo de dois volumes usual.
 
 Bancos de dados menores podem ser colocados em um par de LUNs padrão, desde que as demandas de e/S e capacidade estejam dentro dos limites de um único sistema de arquivos LUN. Por exemplo, um banco de dados que requer aproximadamente 2K IOPS aleatório pode ser hospedado em um único sistema de arquivos em um único LUN. Da mesma forma, um banco de dados com apenas 100GB MB de tamanho caberia em um único LUN sem criar um problema de gerenciamento.
 

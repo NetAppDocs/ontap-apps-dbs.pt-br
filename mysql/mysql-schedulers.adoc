@@ -3,11 +3,13 @@ sidebar: sidebar
 permalink: mysql/mysql-schedulers.html 
 keywords: MySQL,MariaDB,schedulers 
 summary: Agendadores MySQL e IO 
-searchtitle: Agendadores de e/S e MySQL 
+searchtitle: Agendadores MySQL e IO 
 ---
 = Agendadores de e/S.
+:hardbreaks:
 :allow-uri-read: 
 :icons: font
+:linkattrs: 
 :imagesdir: ../media/
 
 

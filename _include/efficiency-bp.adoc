@@ -6,7 +6,7 @@
 
 == Práticas recomendadas de eficiência
 
-A NetApp recomenda o seguinte:
+*A NetApp recomenda* o seguinte:
 
 
 

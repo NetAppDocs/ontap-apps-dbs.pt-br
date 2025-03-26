@@ -3,10 +3,13 @@ sidebar: sidebar
 permalink: mysql/mysql-innodb_buffer_pool_size.html 
 keywords: MySQL,MariaDB,innodb_buffer_pool_size 
 summary: MySQL e innodb_buffer_pool_size 
+searchtitle: MySQL e innodb_buffer_pool_size 
 ---
 = innodb_buffer_pool_size
+:hardbreaks:
 :allow-uri-read: 
 :icons: font
+:linkattrs: 
 :imagesdir: ../media/
 
 

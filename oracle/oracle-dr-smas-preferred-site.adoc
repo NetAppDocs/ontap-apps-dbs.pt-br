@@ -19,7 +19,7 @@ A `source` designação é controla o local preferido. Se o link de replicação
 
 A configuração de origem/destino pode ser visualizada através do SystemManager:
 
-image:smas-source-systemmanager.png["Captura de tela SM da fonte SM-as"]
+image:../media/smas-source-systemmanager.png["Captura de tela SM da fonte SM-as"]
 
 Ou na CLI:
 

@@ -6,8 +6,10 @@ summary: MySQL com NFS
 searchtitle: MySQL com NFS 
 ---
 = NFS
+:hardbreaks:
 :allow-uri-read: 
 :icons: font
+:linkattrs: 
 :imagesdir: ../media/
 
 

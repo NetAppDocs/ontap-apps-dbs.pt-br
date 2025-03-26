@@ -6,7 +6,10 @@ summary: Recuperação de desastres do Microsoft SQL Server com o ONTAP
 searchtitle: Recuperação de desastres do Microsoft SQL Server com o ONTAP 
 ---
 = Recuperação de desastres
+:hardbreaks:
 :allow-uri-read: 
+:icons: font
+:linkattrs: 
 :imagesdir: ../media/
 
 

@@ -2,7 +2,7 @@
 :allow-uri-read: 
 
 
-image:smas-nonuniform.png["Rede não uniforme de sincronização ativa do SnapMirror"]
+image:../media/smas-nonuniform.png["Rede não uniforme de sincronização ativa do SnapMirror"]
 
 O principal benefício dessa abordagem é a simplicidade da SAN - você elimina a necessidade de estender uma SAN pela rede. Alguns clientes não têm conetividade de baixa latência suficiente entre locais ou não têm infraestrutura para túnel do tráfego SAN FC em uma rede entre locais.
 
@@ -12,4 +12,5 @@ Em contraste, um aplicativo em cluster, como o Oracle RAC, pode fornecer um serv
 
 Em muitos casos, a sobrecarga de latência adicional de um aplicativo que acessa o storage em um link local a local seria inaceitável. Isso significa que a disponibilidade aprimorada de redes uniformes é mínima, uma vez que a perda de armazenamento em um local levaria à necessidade de encerrar serviços nesse local com falha de qualquer maneira.
 
-Há caminhos redundantes pelo cluster local que não são mostrados nesses diagramas por uma questão de simplicidade. Os sistemas de storage da ONTAP estão HA, portanto, uma falha da controladora não deve resultar em falha do local. Deve apenas resultar em uma mudança na qual os caminhos locais são usados no site afetado.
+
+NOTE: Há caminhos redundantes pelo cluster local que não são mostrados nesses diagramas por uma questão de simplicidade. Os sistemas de storage da ONTAP estão HA, portanto, uma falha da controladora não deve resultar em falha do local. Deve apenas resultar em uma mudança na qual os caminhos locais são usados no site afetado.

@@ -2,20 +2,23 @@
 sidebar: sidebar 
 permalink: mssql/mssql-dr-smas-mediator.html 
 keywords: MSSQL,SQL Server, SnapMirror active sync, SMBC, overview 
-summary: Microsoft SQL Server e o mediador do ONTAP 
-searchtitle: Microsoft SQL Server e o mediador do ONTAP 
+summary: Microsoft SQL Server e o Mediador ONTAP 
+searchtitle: Microsoft SQL Server e o Mediador ONTAP 
 ---
 = Mediador do ONTAP
+:hardbreaks:
 :allow-uri-read: 
+:icons: font
+:linkattrs: 
 :imagesdir: ../media/
 
 
 [role="lead"]
-O mediador é necessário para automatizar o failover com segurança. Idealmente, ele seria colocado em um local 3rd independente, mas ainda pode funcionar para a maioria das necessidades se colocasse em um dos clusters que participam da replicação.
+O Mediator é necessário para automatizar com segurança o failover. Idealmente, ele seria colocado em um local 3rd independente, mas ainda pode funcionar para a maioria das necessidades se colocasse em um dos clusters que participam da replicação.
 
 O mediador não é realmente um tiebreaker, embora essa seja efetivamente a função que ele fornece. Ele não realiza nenhuma ação; em vez disso, fornece um canal de comunicação alternativo para comunicação de cluster para cluster.
 
-image:smas-mediator.png["Diagrama de sincronização ativa do SnapMirror com mediador"]
+image:../media/smas-mediator.png["Diagrama de sincronização ativa do SnapMirror com mediador"]
 
 O desafio nº 1 com failover automatizado é o problema de split-brain, e esse problema surge se os dois locais perderem a conetividade entre si. O que deve acontecer? Você não quer que dois sites diferentes se designem como as cópias sobreviventes dos dados, mas como um único site pode dizer a diferença entre a perda real do site oposto e a incapacidade de se comunicar com o site oposto?
 

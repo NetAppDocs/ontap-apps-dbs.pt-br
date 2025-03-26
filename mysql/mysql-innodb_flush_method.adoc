@@ -3,10 +3,13 @@ sidebar: sidebar
 permalink: mysql/mysql-innodb_flush_method.html 
 keywords: MySQL,MariaDB,innodb_flush_method 
 summary: MySQL e innodb_flush_Method 
+searchtitle: MySQL e innodb_flush_Method 
 ---
 = innodb_flush_method
+:hardbreaks:
 :allow-uri-read: 
 :icons: font
+:linkattrs: 
 :imagesdir: ../media/
 
 

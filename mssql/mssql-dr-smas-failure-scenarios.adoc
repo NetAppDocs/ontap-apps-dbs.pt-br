@@ -3,10 +3,13 @@ sidebar: sidebar
 permalink: mssql/mssql-dr-smas-failure-scenarios.html 
 keywords: MSSQL,SQL Server, SnapMirror active sync, SMBC, failover 
 summary: Cenários de failover do Microsoft SQL Server e SM-as 
-searchtitle: Failover de sincronização ativa do Microsoft SQL Server e do SnapMirror 
+searchtitle: Cenários de failover do Microsoft SQL Server e SM-as 
 ---
 = Cenários de falha
+:hardbreaks:
 :allow-uri-read: 
+:icons: font
+:linkattrs: 
 :imagesdir: ../media/
 
 
@@ -23,7 +26,7 @@ Se a replicação SM-as for interrompida, não é possível concluir a e/S de gr
 
 
 
-=== Local A (local preferido)
+== Local A (local preferido)
 
 O resultado da falha do link de replicação no site preferido será uma pausa de aproximadamente 15 segundos no processamento de e/S de gravação, à medida que o ONTAP tenta novamente as operações de gravação replicadas antes de determinar que o link de replicação é genuinamente inacessível. Após os 15 segundos decorridos, o Site Um sistema retoma o processamento de e/S de leitura e escrita. Os caminhos de SAN não serão alterados e os LUNs permanecerão online.
 

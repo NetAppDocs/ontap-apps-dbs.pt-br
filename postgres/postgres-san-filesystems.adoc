@@ -35,4 +35,4 @@ O principal objetivo de uma configuração de distribuição é garantir que a e
 
 A figura a seguir mostra três opções possíveis para o tamanho da faixa e ajuste de largura. O número de LUNs é selecionado para atender aos requisitos de performance conforme descrito acima, mas, em todos os casos, o total de dados em um único stripe é de 1MB.
 
-image:ontap-lvm-striping.png["Erro: Imagem gráfica em falta"]
+image:../media/ontap-lvm-striping.png["LVM striping (distribuição LVM)"]

@@ -3,10 +3,13 @@ sidebar: sidebar
 permalink: mysql/mysql-innodb_io_capacity.html 
 keywords: MySQL,MariaDB,innodb_io_capacity 
 summary: MySQL e innodb_io_Capacity 
+searchtitle: MySQL e innodb_io_Capacity 
 ---
 = innodb_io_capacity
+:hardbreaks:
 :allow-uri-read: 
 :icons: font
+:linkattrs: 
 :imagesdir: ../media/
 
 
@@ -26,4 +29,4 @@ CAUTION: Não use valores extremos como 20.000 ou mais, a menos que você tenha 
 O parâmetro InnoDB_io_Capacity regula as taxas de lavagem e e/S relacionadas
 
 
-CAUTION: Você pode prejudicar seriamente o desempenho definindo este parâmetro ou o parâmetro innodb_io_Capacity_Max muito alto e desperdiçando operações de e/S com lavagem prematura.
+CAUTION: Você pode prejudicar seriamente o desempenho definindo este parâmetro ou o parâmetro innodb_io_Capacity_Max muito alto e wastin

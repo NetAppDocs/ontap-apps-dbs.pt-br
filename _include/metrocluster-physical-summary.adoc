@@ -26,7 +26,7 @@ A arquitetura também é mais simples porque as únicas conexões entre locais s
 
 Para obter informações adicionais, consulte a documentação oficial do ONTAP e https://www.netapp.com/pdf.html?item=/media/13481-tr4689.pdf["Arquitetura e design da solução IP da MetroCluster"^].
 
-image:mccip.png["Erro: Imagem gráfica em falta"]
+image:../media/mccip.png["Arquitetura IP do MetroCluster"]
 
 
 
@@ -34,7 +34,7 @@ image:mccip.png["Erro: Imagem gráfica em falta"]
 
 A configuração de MetroCluster FC de par de HA usa dois ou quatro nós por local. Essa opção de configuração aumenta a complexidade e os custos em relação à opção de dois nós, mas oferece um benefício importante: A redundância intrasite. Uma simples falha do controlador não requer acesso aos dados na WAN. O acesso aos dados permanece local por meio do controlador local alternativo.
 
-image:mcc-4-node.png["Erro: Imagem gráfica em falta"]
+image:../media/mcc-4-node.png["MetroCluster de quatro nós"]
 
 Algumas infraestruturas multisite não foram desenvolvidas para operações ativas-ativas, mas são usadas mais como local principal e local de recuperação de desastres. Nesta situação, uma opção MetroCluster de par de HA é geralmente preferível pelas seguintes razões:
 
@@ -49,7 +49,7 @@ Algumas infraestruturas multisite não foram desenvolvidas para operações ativ
 
 A configuração do MetroCluster de dois nós usa apenas um nó por local. Esse design é mais simples do que a opção de par de HA, pois há menos componentes para configurar e manter. Ele também reduziu as demandas de infraestrutura em termos de cabeamento e switch FC. Finalmente, reduz custos.
 
-image:mcc-2-node.png["Erro: Imagem gráfica em falta"]
+image:../media/mcc-2-node.png["MetroCluster de dois nós"]
 
 O impactos óbvio desse projeto é que a falha do controlador em um único local significa que os dados estão disponíveis no local oposto. Esta restrição não é necessariamente um problema. Muitas empresas têm operações de data center multisite com redes estendidas, de alta velocidade e baixa latência, que funcionam essencialmente como uma única infraestrutura. Nesses casos, a versão de dois nós do MetroCluster é a configuração preferida. Sistemas de dois nós são usados atualmente em escala de petabyte por vários provedores de serviços.
 

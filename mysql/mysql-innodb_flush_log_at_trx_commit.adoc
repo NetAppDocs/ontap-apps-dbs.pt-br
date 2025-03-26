@@ -3,10 +3,13 @@ sidebar: sidebar
 permalink: mysql/mysql-innodb_flush_log_at_trx_commit.html 
 keywords: MySQL,MariaDB,innodb_flush_log_at_trx_commi 
 summary: MySQL e innodb_flush_log_at_trx_commi 
+searchtitle: MySQL e innodb_flush_log_at_trx_commi 
 ---
 = innodb_flush_log_at_trx_commit
+:hardbreaks:
 :allow-uri-read: 
 :icons: font
+:linkattrs: 
 :imagesdir: ../media/
 
 
