@@ -1,0 +1,36 @@
+---
+sidebar: sidebar 
+permalink: mssql/mssql-disaster-recovery-ASA.html 
+keywords: MSSQL,SQL Server, disaster recovery, snapmirror 
+summary: Recuperação de desastres do Microsoft SQL Server com o ONTAP 
+searchtitle: Recuperação de desastres do Microsoft SQL Server com o ONTAP 
+---
+= Recuperação de desastres
+:allow-uri-read: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Bancos de dados empresariais e infraestruturas de aplicações geralmente exigem replicação para proteger contra desastres naturais ou interrupções inesperadas dos negócios com o mínimo de tempo de inatividade.
+
+O recurso de replicação de grupo de disponibilidade contínua do SQL Server pode ser uma excelente opção, e o NetApp oferece opções para integrar a proteção de dados sempre ativa. Em alguns casos, no entanto, você pode querer considerar a tecnologia de replicação do ONTAP usando as seguintes opções.
+
+
+
+== SnapMirror
+
+A tecnologia SnapMirror oferece uma solução empresarial rápida e flexível para replicação de dados em LANs e WANs. A tecnologia SnapMirror transfere apenas blocos de dados alterados para o destino após a criação do espelhamento inicial, reduzindo significativamente os requisitos de largura de banda da rede. Ele pode ser configurado em modo síncrono ou assíncrono. A replicação síncrona do SnapMirror no NetApp ASA é configurada usando a sincronização ativa do SnapMirror.
+
+
+
+== Sincronização ativa do SnapMirror
+
+Para muitos clientes, a continuidade dos negócios exige mais do que apenas possuir uma cópia remota de dados. Para isso, ela exige a capacidade de usar rapidamente esses dados, o que é possível no NetApp ONTAP usando a sincronização ativa do SnapMirror
+
+Com o SnapMirror active Sync, você tem essencialmente dois sistemas ONTAP diferentes que mantêm cópias independentes dos seus dados LUN, mas cooperam para apresentar uma única instância desse LUN. Do ponto de vista do host, é uma única entidade LUN. A sincronização ativa do SnapMirror é suportada para LUN baseado em iSCSI/FC.
+
+O SnapMirror active Sync pode fornecer replicação RPO igual a 0 e é fácil de implementar entre dois clusters independentes. Assim que as duas cópias de dados estiverem sincronizadas, os dois clusters só precisam espelhar gravações. Quando ocorre uma gravação em um cluster, ela é replicada para o outro cluster. A gravação só é reconhecida para o host quando a gravação for concluída em ambos os sites. Além desse comportamento de divisão de protocolo, os dois clusters são, de outra forma, clusters ONTAP normais.
+
+Um dos principais casos de uso para SM-as é a replicação granular. Às vezes, você não quer replicar todos os dados como uma única unidade ou precisa ser capaz de falhar seletivamente em determinados workloads.
+
+Outro importante caso de uso para SM-as é para operações ativas-ativas, em que você deseja que cópias totalmente utilizáveis de dados estejam disponíveis em dois clusters diferentes localizados em dois locais diferentes com características de desempenho idênticas e, se desejado, não é necessário estender a SAN entre locais. Você pode ter suas aplicações já em execução em ambos os locais, contanto que a aplicação seja compatível, o que reduz o rto geral durante operações de failover.

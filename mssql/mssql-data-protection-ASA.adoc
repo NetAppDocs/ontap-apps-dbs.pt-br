@@ -1,15 +1,12 @@
 ---
 sidebar: sidebar 
-permalink: mssql/mssql-data-protection.html 
+permalink: mssql/mssql-data-protection-ASA.html 
 keywords: MSSQL,SQL Server, SnapCenter, data protection, app-consistent backup, ONTAP 
 summary: Proteção de bancos de dados Microsoft SQL Server no ONTAP com comandos SnapCenter e T-SQL. 
-searchtitle: Proteção de bancos de dados Microsoft SQL Server no ONTAP com comandos SnapCenter e T-SQL 
+searchtitle: Proteção de dados do Microsoft SQL Server com o software de gerenciamento NetApp 
 ---
 = Proteção de dados
-:hardbreaks:
 :allow-uri-read: 
-:icons: font
-:linkattrs: 
 :imagesdir: ../media/
 
 
@@ -37,7 +34,8 @@ No SQL Server 2022, a Microsoft introduziu snapshots T-SQL que oferece um caminh
 O seguinte é um exemplo de fluxo de trabalho de backup:
 
 . Congelar um banco de dados com comando ALTER. Ele prepara o banco de dados para um snapshot consistente no storage subjacente. Após o congelamento, você pode descongelar o banco de dados e gravar o instantâneo com o comando BACKUP.
-. Execute snapshots de vários bancos de dados nos volumes de storage simultaneamente com os novos comandos DO GRUPO DE backup e DO SERVIDOR DE BACKUP.
+. Execute snapshots de vários bancos de dados nas unidades de armazenamento simultaneamente com os novos comandos DO GRUPO DE backup e DO SERVIDOR DE BACKUP.
+. Se a carga de trabalho do banco de dados for expandida em várias unidades de armazenamento, crie grupos de consistência para simplificar a tarefa de gerenciamento. O grupo de consistência é um conjunto de unidades de armazenamento que são gerenciadas como uma única unidade.
 . Execute backups COMPLETOS ou backups COMPLETOS Copy_ONLY. Esses backups também são gravados em msdb.
 . Execute recuperação pontual usando backups de log feitos com a abordagem de streaming normal após o backup COMPLETO do snapshot. Backups diferenciais de streaming também são suportados, se desejado.
 
@@ -45,4 +43,7 @@ O seguinte é um exemplo de fluxo de trabalho de backup:
 Para saber mais, link:https://learn.microsoft.com/en-us/sql/relational-databases/databases/create-a-database-snapshot-transact-sql?view=sql-server-ver16["Documentação da Microsoft para saber sobre os snapshots T-SQL"^]consulte .
 
 
-TIP: *A NetApp recomenda* usar o SnapCenter para criar cópias Snapshot. O método T-SQL descrito acima também funciona, mas o SnapCenter oferece automação completa no processo de backup, restauração e clonagem. Ele também executa a descoberta para garantir que os snapshots corretos estejam sendo criados. Não é necessária pré-configuração.
+TIP: *A NetApp recomenda* usar o SnapCenter para criar cópias Snapshot. O método T-SQL descrito acima também funciona, mas o SnapCenter oferece automação completa no processo de backup, restauração e clonagem. Ele também executa a descoberta para garantir que os snapshots corretos estejam sendo criados.
+
+
+NOTE: Use o SnapCenter se os bancos de dados do SQL Server estiverem hospedados em disco virtual em execução em um ambiente virtualizado VMware. Caso os bancos de dados estejam hospedados no servidor físico bare metal ou no SCSI Guest-connect, em seguida, faça backup do banco de dados usando o comando T-SQL snapshot.

@@ -31,6 +31,9 @@ NOTE: Os snapshots à prova de violações não podem ser dispostos em camadas u
 Para obter mais informações sobre instantâneos à prova de violações, consulte a. link:https://docs.netapp.com/us-en/ontap/snaplock/snapshot-lock-concept.html["Documentação do ONTAP."]
 
 
+NOTE: Na nova plataforma ASA, replique snapshots para cluster remoto usando a política _Vault_ e bloqueie o destino para fazer snapshots à prova de violações.
+
+
 
 == Replicação SnapMirror
 

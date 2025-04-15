@@ -24,7 +24,7 @@ O Hyper-Threading refere-se à implementação simultânea de multithreading (SM
 
 O Hyper-Threading resulta em CPUs lógicas que aparecem como CPUs físicas para o sistema operacional. O SQL Server então vê essas CPUs adicionais e as usa como se houvesse mais núcleos do que fisicamente presentes. Isso pode melhorar substancialmente o desempenho aumentando a paralelização.
 
-A ressalva aqui é que cada versão do SQL Server tem suas próprias limitações sobre o poder de computação que pode usar. Para obter mais informações, consulte limites de capacidade de computação por edição do SQL Server.
+A ressalva aqui é que cada versão do SQL Server tem suas próprias limitações sobre o poder de computação que pode usar. Para obter mais informações, link:https://learn.microsoft.com/en-us/sql/sql-server/compute-capacity-limits-by-edition-of-sql-server?view=sql-server-ver16&redirectedfrom=MSDN["Limites de capacidade de computação por edição do SQL Server"]consulte .
 
 
 
