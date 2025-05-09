@@ -1,0 +1,56 @@
+---
+sidebar: sidebar 
+permalink: mssql/mssql-ag-snapcenter.html 
+keywords: MSSQL,SQL Server, data protection, snapmirror, availability group 
+summary: Grupo de disponibilidade do Microsoft SQL Server com SnapCenter 
+searchtitle: Grupo de disponibilidade do Microsoft SQL Server com SnapCenter 
+---
+= Grupo de disponibilidade do SQL Server com SnapCenter
+:allow-uri-read: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O SnapCenter suporta backup do banco de dados do grupo de disponibilidade do SQL Server configurado com cluster de failover do Windows.
+
+O plugin SnapCenter para Microsoft SQL Server deve ser instalado em todos os nós do cluster de failover de servidor Windows. Consulte os link:https://docs.netapp.com/us-en/snapcenter/protect-scsql/concept_prerequisites_for_using_snapcenter_plug_in_for_microsoft_sql_server.html["documentação"]pré-requisitos e as etapas para configurar os plugins do SnapCenter.
+
+O SnapCenter descobre que todos os bancos de dados, instâncias e grupos de disponibilidade em hosts e recursos do Windows são enumerados na página de recursos do SnapCenter.
+
+
+
+=== Proteção de bancos de dados no grupo disponibilidade sempre ativa
+
+Bancos de dados no grupo disponibilidade podem ser protegidos de várias maneiras.
+
+* Backup no nível do banco de dados: Selecione o banco de dados de disponibilidade para a página de recursos do banco de dados, adicione a política que consiste em backup completo/log, programe o backup. O SnapCenter toma o backup independentemente da função de banco de dados, seja uma réplica primária ou uma réplica secundária. A proteção também pode ser configurada adicionando bancos de dados ao grupo de recursos.
+* Backup em nível de instância: Selecione a instância e todos os bancos de dados em execução na instância são protegidos com base na política selecionada. Todos os bancos de dados, incluindo o banco de dados de disponibilidade em execução como réplica primária ou secundária, são copiados usando o SnapCenter. A proteção também pode ser configurada adicionando instância ao grupo de recursos.
+* Backup em nível de grupo de disponibilidade: Ao configurar a política, o SnapCenter tem uma opção avançada para backup em nível de grupo de disponibilidade. A configuração do grupo de disponibilidade na política permite que os usuários selecionem a preferência de réplica para backup. Você pode selecionar a réplica primária, secundária ou todas elas. A opção padrão é baseada na réplica de backup definida na configuração do grupo de disponibilidade do SQL Server.
+
+
+A configuração de grupo de disponibilidade na política SnapCenter será aplicada somente se o backup em nível de grupo de disponibilidade for usado para proteger bancos de dados de grupos de disponibilidade e não se aplicar ao backup em nível de banco de dados ou instância.
+
+
+TIP: *A NetApp recomenda* para usar o backup em nível de disponibilidade para fazer backup em todas as réplicas em execução no armazenamento NetApp ONTAP.
+
+
+
+=== Configurando o backup de log no SnapCenter
+
+Se o grupo de disponibilidade estiver configurado na configuração autônoma do SQL Server, um disco dedicado deverá ser montado em cada nó de um cluster de failover de servidor Windows. O disco dedicado deve ser usado para configurar o diretório de log para salvar backups de log de transações.
+
+Se o grupo de disponibilidade estiver configurado no cluster de failover do SQL Server, o disco em cluster deve ser criado na instância de cluster de failover do SQL Server para o diretório de log do host.
+
+
+
+=== Restaurar banco de dados na configuração do grupo de disponibilidade com o SnapCenter
+
+* O SnapCenter fornece a opção Reseed para recuperar automaticamente o banco de dados do snapshot mais recente disponível na réplica secundária. A operação Reseed restaurará e juntará automaticamente o backup do banco de dados ao grupo de disponibilidade.
+* A maneira alternativa de restaurar o banco de dados de réplica no grupo de disponibilidade é quebrando o grupo de disponibilidade e executando a restauração completa e de log. Use o SnapCenter para restaurar o banco de dados no modo norecovery e, em seguida, use o estúdio de gerenciamento do SQL Server ou T-SQL para ingressar no banco de dados de volta ao grupo de disponibilidade.
+* Para recuperar apenas um subconjunto de dados, o recurso clone do SnapCenter pode ser usado para criar uma cópia clone do banco de dados. A cópia do banco de dados é criada em poucos minutos usando o SnapCenter e, em seguida, exporte os dados para a réplica primária usando ferramentas nativas do SQL Server.
+
+
+Para obter as práticas recomendadas de configuração do layout de storage de banco de dados para atender aos requisitos de rto e RPO, link:https://www.netapp.com/pdf.html?item=/media/12400-tr4714.pdf["TR-4714 melhores práticas para Microsoft SQL Server usando NetApp SnapCenter"]consulte .
+
+
+NOTE: O SnapCenter não oferece suporte ao grupo de disponibilidade distribuída e ao grupo de disponibilidade contida.

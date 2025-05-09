@@ -18,7 +18,7 @@ Os volumes criados no ONTAP executados em um sistema all-flash AFF são thin Pro
 
 === Recomendações gerais
 
-* Se os volumes e/ou LUNs não forem provisionados de forma fina, você deve desativar todas as configurações de eficiência porque o uso desses recursos não oferece economia e a combinação de provisionamento espesso com eficiência de espaço habilitada pode causar comportamento inesperado, incluindo erros fora do espaço.
+* Se os volumes e/ou LUNs não estiverem provisionados de forma fina, você deverá desativar todas as configurações de eficiência porque o uso desses recursos não oferece economia e a combinação de provisionamento espesso com eficiência de espaço habilitada pode causar comportamento inesperado, incluindo erros fora do espaço.
 * Se os dados não estiverem sujeitos a sobrescritas, como backups ou logs de transação de banco de dados, você poderá obter maior eficiência ativando o TSSE com um período de resfriamento baixo.
 * Alguns arquivos podem conter uma quantidade significativa de dados não compressíveis, por exemplo, quando a compactação já está ativada no nível de aplicativo de arquivos são criptografados. Se qualquer um desses cenários for verdadeiro, considere desativar a compactação para permitir uma operação mais eficiente em outros volumes que contenham dados compressíveis.
 * Não use a compactação e a deduplicação do 32KB com backups de bancos de dados. Consulte a secção <<Compressão adaptável>> para obter detalhes.

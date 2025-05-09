@@ -2,11 +2,6 @@
 :allow-uri-read: 
 
 
-[role="lead"]
-O posicionamento adequado do arquivo de banco de dados do SQL Server no ONTAP é fundamental durante a fase inicial de implantação. Isso garante um desempenho ideal, gerenciamento de espaço, backup e tempos de restauração que podem ser configurados para atender aos requisitos da sua empresa.
-
-Em teoria, o SQL Server (64 bits) suporta 32.767 bancos de dados por instância e 524.272TB GB de tamanho de banco de dados, embora a instalação típica geralmente tenha vários bancos de dados. No entanto, o número de bancos de dados que o SQL Server pode manipular depende da carga e do hardware. Não é incomum ver instâncias do SQL Server hospedando dezenas, centenas ou até milhares de bancos de dados pequenos.
-
 
 
 === Ficheiros da base de dados e grupo de ficheiros
