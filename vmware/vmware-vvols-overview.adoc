@@ -23,7 +23,7 @@ NOTE: Essa documentação substitui os relatórios técnicos publicados anterior
 As práticas recomendadas complementam outros documentos, como guias e listas de compatibilidade. Eles são desenvolvidos com base em testes de laboratório e extensa experiência de campo por engenheiros e clientes da NetApp. Eles podem não ser as únicas práticas que funcionam ou são suportadas, mas são geralmente as soluções mais simples que atendem às necessidades da maioria dos clientes.
 
 
-TIP: Este documento foi atualizado para incluir novos recursos do vVols encontrados na atualização 3 do vSphere 8,0 e na versão 10,3 das ferramentas do ONTAP.
+NOTE: Este documento foi atualizado para incluir novos recursos do vVols encontrados na atualização 3 do vSphere 8,0, na versão 10,4 das ferramentas do ONTAP e nos novos sistemas NetApp ASA.
 
 
 
@@ -71,7 +71,7 @@ VVols são os arquivos de máquina virtual e discos armazenados no datastore vVo
 
 == Gerenciamento baseado em políticas
 
-As VMware vSphere APIs for Storage Awareness (VASA) facilitam o uso dos recursos de armazenamento necessários para provisionar VMs sem ter que interagir com a equipe de armazenamento. Antes do VASA, os administradores de VM podiam definir políticas de armazenamento de VM, mas tiveram que trabalhar com seus administradores de storage para identificar armazenamentos de dados apropriados, geralmente usando documentação ou convenções de nomenclatura. Com o VASA, os administradores do vCenter com as permissões apropriadas podem definir uma variedade de recursos de armazenamento que os usuários do vCenter podem usar para provisionar VMs. O mapeamento entre a política de storage de VM e os recursos do datastore permite que o vCenter exiba uma lista de datastores compatíveis para seleção, bem como a habilitação de outras tecnologias como o Aria (anteriormente conhecido como vRealize) Automation ou o Tanzu Kubernetes Grid para selecionar automaticamente o storage de uma política atribuída. Essa abordagem é conhecida como gerenciamento baseado em políticas de storage. Embora as regras do provedor VASA e as políticas de armazenamento de VM também possam ser usadas com armazenamentos de dados tradicionais, nosso foco aqui é nos armazenamentos de dados vVols.
+As VMware vSphere APIs for Storage Awareness (VASA) facilitam o uso dos recursos de armazenamento necessários para provisionar VMs sem ter que interagir com a equipe de armazenamento. Antes do VASA, os administradores de VM podiam definir políticas de armazenamento de VM, mas tiveram que trabalhar com seus administradores de armazenamento para identificar armazenamentos de dados apropriados, geralmente usando documentação ou convenções de nomenclatura. Com o VASA, os administradores do vCenter com as permissões apropriadas podem definir uma variedade de recursos de armazenamento que os usuários do vCenter podem usar para provisionar VMs. O mapeamento entre a política de storage de VM e os recursos do datastore permite que o vCenter exiba uma lista de datastores compatíveis para seleção, bem como a habilitação de outras tecnologias como o Aria (anteriormente conhecido como vRealize) Automation ou o Tanzu Kubernetes Grid para selecionar automaticamente o storage de uma política atribuída. Essa abordagem é conhecida como gerenciamento baseado em políticas de storage. Embora as regras do provedor VASA e as políticas de armazenamento de VM também possam ser usadas com armazenamentos de dados tradicionais, nosso foco aqui é nos armazenamentos de dados vVols.
 
 
 
@@ -117,7 +117,7 @@ _Para obter mais informações sobre as práticas recomendadas do ONTAP e do VMw
 
 == Benefícios de usar vVols com ONTAP
 
-Quando a VMware introduziu o suporte ao vVols com o VASA 2,0 em 2015, ela descreveu-o como "uma estrutura de integração e gerenciamento que fornece um novo modelo operacional para storage externo (SAN/nas)." Esse modelo operacional oferece vários benefícios em conjunto com o storage ONTAP.
+Quando a VMware introduziu o suporte ao vVols com o VASA 2,0 em 2015, ela o descreveu como "uma estrutura de integração e gerenciamento que fornece um novo modelo operacional para armazenamento externo (SAN/nas)". Esse modelo operacional oferece vários benefícios em conjunto com o storage ONTAP.
 
 
 
@@ -155,7 +155,7 @@ Além desses benefícios, também vemos esses casos de uso comuns para o storage
 * *Provisionamento sob demanda de VMs*
 +
 ** IaaS provedor de serviços ou nuvem privada.
-** Aproveite a automação e a orquestração por meio do pacote Aria (anteriormente vRealize), OpenStack, etc.
+** Aproveite a automação e a orquestração por meio do pacote Aria (anteriormente vRealize), OpenStack e assim por diante.
 
 
 * *Discos de primeira Classe (FCDs)*

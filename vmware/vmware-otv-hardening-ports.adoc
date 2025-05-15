@@ -4,7 +4,7 @@ permalink: vmware/vmware-otv-hardening-ports.html
 keywords: VMware, Data protection, security, OTV, Hardening, ONTAP Tools 
 summary: Guia de fortalecimento da segurança para ferramentas do ONTAP para VMware vSphere, portas e protocolos TCP 
 ---
-= Portas e protocolos
+= Portas e protocolos para ferramentas ONTAP 9,13
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 
@@ -20,7 +20,7 @@ Aqui estão listadas as portas e protocolos necessários que permitem a comunica
 
 == Portas de entrada e saída necessárias para o OTV
 
-Observe a tabela abaixo que lista as portas de entrada e saída necessárias para o funcionamento adequado das ferramentas do ONTAP. É importante garantir que apenas as portas mencionadas na tabela estejam abertas para conexões de máquinas remotas, enquanto todas as outras portas devem ser bloqueadas para conexões de máquinas remotas. Isso ajudará a garantir a segurança e a segurança do seu sistema.
+Observe a tabela abaixo, que lista as portas de entrada e saída necessárias para o funcionamento adequado das ferramentas do ONTAP. É importante garantir que apenas as portas mencionadas na tabela estejam abertas para conexões de máquinas remotas, enquanto todas as outras portas devem ser bloqueadas para conexões de máquinas remotas. Isso ajudará a garantir a segurança e a segurança do seu sistema.
 
 A tabela a seguir descreve os detalhes da porta aberta.
 

@@ -37,7 +37,7 @@ NOTE: *Esta documentação substitui relatórios técnicos publicados anteriorme
 
 
 
-O ONTAP fornece recursos de eficiência de storage da NetApp, como a tecnologia NetApp Snapshot(R), clonagem, deduplicação, thin Provisioning, thin replication, compactação, disposição em camadas de storage virtual e muito mais, com performance e eficiência aprimoradas.
+O ONTAP fornece recursos de eficiência de storage da NetApp, como a tecnologia NetApp Snapshot, clonagem, deduplicação, thin Provisioning, thin replication, compactação, disposição em camadas de storage virtual e muito mais, com performance e eficiência aprimoradas.
 
 Juntos, o Windows Server e o ONTAP podem operar em ambientes grandes e agregar imenso valor à consolidação do data center e às implantações de nuvem privada ou híbrida. Essa combinação também fornece workloads sem interrupções com eficiência e dá suporte à escalabilidade otimizada.
 

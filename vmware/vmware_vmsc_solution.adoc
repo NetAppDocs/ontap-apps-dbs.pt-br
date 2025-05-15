@@ -1,7 +1,7 @@
 ---
 sidebar: sidebar 
 permalink: vmware/vmware_vmsc_solution.html 
-keywords: VMware, Data protection, MetroCluster, SMBC, SnapMirror active sync, vMSC 
+keywords: VMware, Data protection, MetroCluster, SMBC, SMas, SnapMirror active sync, vMSC, metro storage cluster, vSphere, vCenter, business continuity, disaster recovery, ONTAP 
 summary: Visão geral da solução VMware vSphere 
 ---
 = Visão geral da solução VMware vSphere
@@ -20,7 +20,7 @@ O vCenter Server Appliance (VCSA) é o poderoso sistema de gerenciamento central
 
 == Alta disponibilidade do vSphere
 
-A tecnologia de cluster da VMware agrupa os servidores ESXi em pools de recursos compartilhados para máquinas virtuais e fornece o vSphere High Availability (HA). O vSphere HA oferece alta disponibilidade e fácil de usar para aplicativos executados em máquinas virtuais. Quando o recurso HA está ativado no cluster, cada servidor ESXi mantém a comunicação com outros hosts para que, se qualquer host ESXi ficar sem resposta ou isolado, o cluster HA possa negociar a recuperação das máquinas virtuais que estavam sendo executadas nesse host ESXi entre os hosts sobreviventes no cluster. No caso de uma falha do sistema operacional convidado, o vSphere HA reinicia a máquina virtual afetada no mesmo servidor físico. O vSphere HA possibilita reduzir o tempo de inatividade planejado, evitar tempo de inatividade não planejado e recuperar rapidamente de interrupções.
+A tecnologia de cluster da VMware agrupa os servidores ESXi em pools de recursos compartilhados para máquinas virtuais e fornece o vSphere High Availability (HA). O vSphere HA oferece alta disponibilidade e fácil de usar para aplicativos executados em máquinas virtuais. Quando o recurso HA está ativado no cluster, cada servidor ESXi mantém a comunicação com outros hosts para que, se qualquer host ESXi ficar sem resposta ou isolado, o cluster HA possa negociar a recuperação das máquinas virtuais que estavam sendo executadas nesse host ESXi entre os hosts sobreviventes no cluster. No caso de uma falha do sistema operacional convidado, o vSphere HA pode reiniciar a máquina virtual afetada no mesmo servidor físico. O vSphere HA possibilita reduzir o tempo de inatividade planejado, evitar tempo de inatividade não planejado e recuperar rapidamente de interrupções.
 
 Cluster do vSphere HA recuperando VMs do servidor com falha.
 
@@ -54,7 +54,7 @@ A NetApp recomenda especificar um mínimo de dois endereços de isolamento adici
 
 == Resposta de isolamento do host
 
-A resposta de isolamento é uma configuração no vSphere HA que determina a ação acionada em máquinas virtuais quando um host em um cluster do vSphere HA perde suas conexões de rede de gerenciamento, mas continua sendo executado. Há três opções para essa configuração, "Desativado", "Desligar e reiniciar VMs" e "Desligar e reiniciar VMs".
+A resposta de isolamento é uma configuração no vSphere HA que determina a ação acionada em máquinas virtuais quando um host em um cluster do vSphere HA perde suas conexões de rede de gerenciamento, mas continua sendo executado. Existem três opções para esta definição, "Disabled" (Desativado), "Shut Down and Restart VMs" (Desligar e reiniciar as VMs) e "Power Off and Restart VMs" (Desligar e reiniciar as VMs).
 
 "Desligar" é melhor do que "Desligar", que não libera as alterações mais recentes em transações de disco ou commit. Se as máquinas virtuais não desligarem em 300 segundos, elas serão desligadas. Para alterar o tempo de espera, use a opção avançada das.isolationshutdowntimeout.
 
@@ -96,17 +96,22 @@ Quando uma condição APD é detetada, um temporizador é iniciado. Após 140 se
 ====
 * O NetApp recomenda configurar a "resposta para datastore com APD" para "*Desligar e reiniciar VMs (conservative)*".
 * Conservador refere-se à probabilidade de que o HA seja capaz de reiniciar VMs. Quando definido como Conservador, o HA só reiniciará a VM afetada pelo APD se souber que outro host pode reiniciá-la. No caso de agressivo, o HA tentará reiniciar a VM, mesmo que não saiba o estado dos outros hosts. Isso pode fazer com que as VMs não sejam reiniciadas se não houver nenhum host com acesso ao datastore em que ele está localizado.
-* Se o status APD for resolvido e o acesso ao storage for restaurado antes que o tempo limite tenha passado, o HA não reiniciará desnecessariamente a máquina virtual, a menos que você a configure explicitamente para fazê-lo. Se uma resposta for desejada, mesmo quando o ambiente foi recuperado da condição APD, então Response for APD Recovery After APD Timeout deve ser configurado para Reset VMs.
+* Se o status do APD for resolvido e o acesso ao armazenamento for restaurado antes que o tempo limite tenha passado, o HA não reiniciará desnecessariamente a máquina virtual, a menos que você a configure explicitamente para fazê-lo. Se uma resposta for desejada, mesmo quando o ambiente foi recuperado da condição APD, então Response for APD Recovery After APD Timeout deve ser configurado para Reset VMs.
 * O NetApp recomenda configurar a resposta para recuperação do APD após o tempo limite do APD para Desativado.
 
 
 ====
 
 
+== Implementação do VMware DRS para o NetApp SnapMirror ative Sync
+
+O VMware DRS é um recurso que agrega os recursos de host em um cluster e é usado principalmente para o balanceamento de carga em um cluster em uma infraestrutura virtual. O VMware DRS calcula principalmente os recursos de CPU e memória para realizar o balanceamento de carga em um cluster. Como o vSphere não tem conhecimento do clustering estendido, ele considera todos os hosts em ambos os locais quando o balanceamento de carga.
+
+
+
 == Implementação do VMware DRS para NetApp MetroCluster
 
-O VMware DRS é um recurso que agrega os recursos de host em um cluster e é usado principalmente para o balanceamento de carga em um cluster em uma infraestrutura virtual. O VMware DRS calcula principalmente os recursos de CPU e memória para realizar o balanceamento de carga em um cluster. Como o vSphere não tem conhecimento do clustering estendido, ele considera todos os hosts em ambos os locais quando o balanceamento de carga. Para evitar o tráfego entre locais, o NetApp recomenda configurar regras de afinidade do DRS para gerenciar uma separação lógica de VMs. Isso garantirá que, a menos que haja uma falha completa no local, o HA e o DRS usarão somente hosts locais.
-
+ To avoid cross-site traffic, NetApp recommends configuring DRS affinity rules to manage a logical separation of VMs. This will ensure that unless there is a complete site failure, HA and DRS will only use local hosts.
 Se você criar uma regra de afinidade DRS para o cluster, poderá especificar como o vSphere aplica essa regra durante um failover de máquina virtual.
 
 Existem dois tipos de regras que você pode especificar o comportamento de failover do vSphere HA:
@@ -125,9 +130,9 @@ image::../media/vmsc_2_2.png[Grupos de hosts de VM e regras de afinidade,528,369
 
 === _Melhor prática_
 
-A NetApp recomenda a implementação de regras "devem" em vez de regras "obrigatórias" porque elas são violadas pelo vSphere HA em caso de falha. O uso de regras obrigatórias pode potencialmente levar a interrupções de serviço.
+A NetApp recomenda a implementação de regras "devem" em vez de regras "obrigatórias" porque elas são violadas pelo vSphere HA em caso de falha. O uso de regras "obrigatórias" pode potencialmente levar a interrupções de serviço.
 
-A disponibilidade dos serviços deve sempre prevalecer sobre o desempenho. No cenário em que um data center completo falha, as regras "obrigatórias" devem escolher hosts do grupo de afinidade de host da VM e, quando o data center não estiver disponível, as máquinas virtuais não serão reiniciadas.
+A disponibilidade dos serviços deve sempre prevalecer sobre o desempenho. No cenário em que um data center completo falha, as regras "must" devem escolher hosts do grupo de afinidade de host da VM e, quando o data center não estiver disponível, as máquinas virtuais não serão reiniciadas.
 
 
 

@@ -23,7 +23,7 @@ Saiba mais sobre como implantar o Microsoft Windows Nano Server.
 Para implantar um Nano Server como um host Hyper-V, execute as seguintes etapas:
 
 . Inicie sessão no Windows Server como membro do grupo de administradores.
-. Copie a pasta NanoServerImageGenerator da pasta NanoServer na ISO do Windows Server para a unidade de disco rígido local.
+. Copie a pasta NanoServerImageGenerator da pasta NanoServer na ISO do Windows Server para o disco rígido local.
 . Para criar um Nano Server VHD/VHDX, execute as seguintes etapas:
 +
 .. Inicie o Windows PowerShell como administrador, navegue até a pasta NanoServerImageGenerator copiada no disco rígido local e execute o seguinte cmdlet:

@@ -14,31 +14,40 @@ summary: Esta página descreve as práticas recomendadas para a implementação 
 
 
 [role="lead"]
-No vSphere, há três maneiras de usar LUNs de armazenamento em bloco:
+No vSphere, há quatro maneiras de usar dispositivos de armazenamento em bloco:
 
 * Com datastores VMFS
 * Com mapeamento de dispositivo bruto (RDM)
 * Como um LUN conetado iSCSI ou namespace NVMe/TCP acessado e controlado por um iniciador de software de um sistema operacional convidado VM
+* Como um datastore vVols
 
 
 O VMFS é um sistema de arquivos em cluster de alto desempenho que fornece datastores que são pools de armazenamento compartilhado. Armazenamentos de dados VMFS podem ser configurados com LUNs acessados usando FC, iSCSI, FCoE ou namespaces NVMe acessados usando os protocolos NVMe/FC ou NVMe/TCP. O VMFS permite que o armazenamento seja acessado simultaneamente por cada servidor ESX em um cluster. O tamanho máximo de LUN é geralmente 128TB, começando com ONTAP 9.12.1P2 (e anterior com sistemas ASA); portanto, um datastore VMFS 5 ou 6 de tamanho máximo de 64TB pode ser criado usando um único LUN.
 
-O vSphere inclui suporte integrado para vários caminhos para dispositivos de armazenamento, conhecido como NMP (NMP). O NMP pode detetar o tipo de storage para sistemas de storage compatíveis e configurar automaticamente a pilha NMP para suportar os recursos do sistema de storage em uso.
 
-Tanto o NMP quanto o ONTAP suportam o Acesso lógico assimétrico (ALUA) para negociar caminhos otimizados e não otimizados. No ONTAP, um caminho otimizado para ALUA segue um caminho de dados direto, usando uma porta de destino no nó que hospeda o LUN que está sendo acessado. O ALUA é ativado por padrão no vSphere e no ONTAP. O NMP reconhece o cluster ONTAP como ALUA e usa o plug-in tipo array de armazenamento ALUA (`VMW_SATP_ALUA`) e seleciona o plug-in de seleção de caminho round robin (`VMW_PSP_RR`).
+TIP: As extensões são um conceito de armazenamento do vSphere pelo qual você pode "unir" vários LUNs para criar um único armazenamento de dados maior. Você nunca deve usar extensões para alcançar o tamanho desejado do datastore. Um único LUN é a melhor prática para um datastore VMFS.
 
-ESXi 6 adicionou suporte para até 256 LUNs e até 1.024 caminhos totais para LUNs. O ESXi não vê LUNs ou caminhos além desses limites. Assumindo o número máximo de LUNs, o limite de caminho permite quatro caminhos por LUN. Em um cluster ONTAP maior, é possível alcançar o limite de caminho antes do limite de LUN. Para lidar com essa limitação, o ONTAP oferece suporte ao mapa de LUN seletivo (SLM) na versão 8,3 e posterior.
+O vSphere inclui suporte integrado para vários caminhos para dispositivos de armazenamento. O vSphere pode detetar o tipo de dispositivo de armazenamento para sistemas de armazenamento suportados e configurar automaticamente a pilha de multipathing para suportar os recursos do sistema de armazenamento em uso, regarldess do protocolo usado ou se estiver usando ASA, AFF, FAS ou ONTAP definido por software.
+
+Tanto o vSphere quanto o ONTAP dão suporte ao Asymmetric Logical Unit Access (ALUA) para estabelecer caminhos ativos/otimizados e ativos/não otimizados para Fibre Channel e iSCSI, além de acesso a namespace assimétrico (ANA) para namespaces NVMe usando NVMe/FC e NVMe/TCP. No ONTAP, um caminho otimizado para ALUA ou ANA segue um caminho de dados direto, usando uma porta de destino no nó que hospeda o LUN ou namespace que está sendo acessado. O ALUA/ANA é ativado por padrão no vSphere e no ONTAP. O software multipathing no vSphere reconhece o cluster ONTAP como ALUA ou ANA e usa o plug-in nativo apropriado com a política de balanceamento de carga round robin.
+
+Com os sistemas ASA do NetApp, os LUNs e namespaces são apresentados aos hosts ESXi com pathing simétrico. O que significa que todos os caminhos estão ativos e otimizados. O software multipathing no vSphere reconhece o sistema ASA como simétrico e usa o plug-in nativo apropriado com a política de balanceamento de carga round robin.
+
+
+TIP: link:vmware-vsphere-settings.html["Host ESXi recomendado e outras configurações do ONTAP"^]Consulte para obter as definições de multipathing otimizadas.
+
+O ESXi não vê LUNs, namespaces ou caminhos além de seus limites. Em um cluster ONTAP maior, é possível alcançar o limite de caminho antes do limite de LUN. Para lidar com essa limitação, o ONTAP oferece suporte ao mapa de LUN seletivo (SLM) na versão 8,3 e posterior.
 
 
 NOTE: Consulte a link:https://configmax.broadcom.com/guest?vmwareproduct=vSphere&release=vSphere%208.0&categories=2-0["Ferramenta VMware Configuration Maximums"^]para obter os limites suportados mais atualizados no ESXi.
 
-O SLM limita os nós que anunciam caminhos para um determinado LUN. É uma prática recomendada do NetApp ter pelo menos um LIF por nó por SVM e usar o SLM para limitar os caminhos anunciados para o nó que hospeda o LUN e seu parceiro de HA. Embora existam outros caminhos, eles não são anunciados por padrão. É possível modificar os caminhos anunciados com os argumentos adicionar e remover nó de relatório dentro do SLM. Observe que os LUNs criados em versões anteriores a 8,3 anunciam todos os caminhos e precisam ser modificados para anunciar apenas os caminhos para o par de HA de hospedagem. Para obter mais informações sobre o SLM, consulte a seção 5,9 do https://www.netapp.com/pdf.html?item=/media/10680-tr4080pdf.pdf["TR-4080"^]. O método anterior de portsets também pode ser usado para reduzir ainda mais os caminhos disponíveis para um LUN. Os Portsets ajudam reduzindo o número de caminhos visíveis através dos quais os iniciadores em um iggroup podem ver LUNs.
+O SLM limita os nós que anunciam caminhos para um determinado LUN. É uma prática recomendada do NetApp ter pelo menos dois LIFs por nó e por SVM e usar o SLM para limitar os caminhos anunciados para o nó que hospeda o LUN e seu parceiro de HA. Embora existam outros caminhos, eles não são anunciados por padrão. É possível modificar os caminhos anunciados com os argumentos adicionar e remover nó de relatório dentro do SLM. Observe que os LUNs criados em versões anteriores ao 8,3 anunciam todos os caminhos e precisam ser modificados para anunciar apenas os caminhos para o par de HA de hospedagem. Para obter mais informações sobre o SLM, consulte a seção 5,9 do https://www.netapp.com/pdf.html?item=/media/10680-tr4080pdf.pdf["TR-4080"^]. O método anterior de portsets também pode ser usado para reduzir ainda mais os caminhos disponíveis para um LUN. Os Portsets ajudam reduzindo o número de caminhos visíveis através dos quais os iniciadores em um iggroup podem ver LUNs.
 
 * O SLM está ativado por predefinição. A menos que você esteja usando portsets, nenhuma configuração adicional é necessária.
 * Para LUNs criadas antes do Data ONTAP 8.3, aplique manualmente o SLM executando o `lun mapping remove-reporting-nodes` comando para remover os nós de relatórios de LUN e restringir o acesso LUN ao nó proprietário de LUN e ao seu parceiro de HA.
 
 
-Os protocolos de bloqueio (iSCSI, FC e FCoE) acessam LUNs usando IDs de LUN e números de série, juntamente com nomes exclusivos. FC e FCoE usam nomes mundiais (WWNNs e WWPNs) e iSCSI usa nomes qualificados iSCSI (IQNs). O caminho para LUNs dentro do armazenamento não tem sentido para os protocolos de bloco e não é apresentado em nenhum lugar do protocolo. Portanto, um volume que contém apenas LUNs não precisa ser montado internamente, e um caminho de junção não é necessário para volumes que contêm LUNs usados em datastores. O subsistema NVMe no ONTAP funciona da mesma forma.
+Os protocolos de bloco baseados em SCSI (iSCSI, FC e FCoE) acessam LUNs usando IDs de LUN e números de série, juntamente com nomes exclusivos. FC e FCoE usam nomes mundiais (WWNNs e WWPNs) e iSCSI usa nomes qualificados iSCSI (IQNs) para estabelecer caminhos com base em mapeamentos de LUN para agrupar filtrados por portsets e SLM. Os protocolos de bloco baseados em NVMe são gerenciados atribuindo o namespace com um ID de namespace gerado automaticamente a um subsistema NVMe e mapeando esse subsistema para o nome qualificado do NVMe (NQN) do(s) host(s). Independentemente do FC ou TCP, os namespaces NVMe são mapeados usando o NQN e não o WWPN ou WWNN. O host então cria um controlador definido por software para que o subsistema mapeado acesse seus namespaces. O caminho para LUNs e namespaces dentro do ONTAP não tem sentido para os protocolos de bloco e não é apresentado em nenhum lugar do protocolo. Portanto, um volume que contém apenas LUNs não precisa ser montado internamente, e um caminho de junção não é necessário para volumes que contêm LUNs usados em datastores.
 
 Outras práticas recomendadas a considerar:
 

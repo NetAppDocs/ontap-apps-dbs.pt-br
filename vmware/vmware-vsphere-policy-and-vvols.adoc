@@ -14,7 +14,7 @@ summary: O SnapCenter permite criar políticas de backup que podem ser aplicadas
 
 
 [role="lead"]
-As VMware vSphere APIs for Storage Awareness (VASA) facilitam para um administrador de storage configurar datastores com recursos bem definidos e permitem que o administrador da VM use-os sempre que necessário para provisionar VMs sem ter que interagir uns com os outros.
+As VMware vSphere APIs for Storage Awareness (VASA) facilitam para um administrador de storage configurar datastores com recursos bem definidos e permitir que o administrador da VM use-os sempre que necessário para provisionar VMs sem ter que interagir uns com os outros.
 
 Vale a pena dar uma olhada nessa abordagem para ver como ela pode otimizar suas operações de storage de virtualização e evitar muito trabalho trivial.
 

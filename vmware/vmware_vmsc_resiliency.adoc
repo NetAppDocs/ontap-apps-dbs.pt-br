@@ -1,7 +1,7 @@
 ---
 sidebar: sidebar 
 permalink: vmware/vmware_vmsc_resiliency.html 
-keywords: VMware, Data protection, MetroCluster, SMBC, SnapMirror active sync, vMSC 
+keywords: VMware, Data protection, MetroCluster, SMBC, SMas, SnapMirror active sync, vMSC, metro storage cluster, vSphere, vCenter, business continuity, disaster recovery, ONTAP 
 summary: Saiba mais sobre o cluster de armazenamento do vSphere Metro com o ONTAP 
 ---
 = Resiliência para eventos planejados e não planejados
@@ -16,7 +16,7 @@ summary: Saiba mais sobre o cluster de armazenamento do vSphere Metro com o ONTA
 [role="lead"]
 O NetApp MetroCluster e o SnapMirror ative Sync são ferramentas poderosas que melhoram a alta disponibilidade e as operações ininterruptas do hardware NetApp e do software ONTAP.
 
-Essas ferramentas fornecem proteção em todo o local para todo o ambiente de storage, garantindo que seus dados estejam sempre disponíveis. Se você estiver usando servidores autônomos, clusters de servidores de alta disponibilidade, contentores Docker ou servidores virtualizados, a tecnologia NetApp mantém perfeitamente a disponibilidade de armazenamento em caso de uma interrupção total devido à perda de energia, resfriamento ou conetividade de rede, desligamento de storage array ou erro operacional.
+Essas ferramentas fornecem proteção em todo o local para todo o ambiente de storage, garantindo que seus dados estejam sempre disponíveis. Quer você esteja usando servidores autônomos, clusters de servidores de alta disponibilidade, contêineres ou servidores virtualizados, a tecnologia NetApp mantém perfeitamente a disponibilidade do storage em caso de uma interrupção total devido à perda de energia, resfriamento ou conectividade de rede, desligamento do storage array ou erro operacional.
 
 O MetroCluster e o SnapMirror ative Sync oferecem três métodos básicos para a continuidade dos dados em caso de eventos planejados ou não planejados:
 
@@ -31,10 +31,10 @@ Todos os clusters do ONTAP, exceto clusters de nó único (normalmente versões 
 
 O takeover é um processo automatizado no qual um nó assume o storage do outro para manter os serviços de dados. Giveback é o processo reverso que restaura a operação normal. O takeover pode ser planejado, como ao executar a manutenção de hardware ou atualizações de ONTAP, ou não planejado, resultante de um pânico de nó ou falha de hardware.
 
-Durante um takeover, as interfaces lógicas de storage conetadas à rede (LIFs nas) nas configurações do MetroCluster fazem failover automático. No entanto, os LIFs de rede de Área de armazenamento (SAN LIFs) não falham; eles continuarão a usar o caminho direto para os LUNs (Logical Unit Numbers).
+Durante uma takeover, LIFs nas nas configurações do MetroCluster fazem failover automático. No entanto, os LIFs SAN não fazem failover; eles continuarão a usar o caminho direto para os LUNs (Logical Unit Numbers).
 
 Para obter mais informações sobre a aquisição de HA e a giveback, consulte o https://docs.netapp.com/us-en/ontap/high-availability/index.html["Visão geral do gerenciamento do par HA"]. Vale a pena notar que essa funcionalidade não é específica para a sincronização ativa do MetroCluster ou do SnapMirror.
 
 O switchover do local com o MetroCluster ocorre quando um local está off-line ou como uma atividade planejada para manutenção em todo o local. O local restante assume a propriedade dos recursos de storage (discos e agregados) do cluster off-line, e os SVMs no site com falha são colocados on-line e reiniciados no local de desastre, preservando sua identidade completa para acesso ao cliente e ao host.
 
-Com a sincronização ativa do SnapMirror, uma vez que ambas as cópias são usadas ativamente simultaneamente, seus hosts existentes continuarão operando. O Mediador NetApp é necessário para garantir que o failover do site ocorra corretamente.
+Com a sincronização ativa do SnapMirror, uma vez que ambas as cópias são usadas ativamente simultaneamente, seus hosts existentes continuarão operando. O Mediador ONTAP é necessário para garantir que o failover do site ocorra corretamente.

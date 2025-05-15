@@ -1,7 +1,7 @@
 ---
 sidebar: sidebar 
 permalink: vmware/vmware-vsphere-datastores-nfs.html 
-keywords: vSphere, datastore, VMFS, FC, FCoE, NVMe/FC, iSCSI, NFS, vVols, NFSv3, NFSv4.1 
+keywords: vSphere, datastore, NFS, vVols, NFSv3, NFSv4.1 
 summary: Esta página descreve as práticas recomendadas para a implementação do VMware vSphere com armazenamentos de dados conectados a ONTAP e NFS. 
 ---
 = NFS
@@ -27,6 +27,7 @@ As práticas recomendadas a seguir são recomendadas ao usar o ONTAP NFS com vSp
 
 
 * Use uma única interface lógica (LIF) para cada SVM em cada nó no cluster do ONTAP. As recomendações anteriores de um LIF por datastore não são mais necessárias. Embora o acesso direto (LIF e datastore no mesmo nó) seja o melhor, não se preocupe com o acesso indireto porque o efeito de desempenho geralmente é mínimo (microssegundos).
+* Se você usar o fpolicy, certifique-se de excluir arquivos .lck, pois eles são usados pelo vSphere para bloquear sempre que uma VM é ligada.
 * Todas as versões do VMware vSphere com suporte no momento podem usar o NFS v3 e o v4,1. O suporte oficial para nconnect foi adicionado ao vSphere 8,0 update 2 for NFS v3 e à atualização 3 for NFS v4,1. Para o NFS v4,1, o vSphere continua a oferecer suporte ao entroncamento de sessão, autenticação Kerberos e autenticação Kerberos com integridade. É importante notar que o entroncamento de sessão requer o ONTAP 9.14,1 ou uma versão posterior. Você pode saber mais sobre o recurso nconnect e como ele melhora o desempenho em link:https://docs.netapp.com/us-en/netapp-solutions/virtualization/vmware-vsphere8-nfsv3-nconnect.html["NFSv3 nconnect recurso com NetApp e VMware"].
 
 
@@ -42,9 +43,10 @@ As práticas recomendadas a seguir são recomendadas ao usar o ONTAP NFS com vSp
 * Vale a pena notar que NFSv3 e NFSv4,1 usam diferentes mecanismos de bloqueio. O NFSv3 usa o bloqueio do lado do cliente, enquanto o NFSv4,1 usa o bloqueio do lado do servidor. Embora um volume ONTAP possa ser exportado através de ambos os protocolos, o ESXi pode montar apenas um datastore através de um protocolo. No entanto, isso não significa que outros hosts ESXi não possam montar o mesmo datastore através de uma versão diferente. Para evitar quaisquer problemas, é essencial especificar a versão do protocolo a ser usada durante a montagem, garantindo que todos os hosts usem a mesma versão e, portanto, o mesmo estilo de bloqueio. É essencial evitar misturar versões NFS entre hosts. Se possível, use perfis de host para verificar a conformidade.
 +
 ** Como não há conversão automática de datastore entre NFSv3 e NFSv4,1, crie um novo datastore NFSv4,1 e use o Storage vMotion para migrar VMs para o novo datastore.
-** Consulte as notas da tabela de interoperabilidade NFS v4,1 no link:https://mysupport.netapp.com/matrix/["Ferramenta Matriz de interoperabilidade NetApp"^] para obter os níveis de patch específicos do ESXi necessários para suporte.
+** Consulte as notas da tabela de interoperabilidade NFS v4,1 no link:https://mysupport.netapp.com/matrix/["Ferramenta de Matriz de interoperabilidade do NetApp"^] para obter os níveis de patch ESXi específicos necessários para suporte.
 
 
+* Como mencionado no link:vmware/vmware-vsphere-settings.html["definições"], se você não estiver usando o vSphere CSI for Kubernetes, você deve definir o newSyncInterval per https://knowledge.broadcom.com/external/article/386364/reducing-excessive-vsan-cnssync-warnings.html["VMware KB 386364"^]
 * As regras de política de exportação de NFS são usadas para controlar o acesso pelos hosts vSphere. Você pode usar uma diretiva com vários volumes (datastores). Com o NFS, o ESXi usa o estilo de segurança sys (UNIX) e requer a opção de montagem raiz para executar VMs. No ONTAP, essa opção é chamada de superusuário e, quando a opção superusuário é usada, não é necessário especificar o ID de usuário anônimo. Observe que regras de política de exportação com valores diferentes `-anon` e `-allow-suid` podem causar problemas de descoberta de SVM com ferramentas do ONTAP. Os endereços IP devem ser uma lista separada por vírgulas sem espaços dos endereços de porta vmkernel que montam os datastores. Aqui está uma regra de política de exemplo:
 +
 ** Protocolo de acesso: nfs (que inclui nfs3 e nfs4)

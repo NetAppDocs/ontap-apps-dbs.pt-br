@@ -14,19 +14,19 @@ summary: 'O ONTAP dá suporte a todos os principais protocolos de storage usados
 
 
 [role="lead"]
-O NetApp oferece várias ferramentas de software independentes que podem ser usadas em conjunto com o ONTAP e o vSphere para gerenciar seu ambiente virtualizado.
+O NetApp fornece várias ferramentas de software independentes compatíveis com os sistemas ONTAP e ASA tradicionais, integrando o vSphere para gerenciar efetivamente seu ambiente virtualizado.
 
-As ferramentas a seguir estão incluídas na licença ONTAP sem nenhum custo adicional. Consulte a Figura 1 para ver uma descrição de como essas ferramentas funcionam juntas no seu ambiente vSphere.
+As ferramentas a seguir estão incluídas com a licença ONTAP One sem custo adicional. Consulte a Figura 1 para ver uma descrição de como essas ferramentas funcionam juntas no seu ambiente vSphere.
 
 
 
 == Ferramentas do ONTAP para VMware vSphere
 
-As ferramentas do ONTAP para VMware vSphere são um conjunto de ferramentas para usar o armazenamento do ONTAP junto com o vSphere. O plug-in do vCenter, anteriormente conhecido como Virtual Storage Console (VSC), simplifica o gerenciamento de storage e os recursos de eficiência, aprimora a disponibilidade e reduz os custos de storage e a sobrecarga operacional, independentemente de você estar usando SAN ou nas. Ele usa as práticas recomendadas para provisionar armazenamentos de dados e otimiza as configurações de host ESXi para ambientes de storage de bloco e NFS. Para todos esses benefícios, a NetApp recomenda o uso dessas ferramentas do ONTAP como uma prática recomendada ao usar o vSphere com sistemas que executam o ONTAP. Ele inclui um dispositivo de servidor, extensões de interface de usuário para vCenter, provedor VASA e adaptador de replicação de armazenamento. Quase tudo nas ferramentas do ONTAP pode ser automatizado com o uso de APIs REST simples, consumíveis pela maioria das ferramentas de automação modernas.
+https://mysupport.netapp.com/site/products/all/details/otv10/docs-tab["Ferramentas do ONTAP para VMware vSphere"] O é um conjunto de ferramentas para usar o armazenamento do ONTAP junto com o vSphere. O plug-in do vCenter, anteriormente conhecido como Virtual Storage Console (VSC), simplifica o gerenciamento de storage e os recursos de eficiência, aprimora a disponibilidade e reduz os custos de storage e a sobrecarga operacional, independentemente de você estar usando SAN ou nas. Ele usa as práticas recomendadas para provisionar armazenamentos de dados e otimiza as configurações de host ESXi para ambientes de storage de bloco e NFS. Para todos esses benefícios, a NetApp recomenda o uso dessas ferramentas do ONTAP como uma prática recomendada ao usar o vSphere com sistemas que executam o ONTAP. Ele inclui um dispositivo de servidor, extensões de IU para vCenter, provedor VASA e adaptador de replicação de armazenamento. Quase tudo nas ferramentas do ONTAP pode ser automatizado com o uso de APIs REST simples, consumíveis pela maioria das ferramentas de automação modernas.
 
-* * Extensões de IU do vCenter.* As extensões de IU das ferramentas do ONTAP simplificam o trabalho das equipes de operações e administradores do vCenter ao incorporar menus sensíveis ao contexto e fáceis de usar para gerenciar hosts e storage, portlets informativos e recursos de alerta nativos diretamente na IU do vCenter para fluxos de trabalho simplificados.
+* * Extensões de IU do vCenter.* As extensões de IU das ferramentas do ONTAP simplificam o trabalho das equipes de operações e administradores do vCenter, incorporando menus sensíveis ao contexto fáceis de usar para gerenciar hosts e armazenamento, portlets informativos e recursos de alerta nativos diretamente na IU do vCenter para fluxos de trabalho simplificados.
 * *Fornecedor VASA para ONTAP.* O provedor VASA para ONTAP oferece suporte à estrutura VMware vStorage APIs for Storage Awareness (VASA). Ele é fornecido como parte das ferramentas do ONTAP para o VMware vSphere como um único dispositivo virtual para facilitar a implantação. O provedor VASA coneta o vCenter Server com o ONTAP para auxiliar no provisionamento e monitoramento do armazenamento de VM. Ele permite o suporte do VMware Virtual volumes (vVols), o gerenciamento de perfis de funcionalidades de storage e o desempenho individual de vVols de VM, além de alarmes para monitorar a capacidade e a conformidade com os perfis.
-* *Adaptador de replicação de armazenamento.* O SRA é usado em conjunto com o VMware Site Recovery Manager (SRM) para gerenciar a replicação de dados entre locais de produção e recuperação de desastres e testar as réplicas de DR sem interrupções. Ele ajuda a automatizar as tarefas de descoberta, recuperação e reproteção. Inclui um dispositivo de servidor SRA e adaptadores SRA para o servidor SRM do Windows e o dispositivo SRM.
+* *Adaptador de replicação de armazenamento.* O SRA é usado em conjunto com o VMware Live Site Recovery (VLSR)/Site Recovery Manager (SRM) para gerenciar a replicação de dados entre locais de produção e recuperação de desastres usando o SnapMirror para replicação baseada em array. Ele pode automatizar a tarefa de failover em caso de desastre e pode ajudar a testar as réplicas de DR sem interrupções, para garantir a confiança na sua solução de DR.
 
 
 A figura a seguir mostra as ferramentas do ONTAP para vSphere.
@@ -35,6 +35,18 @@ image:vsphere_ontap_image1.png["Ferramentas do ONTAP para vSphere"]
 
 
 
+== Plug-in do SnapCenter para VMware vSphere
+
+O https://mysupport.netapp.com/site/products/all/details/scv/docs-tab["Plug-in do SnapCenter para VMware vSphere"] é um plug-in do vCenter Server que permite gerenciar backups e restaurações de máquinas virtuais (VMs) e datastores. Ele fornece uma única interface para gerenciar backups, restaurações e clones de VMs e armazenamentos de dados em vários sistemas ONTAP. O SnapCenter dá suporte à replicação e recuperação de locais secundários que usam o SnapMirror. As versões mais recentes também são compatíveis com SnapMirror para nuvem (S3), snapshots à prova de violações, SnapLock e sincronização ativa do SnapMirror. O plug-in do SnapCenter para VMware vSphere pode ser integrado aos plugins de aplicativos do SnapCenter para fornecer backups consistentes de aplicativos.
+
+
+
 == Plug-in NFS para VMware VAAI
 
-O plug-in NFS do NetApp para VMware VAAI é um plug-in para hosts ESXi que permite que eles usem recursos do VAAI com datastores NFS no ONTAP. Ele dá suporte a descarga de cópia para operações de clone, reserva de espaço para arquivos de disco virtual com espessura e descarga de snapshot. Descarregar operações de cópia para armazenamento não é necessariamente mais rápido de ser concluído, mas reduz os requisitos de largura de banda da rede e descarrega recursos do host, como ciclos de CPU, buffers e filas. Você pode usar as ferramentas do ONTAP para o VMware vSphere para instalar o plug-in em hosts ESXi ou, onde for compatível, o vLCM (vSphere Lifecycle Manager).
+O https://mysupport.netapp.com/site/products/all/details/nfsplugin-vmware-vaai/about-tab["Plug-in NFS do NetApp para VMware VAAI"] é um plug-in para hosts ESXi que permite que eles usem recursos do VAAI com datastores NFS no ONTAP. Ele dá suporte a descarga de cópia para operações de clone, reserva de espaço para arquivos de disco virtual com espessura e descarga de snapshot. Descarregar operações de cópia para armazenamento não é necessariamente mais rápido de ser concluído, mas reduz os requisitos de largura de banda da rede e descarrega recursos do host, como ciclos de CPU, buffers e filas. Você pode usar as ferramentas do ONTAP para o VMware vSphere para instalar o plug-in em hosts ESXi ou, onde for compatível, o vLCM (vSphere Lifecycle Manager).
+
+
+
+== Opções de software premium
+
+Os seguintes produtos de software premium estão disponíveis na NetApp. Eles não estão incluídos na licença ONTAP One e devem ser comprados separadamente. * https://www.netapp.com/data-services/disaster-recovery/["Recuperação de desastres (DR) do BlueXP "] Para VMware vSphere. Este é um serviço baseado em nuvem que oferece recuperação de desastres e backup para ambientes VMware. Ele pode ser usado com ou sem SnapCenter e dá suporte à recuperação de desastres no local ou no local usando SAN ou nas e no local de/para a nuvem usando NFS onde compatível. * https://www.netapp.com/data-infrastructure-insights/["Insights de infraestrutura de dados (DII)"]. Este é um serviço baseado em nuvem que fornece monitoramento e análise para ambientes VMware. Ele dá suporte a outros fornecedores de storage em ambientes de storage heterogêneos, bem como a vários fornecedores de switch e outros hipervisores. O DII fornece insights completos completos sobre a performance, a capacidade e a integridade do seu ambiente VMware.

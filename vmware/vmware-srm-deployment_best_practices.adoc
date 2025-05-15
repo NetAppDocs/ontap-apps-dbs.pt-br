@@ -1,7 +1,7 @@
 ---
 sidebar: sidebar 
 permalink: vmware/vmware-srm-deployment_best_practices.html 
-keywords: vmware, site, recovery manager, vsrm, svm, layout, segmentation, smt, best, practices, deploy, ontap, tools, vvols 
+keywords: vmware, site, recovery manager, vsrm, svm, layout, segmentation, smt, best, practices, deploy, ontap, tools, vvols, srm, vlsr 
 summary: 'Com o ONTAP, o conceito de máquina virtual de storage (SVM) fornece segmentação rigorosa em ambientes multitenant seguros.' 
 ---
 = Práticas recomendadas de implantação
@@ -18,27 +18,26 @@ As seções a seguir descrevem as práticas recomendadas de implantação com o 
 
 
 
+== Use a versão mais recente das ferramentas do ONTAP 10
+
+O ONTAP Tools 10 fornece melhorias significativas em relação às versões anteriores, incluindo o seguinte:
+
+* failover de teste 8xx mais rápido*
+* limpeza e reproteção 2xx mais rápidas*
+* failover 32% mais rápido*
+* Maior escala
+* Suporte nativo para layouts de site compartilhados
+
+
+*Essas melhorias são baseadas em testes internos e podem variar de acordo com o seu ambiente.
+
+
+
 == Layout e segmentação do SVM para SMT
 
 Com o ONTAP, o conceito de máquina virtual de storage (SVM) fornece segmentação rigorosa em ambientes multitenant seguros. Os usuários do SVM em um SVM não podem acessar ou gerenciar recursos de outro. Dessa forma, você pode utilizar a tecnologia ONTAP criando SVMs separadas para diferentes unidades de negócios que gerenciam seus próprios fluxos de trabalho SRM no mesmo cluster para maior eficiência geral de storage.
 
 Considere o gerenciamento do ONTAP usando contas com escopo SVM e LIFs de gerenciamento de SVM para aprimorar não apenas os controles de segurança, mas também a performance. O desempenho é inerentemente maior ao usar conexões com escopo SVM, pois o SRA não é necessário para processar todos os recursos em um cluster inteiro, incluindo recursos físicos. Em vez disso, ele só precisa entender os ativos lógicos que são abstraídos para o SVM específico.
-
-Ao usar apenas protocolos nas (sem acesso SAN), você pode até mesmo aproveitar o novo modo otimizado nas definindo o seguinte parâmetro (observe que o nome é tal porque SRA e VASA usam os mesmos serviços de back-end no dispositivo):
-
-. Faça login no painel de controle em `\https://<IP address>:9083` e clique em interface CLI baseada na Web.
-. Executar o comando `vp updateconfig -key=enable.qtree.discovery -value=true`.
-. Executar o comando `vp updateconfig -key=enable.optimised.sra -value=true`.
-. Executar o comando `vp reloadconfig`.
-
-
-
-
-== Implante ferramentas e considerações do ONTAP para vVols
-
-Se você pretende usar o SRM com vVols, você deve gerenciar o storage usando credenciais com escopo de cluster e um LIF de gerenciamento de cluster. Isso ocorre porque o provedor VASA deve entender a arquitetura física subjacente para satisfazer as exigências da política para políticas de armazenamento de VM. Por exemplo, se você tiver uma política que exija armazenamento all-flash, o provedor VASA deve ser capaz de ver quais sistemas são all-flash.
-
-Outra prática recomendada de implantação é nunca armazenar seu dispositivo ONTAP Tools em um datastore vVols que ele está gerenciando. Isso pode levar a uma situação em que você não pode ligar o provedor VASA, porque você não pode criar o vVol swap para o dispositivo porque o dispositivo está offline.
 
 
 
@@ -46,13 +45,9 @@ Outra prática recomendada de implantação é nunca armazenar seu dispositivo O
 
 Como mencionado anteriormente, você pode gerenciar clusters do ONTAP usando credenciais de escopo do cluster ou SVM e LIFs de gerenciamento. Para um desempenho ideal, você pode considerar o uso de credenciais com escopo SVM sempre que não estiver usando vVols. No entanto, ao fazer isso, você deve estar ciente de alguns requisitos, e que você perde alguma funcionalidade.
 
-* A conta padrão do vsadmin SVM não tem o nível de acesso necessário para executar tarefas de ferramentas do ONTAP. Portanto, você precisa criar uma nova conta SVM.
-* Se você estiver usando o ONTAP 9.8 ou posterior, o NetApp recomenda criar uma conta de usuário com menos privilégios RBAC usando o menu usuários do Gerenciador de sistemas do ONTAP juntamente com o arquivo JSON disponível no seu dispositivo de ferramentas do ONTAP em `\https://<IP address>:9083/vsc/config/`. Use sua senha de administrador para baixar o arquivo JSON. Isso pode ser usado para contas com escopo de SVM ou cluster.
-+
-Se você estiver usando o ONTAP 9.6 ou anterior, use a ferramenta Criador de Usuário RBAC (RUC) disponível no https://mysupport.netapp.com/site/tools/tool-eula/rbac["Caixa de ferramentas do site de suporte da NetApp"^].
-
-* Como o plug-in da IU do vCenter, o provedor VASA e o servidor SRA são todos serviços totalmente integrados, você deve adicionar armazenamento ao adaptador SRA no SRM da mesma forma que você adiciona armazenamento nas ferramentas da IU do vCenter para ONTAP. Caso contrário, o servidor SRA pode não reconhecer as solicitações enviadas do SRM através do adaptador SRA.
-* A verificação de caminho NFS não é realizada ao usar credenciais com escopo da SVM. Isso ocorre porque a localização física é logicamente abstraída do SVM. No entanto, isso não é motivo de preocupação, já que os sistemas ONTAP modernos não sofrem mais nenhum declínio de desempenho percetível ao usar caminhos indiretos.
+* A conta padrão do vsadmin SVM não tem o nível de acesso necessário para executar tarefas de ferramentas do ONTAP. Portanto, você precisa criar uma nova conta SVM. https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/configure/configure-user-role-and-privileges.html["Configurar as funções de usuário do ONTAP e o Privileges"] Usando o arquivo JSON incluído. Isso pode ser usado para contas com escopo de SVM ou cluster.
+* Como o plug-in da IU do vCenter, o provedor VASA e o servidor SRA são todos microsserviços totalmente integrados, você deve adicionar armazenamento ao adaptador SRA no SRM da mesma forma que você adiciona armazenamento na IU do vCenter para ferramentas do ONTAP. Caso contrário, o servidor SRA pode não reconhecer as solicitações enviadas do SRM através do adaptador SRA.
+* A verificação de caminho NFS não é realizada ao usar credenciais com escopo SVM, a menos que você primeiro https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/configure/add-storage-backend.html["clusters integrados"] no Gerenciador de ferramentas do ONTAP e associe-as a vCenters. Isso ocorre porque a localização física é logicamente abstraída do SVM. No entanto, isso não é motivo de preocupação, já que os sistemas ONTAP modernos não sofrem mais nenhum declínio de desempenho percetível ao usar caminhos indiretos.
 * Economias de espaço agregado devido à eficiência de storage podem não ser relatadas.
 * Quando suportado, os espelhos de partilha de carga não podem ser atualizados.
 * O log do EMS pode não ser realizado em sistemas ONTAP gerenciados com credenciais de escopo da SVM.

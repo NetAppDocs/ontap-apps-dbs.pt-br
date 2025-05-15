@@ -25,7 +25,7 @@ Uma controladora de storage NetApp executando o ONTAP pode dar suporte aos segui
 * Outros workloads de aplicações
 
 
-Além disso, os recursos de eficiência de storage da NetApp, como deduplicação, cópias NetApp FlexClone(R), tecnologia NetApp Snapshot, thin Provisioning, compactação e disposição em camadas de storage, agregam valor significativo para workloads executados em Windows Server.
+Além disso, os recursos de eficiência de storage da NetApp, como deduplicação, cópias NetApp FlexClone(R), tecnologia Snapshot da NetApp, thin Provisioning, compactação e disposição em camadas de storage, agregam valor significativo para workloads executados em Windows Server.
 
 
 
@@ -33,9 +33,9 @@ Além disso, os recursos de eficiência de storage da NetApp, como deduplicaçã
 
 O ONTAP é um software de gerenciamento executado em um controlador de storage da NetApp. Referido como um nó, um controlador de armazenamento NetApp é um dispositivo de hardware com um processador, RAM e NVRAM. O nó pode ser conetado a unidades de disco SATA, SAS ou SSD ou a uma combinação dessas unidades.
 
-Vários nós são agregados em um sistema em cluster. Os nós no cluster comunicam-se continuamente entre si para coordenar as atividades do cluster. Os nós também podem mover dados de forma transparente de nó para nó usando caminhos redundantes para uma rede de cluster dedicada que consiste em dois switches Ethernet 10Gb. Os nós no cluster podem assumir o controle uns dos outros para fornecer alta disponibilidade durante quaisquer cenários de failover. Os clusters são administrados em um cluster inteiro, em vez de por nó, e os dados são fornecidos a partir de uma ou mais máquinas virtuais de storage (SVMs). Para fornecer dados, um cluster precisa ter pelo menos um SVM.
+Vários nós são agregados em um sistema em cluster. Os nós no cluster comunicam-se continuamente entre si para coordenar as atividades do cluster. Os nós também podem mover dados de forma transparente de nó para nó usando caminhos redundantes para uma interconexão de cluster dedicada que consiste em dois switches Ethernet de 10Gb GB. Os nós no cluster podem assumir o controle uns dos outros para fornecer alta disponibilidade durante quaisquer cenários de failover. Os clusters são administrados em um cluster inteiro, em vez de por nó, e os dados são fornecidos a partir de uma ou mais máquinas virtuais de storage (SVMs). Para fornecer dados, um cluster precisa ter pelo menos um SVM.
 
-A unidade básica de um cluster é o nó e os nós são adicionados ao cluster como parte de um par de alta disponibilidade (HA). Os pares DE HA permitem alta disponibilidade comunicando-se entre si por meio de uma interconexão de HA (separada da rede de cluster dedicada) e mantendo conexões redundantes com os discos do par de HA. Os discos não são compartilhados entre pares de HA, embora as gavetas possam conter discos que pertencem a um dos membros de um par de HA. A figura a seguir mostra uma implantação de storage do NetApp em um ambiente do Windows Server.
+A unidade básica de um cluster é o nó e os nós são adicionados ao cluster como parte de um par de alta disponibilidade (HA). Os pares DE HA permitem alta disponibilidade comunicando-se entre si por meio de uma interconexão de HA (separada da interconexão de cluster dedicada) e mantendo conexões redundantes com os discos do par de HA. Os discos não são compartilhados entre pares de HA, embora as gavetas possam conter discos que pertencem a um dos membros de um par de HA. A figura a seguir mostra uma implantação de storage do NetApp em um ambiente do Windows Server.
 
 image:win_image1.png["Implantação de armazenamento NetApp no ambiente do Windows Server, largura de 624 mm, altura de 479 mm"]
 
@@ -77,7 +77,7 @@ Para conetar, configurar e gerenciar o armazenamento do NetApp a partir do Windo
 
 == Kit de ferramentas do NetApp
 
-O NetApp PowerShell Toolkit (PSTK) é um módulo do PowerShell que fornece automação de ponta a ponta e permite a administração de storage do ONTAP. O módulo ONTAP contém mais de 2.000 cmdlets e ajuda na administração de FAS, NetApp All Flash FAS (AFF), hardware comum e recursos de nuvem.
+O NetApp PowerShell Toolkit (PSTK) é um módulo do PowerShell que fornece automação de ponta a ponta e permite a administração de storage do ONTAP. O módulo ONTAP contém mais de 2.000 cmdlets e ajuda com a administração de NetApp AFF, FAS, hardware comum e recursos de nuvem.
 
 
 

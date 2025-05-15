@@ -32,7 +32,7 @@ O thin Provisioning é uma maneira eficiente de provisionar storage porque o sto
 
 == Qualidade do serviço
 
-A QoS de storage no Clustered ONTAP permite agrupar objetos de storage e definir limites de taxa de transferência no grupo. A QoS de storage pode ser usada para limitar a taxa de transferência a workloads e monitorar a performance de workload. Com isso, um administrador de storage pode separar workloads por organização, aplicação, unidade de negócios ou ambientes de produção ou desenvolvimento.
+A QoS de storage no NetApp ONTAP permite agrupar objetos de storage e definir limites de taxa de transferência no grupo. A QoS de storage pode ser usada para limitar a taxa de transferência a workloads e monitorar a performance de workload. Com isso, um administrador de storage pode separar workloads por organização, aplicação, unidade de negócios ou ambientes de produção ou desenvolvimento.
 
 Em ambientes empresariais, a QoS de storage ajuda a conseguir o seguinte:
 

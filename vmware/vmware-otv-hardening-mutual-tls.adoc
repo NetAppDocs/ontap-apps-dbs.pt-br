@@ -4,7 +4,7 @@ permalink: vmware/vmware-otv-hardening-mutual-tls.html
 keywords: VMware, Data protection, security, OTV, Hardening, ONTAP Tools 
 summary: Guia de fortalecimento da segurança para ferramentas do ONTAP para VMware vSphere, criptografia TLS mútua para conexões de gerenciamento de storage. 
 ---
-= TLS mútuo (autenticação baseada em certificado)
+= ONTAP Tools 9,13 TLS mútuo (autenticação baseada em certificado)
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 

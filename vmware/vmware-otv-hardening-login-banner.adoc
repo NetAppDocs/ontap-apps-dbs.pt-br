@@ -4,7 +4,7 @@ permalink: vmware/vmware-otv-hardening-login-banner.html
 keywords: VMware, Data protection, security, OTV, Hardening, ONTAP Tools 
 summary: Guia de fortalecimento da segurança para ferramentas do ONTAP para VMware vSphere, banner de login. 
 ---
-= Banner de login
+= ONTAP Tools 9,13 banner de login
 :hardbreaks:
 :allow-uri-read: 
 :nofooter: 
@@ -14,7 +14,7 @@ summary: Guia de fortalecimento da segurança para ferramentas do ONTAP para VMw
 
 
 [role="lead"]
-O banner de login a seguir é exibido depois que o usuário insere um nome de usuário no prompt de login. Observe que o SSH está desativado por padrão e só permite logins únicos quando ativado a partir do console da VM.
+O banner de login a seguir é exibido depois que o usuário insere um nome de usuário no prompt de login. Observe que o SSH está desativado por padrão e permite somente logins únicos quando habilitado a partir do console da VM.
 
 ....
 WARNING: Unauthorized access to this system is forbidden and will be

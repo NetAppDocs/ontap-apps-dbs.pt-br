@@ -23,49 +23,19 @@ As seções a seguir descrevem as práticas recomendadas operacionais para o sto
 * Se possível, sempre use ferramentas do ONTAP para provisionar armazenamentos de dados e volumes. Isso garante que volumes, caminhos de junção, LUNs, grupos, políticas de exportação e outras configurações sejam configurados de maneira compatível.
 * O SRM dá suporte a iSCSI, Fibre Channel e NFS versão 3 com ONTAP 9 ao usar replicação baseada em array por meio do SRA. O SRM não dá suporte à replicação baseada em array para NFS versão 4,1 com datastores tradicionais ou vVols.
 * Para confirmar a conectividade, verifique sempre se é possível montar e desmontar um novo datastore de teste no local de DR do cluster do ONTAP de destino. Teste cada protocolo que você pretende usar para a conetividade do datastore. Uma prática recomendada é usar as ferramentas do ONTAP para criar seu datastore de teste, já que ele está fazendo toda a automação do datastore, conforme indicado pelo SRM.
-* Os protocolos SAN devem ser homogêneos para cada local. Você pode misturar NFS e SAN, mas os protocolos SAN não devem ser misturados em um local. Por exemplo, você pode usar FCP no local A e iSCSI no local B. você não deve usar FCP e iSCSI no local A. o motivo para isso é que o SRA não cria grupos mistos no local de recuperação e o SRM não filtra a lista de iniciadores fornecida ao SRA.
-* Guias anteriores aconselharam a criação de LIF para localidade de dados. Ou seja, monte sempre um datastore usando um LIF localizado no nó que possui fisicamente o volume. Isso não é mais um requisito nas versões modernas do ONTAP 9. Sempre que possível, e se forem dadas credenciais com escopo de cluster, as ferramentas do ONTAP ainda escolherão o balanceamento de carga entre LIFs locais para os dados, mas não será um requisito de alta disponibilidade ou desempenho.
-* O ONTAP 9 pode ser configurado para remover automaticamente snapshots para preservar o tempo de atividade em caso de uma condição fora do espaço quando o dimensionamento automático não é capaz de fornecer capacidade de emergência suficiente. A configuração padrão para esse recurso não exclui automaticamente os snapshots criados pelo SnapMirror. Se os snapshots do SnapMirror forem excluídos, o NetApp SRA não poderá reverter e ressincronizar a replicação para o volume afetado. Para impedir que o ONTAP exclua snapshots do SnapMirror, configure o recurso snapshot autodelete a ser testado.
+* Os protocolos SAN devem ser homogêneos para cada local. Você pode misturar NFS e SAN, mas os protocolos SAN não devem ser misturados em um local. Por exemplo, você pode usar FCP no local A e iSCSI no local B. você não deve usar FCP e iSCSI no local A.
+* Guias anteriores aconselharam a criação de LIF para localidade de dados. Ou seja, monte sempre um datastore usando um LIF localizado no nó que possui fisicamente o volume. Embora essa ainda seja a melhor prática, não é mais um requisito nas versões modernas do ONTAP 9. Sempre que possível, e se forem dadas credenciais com escopo de cluster, as ferramentas do ONTAP ainda escolherão o balanceamento de carga entre LIFs locais para os dados, mas não será um requisito de alta disponibilidade ou desempenho.
+* O ONTAP 9 pode ser configurado para remover automaticamente snapshots para preservar o tempo de atividade em caso de uma condição fora do espaço quando o dimensionamento automático não é capaz de fornecer capacidade de emergência suficiente. A configuração padrão para esse recurso não exclui automaticamente os snapshots criados pelo SnapMirror. Se os snapshots do SnapMirror forem excluídos, o NetApp SRA não poderá reverter e ressincronizar a replicação para o volume afetado. Para evitar que o ONTAP elimine instantâneos do SnapMirror, configure a capacidade de instantâneos para "tentar".
 
 
 ....
 snap autodelete modify -volume -commitment try
 ....
-* O dimensionamento automático de volume deve ser definido como `grow` para volumes que contêm armazenamentos de dados SAN e `grow_shrink` para armazenamentos de dados NFS. Saiba mais link:https://docs.netapp.com/us-en/ontap/flexgroup/configure-automatic-grow-shrink-task.html["configuração de volumes para crescer ou diminuir automaticamente"^]sobre o .
+* O dimensionamento automático de volume deve ser definido como `grow` para volumes que contêm armazenamentos de dados SAN e `grow_shrink` para armazenamentos de dados NFS. Saiba mais sobre este tópico em link:https://docs.netapp.com/us-en/ontap/volumes/configure-automatic-grow-shrink-size-task.html["Configure volumes para aumentar e diminuir automaticamente o tamanho"^].
 * O SRM tem melhor desempenho quando o número de datastores e, portanto, os grupos de proteção são minimizados em seus planos de recuperação. Portanto, você deve considerar a otimização para a densidade da VM em ambientes protegidos pelo SRM, onde o rto é de importância fundamental.
 * Use o DRS (Distributed Resource Scheduler) para ajudar a equilibrar a carga nos clusters ESXi protegidos e de recuperação. Lembre-se de que, se você planeja fazer o failback, ao executar uma reproteção, os clusters anteriormente protegidos se tornarão os novos clusters de recuperação. O DRS ajudará a equilibrar a colocação em ambas as direções.
 * Sempre que possível, evite usar a personalização de IP com o SRM, pois isso pode aumentar seu rto.
 
-
-
-
-== Gerenciamento baseado em políticas de storage (SPBM) e vVols
-
-A partir do SRM 8,3, a proteção de VMs usando datastores vVols é suportada. As programações do SnapMirror são expostas às políticas de armazenamento de VM pelo provedor VASA quando a replicação vVols é ativada no menu de configurações de ferramentas do ONTAP, como mostrado nas capturas de tela a seguir.
-
-O exemplo a seguir mostra a capacitação da replicação do vVols.
-
-image:vsrm-ontap9_image2.png["Replicação do vVols"]
-
-A captura de tela a seguir fornece um exemplo de programações do SnapMirror exibidas no assistente criar política de armazenamento de VM.
-
-image:vsrm-ontap9_image3.png["Horários do SnapMirror"]
-
-O Fornecedor ONTAP VASA suporta failover para armazenamento dissimilar. Por exemplo, o sistema pode fazer failover do ONTAP Select em um local de borda para um sistema AFF no data center central. Independentemente da semelhança do storage, você sempre deve configurar mapeamentos de políticas de storage e mapeamentos reversos para políticas de armazenamento de VM habilitadas para replicação para garantir que os serviços fornecidos no local de recuperação atendam às expetativa e aos requisitos. A captura de tela a seguir destaca um exemplo de mapeamento de políticas.
-
-image:vsrm-ontap9_image4.png["mapeamento de políticas"]
-
-
-
-== Criar volumes replicados para datastores vVols
-
-Ao contrário dos armazenamentos de dados vVols anteriores, os armazenamentos de dados vVols replicados devem ser criados desde o início com a replicação habilitada e devem usar volumes pré-criados nos sistemas ONTAP com relacionamentos SnapMirror. Isso requer pré-configuração de coisas como peering de cluster e peering SVM. Essas atividades devem ser realizadas pelo administrador do ONTAP, pois isso facilita uma separação estrita de responsabilidades entre aqueles que gerenciam os sistemas ONTAP em vários locais e aqueles que são os principais responsáveis pelas operações do vSphere.
-
-Isso vem com um novo requisito em nome do administrador do vSphere. Como os volumes estão sendo criados fora do escopo das ferramentas do ONTAP, ele não tem conhecimento das alterações feitas pelo administrador do ONTAP até o período de redescoberta agendado regularmente. Por esse motivo, é uma prática recomendada sempre executar a redescoberta sempre que você criar um relacionamento de volume ou SnapMirror para ser usado com o vVols. Basta clicar com o botão direito do rato no anfitrião ou cluster e selecionar Ferramentas do ONTAP > Atualizar dados do anfitrião e armazenamento, como mostrado na seguinte captura de ecrã.
-
-image:vsrm-ontap9_image5.png["Atualizar dados do host e do armazenamento"]
-
-Uma precaução deve ser tomada quando se trata de vVols e SRM. Nunca misture VMs protegidas e desprotegidas no mesmo datastore vVols. O motivo disso é que, quando você usa o SRM para fazer failover para o local de DR, apenas as VMs que fazem parte do grupo de proteção são colocadas on-line no DR. Portanto, quando você reprotege (inverta o SnapMirror da recuperação de desastres para produção novamente), você pode substituir as VMs que não falharam e podem conter dados valiosos.
 
 
 
@@ -81,9 +51,9 @@ image:vsrm-ontap9_image6.jpg["cluster"]
 
 == Sobre os grupos de replicação
 
-Os grupos de replicação contêm coleções lógicas de máquinas virtuais que são recuperadas juntas. O provedor VASA de ferramentas do ONTAP cria automaticamente grupos de replicação para você. Como a replicação do ONTAP SnapMirror ocorre no nível do volume, todas as VMs em um volume estão no mesmo grupo de replicação.
+Os grupos de replicação contêm coleções lógicas de máquinas virtuais que são recuperadas juntas. Como a replicação do ONTAP SnapMirror ocorre no nível do volume, todas as VMs em um volume estão no mesmo grupo de replicação.
 
-Há vários fatores a serem considerados nos grupos de replicação e como você distribui VMs pelos volumes do FlexVol. Agrupar VMs semelhantes no mesmo volume pode aumentar a eficiência de storage com sistemas ONTAP mais antigos que não possuem deduplicação em nível de agregado, mas o agrupamento aumenta o tamanho do volume e reduz a simultaneidade de e/S do volume. O melhor equilíbrio entre performance e eficiência de storage pode ser obtido em sistemas ONTAP modernos, distribuindo máquinas virtuais por volumes FlexVol no mesmo agregado, aproveitando a deduplicação em nível de agregado e obtendo maior paralelização de e/S em vários volumes. Você pode recuperar VMs nos volumes juntos porque um grupo de proteção (discutido abaixo) pode conter vários grupos de replicação. A desvantagem desse layout é que os blocos podem ser transmitidos por cabo várias vezes, porque o volume SnapMirror não leva em conta a deduplicação agregada.
+Há vários fatores a serem considerados nos grupos de replicação e como você distribui VMs pelos volumes do FlexVol. Agrupar VMs semelhantes no mesmo volume pode aumentar a eficiência de storage com sistemas ONTAP mais antigos que não possuem deduplicação em nível de agregado, mas o agrupamento aumenta o tamanho do volume e reduz a simultaneidade de e/S do volume. O melhor equilíbrio entre performance e eficiência de storage pode ser obtido em sistemas ONTAP modernos, distribuindo máquinas virtuais por volumes FlexVol no mesmo agregado, aproveitando a deduplicação em nível de agregado e obtendo maior paralelização de e/S em vários volumes. Você pode recuperar VMs nos volumes juntos porque um grupo de proteção (discutido abaixo) pode conter vários grupos de replicação. A desvantagem desse layout é que os blocos podem ser transmitidos por cabo várias vezes, porque o SnapMirror não leva em conta a deduplicação agregada.
 
 Uma consideração final para grupos de replicação é que cada um é, por sua natureza, um grupo de consistência lógica (não deve ser confundido com grupos de consistência SRM). Isso ocorre porque todas as VMs no volume são transferidas juntas usando o mesmo snapshot. Portanto, se você tiver VMs que precisam ser consistentes umas com as outras, considere armazená-las no mesmo FlexVol.
 
@@ -109,7 +79,7 @@ A NetApp recomenda fortemente que você trabalhe com suas equipes de aplicaçõe
 
 == Failover de teste
 
-Como prática recomendada, sempre execute um failover de teste sempre que uma alteração for feita na configuração de um storage de VM protegido. Isso garante que, no caso de um desastre, você possa confiar que o Site Recovery Manager pode restaurar serviços dentro do destino de rto esperado.
+Como prática recomendada, sempre execute um failover de teste sempre que for feita uma alteração na configuração do storage de VM protegido. Isso garante que, no caso de um desastre, você possa confiar que o Site Recovery Manager pode restaurar serviços dentro do destino de rto esperado.
 
 O NetApp também recomenda confirmar ocasionalmente a funcionalidade do aplicativo in-Guest, especialmente depois de reconfigurar o armazenamento de VM.
 

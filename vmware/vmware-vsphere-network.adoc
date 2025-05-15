@@ -18,9 +18,9 @@ A configuração das configurações de rede ao usar o vSphere com sistemas exec
 
 Aqui estão algumas coisas a considerar:
 
-* Separe o tráfego de rede de armazenamento de outras redes. Uma rede separada pode ser obtida usando uma VLAN dedicada ou switches separados para armazenamento. Se a rede de armazenamento partilhar caminhos físicos, como uplinks, poderá necessitar de portas de QoS ou uplink adicionais para garantir uma largura de banda suficiente. Não conete os hosts diretamente ao storage; use os switches para ter caminhos redundantes e permitir que o VMware HA funcione sem intervenção. link:vmware-vsphere-network.html["Ligação direta em rede"]Consulte para obter informações adicionais.
-* Os frames grandes podem ser usados se desejado e suportados pela sua rede, especialmente ao usar iSCSI. Se forem usados, certifique-se de que estejam configurados de forma idêntica em todos os dispositivos de rede, VLANs e assim por diante no caminho entre o armazenamento e o host ESXi. Caso contrário, você pode ver problemas de desempenho ou conexão. A MTU também deve ser definida de forma idêntica no switch virtual ESXi, na porta VMkernel e também nas portas físicas ou grupos de interface de cada nó ONTAP.
-* O NetApp recomenda apenas desativar o controle de fluxo de rede nas portas de rede do cluster dentro de um cluster ONTAP. O NetApp não faz outras recomendações sobre as práticas recomendadas para as portas de rede restantes usadas para tráfego de dados. Você deve ativá-lo ou desativá-lo conforme necessário.  https://www.netapp.com/pdf.html?item=/media/16885-tr-4182pdf.pdf["TR-4182"^]Consulte para obter mais informações sobre o controlo de fluxo.
+* Separe o tráfego de rede de armazenamento de outras redes. Uma rede separada pode ser obtida usando uma VLAN dedicada ou switches separados para armazenamento. Se a rede de armazenamento partilhar caminhos físicos, como uplinks, poderá necessitar de portas de QoS ou uplink adicionais para garantir uma largura de banda suficiente. Não conete os hosts diretamente ao storage a menos que o guia de solução o chame especificamente; use switches para ter caminhos redundantes e permitir que o VMware HA funcione sem intervenção.
+* Jumbo Frames devem ser usados se suportado pela sua rede. Se forem usados, certifique-se de que estejam configurados de forma idêntica em todos os dispositivos de rede, VLANs e assim por diante no caminho entre o armazenamento e o host ESXi. Caso contrário, você pode ver problemas de desempenho ou conexão. A MTU também deve ser definida de forma idêntica no switch virtual ESXi, na porta VMkernel e também nas portas físicas ou grupos de interface de cada nó ONTAP.
+* O NetApp recomenda apenas desativar o controle de fluxo de rede nas portas de interconexão de cluster dentro de um cluster ONTAP. A NetApp não faz outras recomendações sobre práticas recomendadas em relação ao controle de fluxo para as portas de rede restantes usadas para tráfego de dados. Você deve ativá-lo ou desativá-lo conforme necessário.  https://www.netapp.com/pdf.html?item=/media/16885-tr-4182pdf.pdf["TR-4182"^]Consulte para obter mais informações sobre o controlo de fluxo.
 * Quando os storages ESXi e ONTAP estão conetados a redes de armazenamento Ethernet, a NetApp recomenda configurar as portas Ethernet às quais esses sistemas se conetam como portas de borda de protocolo de árvore de expansão rápida (RSTP) ou usando o recurso Cisco PortFast. A NetApp recomenda ativar o recurso de tronco de porta de árvore de expansão rápida em ambientes que usam o recurso Cisco PortFast e que têm entroncamento de VLAN 802,1Q habilitado para o servidor ESXi ou para os storages ONTAP.
 * A NetApp recomenda as seguintes práticas recomendadas para agregação de links:
 +
@@ -64,7 +64,7 @@ A tabela a seguir fornece um resumo dos itens de configuração de rede e indica
 
 
 
-== SAN (FC, FCoE, NVMe/FC, iSCSI), RDM
+== SAN (FC, NVMe/FC, iSCSI, NVMe/TCP), RDM
 
 O ONTAP oferece storage de bloco de classe empresarial para VMware vSphere usando iSCSI tradicional e Fibre Channel Protocol (FCP), bem como o protocolo de bloco de última geração, altamente eficiente e de alta performance, o NVMe over Fabrics (NVMe-of), com suporte a NVMe/FC e NVMe/TCP.
 
@@ -82,7 +82,7 @@ Para obter as melhores práticas recomendadas, consulte link:vmware-vsphere-data
 
 == Ligação direta em rede
 
-Às vezes, os administradores de storage preferem simplificar suas infraestruturas removendo switches de rede da configuração. Isso pode ser suportado em alguns cenários.
+Às vezes, os administradores de storage preferem simplificar suas infraestruturas removendo switches de rede da configuração. Isso pode ser suportado em alguns cenários. No entanto, existem algumas limitações e ressalvas a serem observadas.
 
 
 
@@ -100,7 +100,7 @@ O motivo pelo qual o failover sem interrupções é complicado com o storage NFS
 
 A segunda NIC do SO poderia ser configurada como 19 2.168.1.2 e seria capaz de se comunicar com o endereço 192.168.1.50 com falha, mas as tabelas de roteamento local teriam um padrão de usar um endereço *e apenas um* para se comunicar com a sub-rede 192.168.1.0/24. Um sysadmin poderia criar uma estrutura de script que detetaria uma conexão de rede com falha e alteraria as tabelas de roteamento local ou colocaria interfaces para cima e para baixo. O procedimento exato dependeria do SO em uso.
 
-Na prática, os clientes da NetApp têm NFS com conexão direta, mas normalmente apenas para workloads em que as pausas de e/S durante failovers são aceitáveis. Quando os suportes rígidos são usados, não deve haver nenhum erro de e/S durante essas pausas. O IO deve travar até que os serviços sejam restaurados, seja por um failback ou intervenção manual para mover endereços IP entre NICs no host.
+Na prática, os clientes da NetApp têm NFS com conexão direta, mas normalmente apenas para workloads em que as pausas de e/S durante failovers são aceitáveis. Quando os suportes rígidos são usados, não deve haver nenhum erro de e/S durante essas pausas. O IO deve congelar até que os serviços sejam restaurados, seja por uma intervenção de failback ou manual para mover endereços IP entre NICs no host.
 
 
 

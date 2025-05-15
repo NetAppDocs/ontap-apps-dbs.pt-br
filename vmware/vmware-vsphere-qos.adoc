@@ -146,7 +146,7 @@ Outras práticas recomendadas da ONTAP para SDRS incluem o seguinte:
 
 == VVols e gerenciamento baseado em políticas de storage
 
-As VMware vSphere APIs for Storage Awareness (VASA) facilitam para um administrador de storage configurar datastores com recursos bem definidos e permitem que o administrador da VM use-os sempre que necessário para provisionar VMs sem ter que interagir uns com os outros. Vale a pena dar uma olhada nessa abordagem para ver como ela pode otimizar suas operações de storage de virtualização e evitar muito trabalho trivial.
+As VMware vSphere APIs for Storage Awareness (VASA) facilitam para um administrador de storage configurar datastores com recursos bem definidos e permitir que o administrador da VM use-os sempre que necessário para provisionar VMs sem ter que interagir uns com os outros. Vale a pena dar uma olhada nessa abordagem para ver como ela pode otimizar suas operações de storage de virtualização e evitar muito trabalho trivial.
 
 Antes do VASA, os administradores de VM podiam definir políticas de armazenamento de VM, mas precisavam trabalhar com o administrador de armazenamento para identificar armazenamentos de dados apropriados, geralmente usando documentação ou convenções de nomenclatura. Com o VASA, o administrador de storage pode definir uma variedade de recursos de storage, incluindo desempenho, disposição em camadas, criptografia e replicação. Um conjunto de recursos para um volume ou um conjunto de volumes é chamado de Perfil de capacidade de armazenamento (SCP).
 

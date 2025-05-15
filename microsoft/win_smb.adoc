@@ -53,7 +53,7 @@ Para que a configuração CIFS funcione corretamente, os controladores de armaze
 
 ....
 $domainControllerIP = "<input IP Address of windows domain controller>"
-cluster::> system services ntp server create â€“server $domainControllerIP
+cluster::> system services ntp server create -server $domainControllerIP
 ....
 
 

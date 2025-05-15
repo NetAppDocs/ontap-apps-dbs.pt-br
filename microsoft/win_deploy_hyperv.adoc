@@ -54,10 +54,10 @@ Este apêndice descreve a implantação de um cluster Hyper-V.
 +
 ... Leve o LUN online, inicialize o disco, crie um novo volume simples e formate-o usando NTFS ou refs.
 ... No Gerenciador de Cluster de failover, expanda o cluster, expanda armazenamento, clique com o botão direito do Mouse em discos e clique em Adicionar discos. Isso abre o assistente Adicionar discos a um cluster mostrando o LUN como um disco. Clique em OK para adicionar o LUN como um disco.
-... Agora, o LUN é nomeado disco agrupado e é mostrado como armazenamento disponível em discos.
+... Agora, o LUN é chamado de 'Clustered Disk' e é mostrado como armazenamento disponível em discos.
 
 
-.. Clique com o botão direito do rato no LUN (Clustered Disk) e clique em Adicionar ao Cluster Shared volumes. Agora, o LUN é mostrado como um CSV.
+.. Clique com o botão direito do rato no LUN ('Clustered Disk') e clique em Adicionar ao Cluster Shared volumes. Agora, o LUN é mostrado como um CSV.
 .. O CSV é simultaneamente visível e acessível a partir de todos os servidores Hyper-V do cluster de failover em sua localização local C: /ClusterStorage.
 
 
