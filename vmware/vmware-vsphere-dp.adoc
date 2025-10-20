@@ -16,7 +16,7 @@ summary: O SnapCenter permite criar políticas de backup que podem ser aplicadas
 [role="lead"]
 Fazer backup e recuperar rapidamente suas máquinas virtuais (VMs) são as principais vantagens do uso do ONTAP para vSphere. Essa funcionalidade pode ser gerenciada facilmente no vCenter por meio do plug-in do SnapCenter para VMware vSphere. Muitos clientes aprimoram suas soluções de backup de terceiros com o SnapCenter para aproveitar a tecnologia de snapshot da ONTAP, pois oferece a maneira mais rápida e simples de recuperar uma VM com o ONTAP. O SnapCenter está disponível gratuitamente para clientes que têm a licença ONTAP One e outros pacotes de licença também podem estar disponíveis.
 
-Além disso, o plug-in SnapCenter para VMware pode ser integrado ao https://docs.netapp.com/us-en/bluexp-backup-recovery/concept-protect-vm-data.html["BlueXP  para backup e recuperação de máquinas virtuais"^], permitindo soluções de backup 3-2-1 eficazes para a maioria dos sistemas ONTAP. Observe que algumas taxas podem ser aplicadas se o uso de backup e recuperação do BlueXP  para máquinas virtuais com serviços premium, como armazenamentos de objetos para armazenamento de backup adicional. Esta seção descreve as várias opções disponíveis para proteger suas VMs e armazenamentos de dados.
+Além disso, o SnapCenter Plug-In para VMware pode ser integrado com https://docs.netapp.com/us-en/data-services-backup-recovery/concept-protect-vm-data.html["NetApp Backup and Recovery para máquinas virtuais"^], permitindo soluções eficazes de backup 3-2-1 para a maioria dos sistemas ONTAP . Observe que algumas taxas podem ser aplicadas ao usar o Backup e Recuperação para máquinas virtuais com serviços premium, como armazenamentos de objetos para armazenamento de backup adicional. Esta seção descreve as várias opções disponíveis para proteger suas VMs e armazenamentos de dados.
 
 
 
@@ -58,9 +58,9 @@ Para melhorar os recursos de recuperação de desastres, considere a utilizaçã
 
 
 
-== Recuperação de desastres do BlueXP
+== NetApp Disaster Recovery
 
-O BlueXP  Disaster Recovery (DR) é um serviço baseado na nuvem que fornece uma solução abrangente para proteger seus dados e aplicações em caso de desastre. Ele oferece uma variedade de recursos, incluindo failover automatizado e failback, pontos de recuperação de vários pontos no tempo, recuperação de desastres consistente com aplicações e suporte para sistemas ONTAP baseados na nuvem e no local. O BlueXP  DR foi projetado para funcionar perfeitamente com o ONTAP e seu ambiente VMware vSphere, fornecendo uma solução unificada para recuperação de desastres.
+Recuperação de desastres (DR) é um serviço baseado em nuvem que fornece uma solução abrangente para proteger seus dados e aplicativos em caso de desastre. Ele oferece uma variedade de recursos, incluindo failover e failback automatizados, vários pontos de recuperação pontuais, recuperação de desastres consistente com o aplicativo e suporte para sistemas ONTAP locais e baseados na nuvem. O BlueXP DR foi projetado para funcionar perfeitamente com o ONTAP e seu ambiente VMware vSphere, fornecendo uma solução unificada para recuperação de desastres.
 
 
 

@@ -16,7 +16,7 @@ summary: Topologias de replicação usando o ONTAP com SnapMirror e VMware VLSR 
 [role="lead"]
 No ONTAP 9, os componentes físicos de um cluster são visíveis para os administradores de cluster, mas não são visíveis diretamente para os aplicativos e hosts que usam o cluster. Os componentes físicos fornecem um pool de recursos compartilhados a partir do qual os recursos lógicos do cluster são construídos. As aplicações e os hosts acessam dados somente por meio de SVMs que contêm volumes e LIFs.
 
-Cada SVM do NetApp é Tratado como um array no VMware vCenter Site Recovery Manager. O VLSR é compatível com certos layouts de replicação de array a array (ou SVM para SVM).
+Cada NetApp SVM é tratado como uma matriz exclusiva no Site Recovery Manager. O VLSR oferece suporte a determinados layouts de replicação de matriz para matriz (ou SVM para SVM).
 
 Uma única VM não pode possuir dados – Virtual Machine Disk (VMDK) ou RDM – em mais de um array VLSR pelos seguintes motivos:
 
@@ -43,6 +43,20 @@ image:vsrm-ontap9_image8.png["Layout da relação do SnapMirror"]
 image:vsrm-ontap9_image9.png["Layout da relação do SnapMirror"]
 
 image:vsrm-ontap9_image10.png["Layout da relação do SnapMirror"]
+
+
+
+== Suporte VMFS com sincronização ativa SnapMirror
+
+As ferramentas ONTAP 10.3 e posteriores também oferecem suporte à proteção de seus armazenamentos de dados VMFS com sincronização ativa do SnapMirror (SMas). Isso permite failover transparente para continuidade de negócios entre dois datacenters (chamados de domínios de falha) que estão relativamente próximos. A recuperação de desastres de longa distância pode então ser orquestrada usando o SnapMirror de forma assíncrona por meio das ferramentas ONTAP SRA com VLSR.
+
+https://docs.netapp.com/us-en/ontap/snapmirror-active-sync/["Saiba mais sobre a sincronização ativa do ONTAP SnapMirror"]
+
+Os armazenamentos de dados são reunidos em um grupo de consistência (CG), e as VMs em todos os armazenamentos de dados permanecerão consistentes na ordem de gravação como membros do mesmo CG.
+
+Alguns exemplos podem ser ter sites em Berlim e Hamburgo protegidos por SMas e uma terceira réplica de site usando SnapMirror assíncrono e protegido por VLSR. Outro exemplo pode ser proteger locais em Nova York e Nova Jersey usando SMas, com um terceiro local em Chicago.
+
+image:https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-104/media/fan-out-protection.png["Layout SMas"]
 
 
 
