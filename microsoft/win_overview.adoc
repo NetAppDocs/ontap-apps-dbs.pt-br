@@ -25,7 +25,6 @@ NOTE: *Esta documentação substitui relatórios técnicos publicados anteriorme
 * Uma arquitetura unificada definida por software
 +
 ** ONTAP Select em execução no VMware vSphere ou KVM
-** Cloud Volumes ONTAP executado como uma instância nativa da nuvem
 
 
 * Primeiras ofertas de fornecedores de nuvem em hiperescala
