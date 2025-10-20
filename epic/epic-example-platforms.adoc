@@ -13,4 +13,4 @@ Para workloads de aplicações, periódicos e bancos de dados ODB da Epic, a Epi
 
 O NetApp também dá suporte ao uso de NVMe/FC (se você tiver versões dos sistemas operacionais AIX e RHEL capazes) e melhora a performance. FCP e NVMe/FC podem coexistir na mesma malha.
 
-Os clientes da NetApp executam com sucesso todos os workloads da Epic na nuvem do Azure. A AWS também pode executar workloads da Epic. Com o NetApp Cloud Volumes ONTAP e o NetApp Cloud volumes Services, o NetApp oferece as funcionalidades de classe empresarial e a performance necessária para executar a Epic na nuvem com eficiência. As opções de nuvem da NetApp fornecem bloco sobre iSCSI e arquivo em NFS ou SMB.
+Os clientes da NetApp executaram com sucesso todas as cargas de trabalho da Epic na nuvem do Azure.  AWS e Google Cloud também são capazes de executar cargas de trabalho da Epic.  A NetApp fornece os recursos de nível empresarial e o desempenho necessários para executar o Epic com eficiência na nuvem.  As opções de nuvem da NetApp oferecem blocos sobre iSCSI e arquivos sobre NFS ou SMB.
