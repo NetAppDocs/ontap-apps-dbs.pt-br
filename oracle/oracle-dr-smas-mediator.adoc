@@ -13,7 +13,7 @@ searchtitle: Oracle, SnapMirror ative Sync e o Mediador ONTAP
 [role="lead"]
 O mediador é necessário para automatizar o failover com segurança. Idealmente, ele seria colocado em um local 3rd independente, mas ainda pode funcionar para a maioria das necessidades se colocasse em um dos clusters que participam da replicação.
 
-O mediador não é realmente um tiebreaker, embora essa seja efetivamente a função que ele fornece. Ele não realiza nenhuma ação; em vez disso, fornece um canal de comunicação alternativo para comunicação de cluster para cluster.
+O mediador não é propriamente um desempate, embora essa seja efetivamente a função que desempenha. O mediador ajuda a determinar o estado dos nós do cluster e auxilia no processo de comutação automática em caso de falha de um dos sites. O Mediator não transfere dados sob nenhuma circunstância.
 
 image:../media/smas-mediator.png["Diagrama de sincronização ativa do SnapMirror com mediador"]
 
