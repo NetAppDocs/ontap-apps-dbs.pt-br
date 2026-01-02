@@ -23,31 +23,31 @@ O provisionamento de armazenamentos de dados vVols envolve várias etapas. Os si
 
 Você pode ignorar as duas primeiras etapas do processo de implantação se você já estiver usando ferramentas do ONTAP para gerenciar, automatizar e gerar relatórios sobre o seu storage VMFS existente ou baseado em NFS tradicional. Você também pode consultar este completo link:vmware-vvols-checklist.html["lista de verificação"] para implantar e configurar ferramentas do ONTAP.
 
-. Crie a Storage Virtual Machine (SVM) e sua configuração de protocolo. Observe que isso pode não ser necessário para os sistemas ASA R2, uma vez que eles geralmente já terão um único SVM para serviços de dados. Você selecionará NVMe/FC (somente ferramentas ONTAP 9,13), NFSv3, NFSv4,1, iSCSI, FCP ou uma combinação dessas opções. O NVMe/TCP e o NVMe/FC também podem ser usados em datastores VMFS tradicionais com as ferramentas do ONTAP 10,3 e posteriores. Você pode usar assistentes do Gerenciador de sistema do ONTAP ou a linha de comando do shell do cluster.
+. Crie a Máquina Virtual de Armazenamento (SVM) e sua configuração de protocolo. Note que isso pode não ser necessário para sistemas ASA r2, já que eles normalmente já possuem uma única SVM para serviços de dados. Você deverá selecionar NVMe/FC (somente para ONTAP tools 9.13), NFSv3, NFSv4.1, iSCSI, FCP ou uma combinação dessas opções. NVMe/TCP e NVMe/FC também podem ser usados ​​para armazenamentos de dados VMFS tradicionais com as ferramentas ONTAP 10.3 e posteriores. Você pode usar os assistentes do ONTAP System Manager ou a linha de comando do shell do cluster.
 +
 ** https://docs.netapp.com/us-en/ontap/disks-aggregates/assign-aggregates-svms-task.html["Atribua camadas locais (agregados) a SVMs"] Para todos os sistemas que não sejam ASA R2.
 ** Pelo menos um LIF por nó para cada conexão de switch/malha. Como prática recomendada, crie dois ou mais por nó para protocolos baseados em FCP, iSCSI ou NVMe. Um LIF por nó é suficiente para vVols baseados em NFS, mas esse LIF deve ser protegido por um ifgroup LACP.  https://docs.netapp.com/us-en/ontap/networking/configure_lifs_cluster_administrators_only_overview.html["Configure a visão geral dos LIFs"]Consulte e https://docs.netapp.com/us-en/ontap/networking/combine_physical_ports_to_create_interface_groups.html["Combine portas físicas para criar grupos de interface"] para obter detalhes.
-** Pelo menos um LIF de gerenciamento por SVM se você pretende usar credenciais de escopo da SVM para seus vCenters de locatário.
+** É necessário pelo menos um LIF de gerenciamento por SVM se você pretende usar credenciais com escopo de SVM para seus vCenters de locatário.
 ** Se você planeja usar o SnapMirror, verifique se o código fonte e o destino https://docs.netapp.com/us-en/ontap/peering/["Os clusters e SVMs do ONTAP são peered"].
-** Para sistemas que não sejam ASA R2, volumes podem ser criados no momento, mas é a prática recomendada permitir que o assistente _provision datastore_ nas ferramentas do ONTAP os crie. A única exceção a esta regra é se você planeja usar a replicação do vVols com o VMware Site Recovery Manager e as ferramentas do ONTAP 9,13. Isso é mais fácil de configurar com volumes FlexVol pré-existentes com relacionamentos SnapMirror existentes. Lembre-se de não ativar o QoS em nenhum volume a ser usado para vVols, pois isso deve ser gerenciado por ferramentas SPBM e ONTAP.
+** Para sistemas que não sejam ASA r2, os volumes podem ser criados neste momento, mas a melhor prática é deixar que o assistente _Provision Datastore_ nas ferramentas ONTAP os crie. A única exceção a essa regra é se você planeja usar a replicação de vVols com o VMware Site Recovery Manager e as ferramentas ONTAP 9.13. Isso é mais fácil de configurar com volumes FlexVol preexistentes que já possuam relações SnapMirror . Tenha cuidado para não ativar o QoS em nenhum volume que será usado para vVols, pois isso deve ser gerenciado pelas ferramentas SPBM e ONTAP .
 
 
 . https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/deploy/ontap-tools-deployment.html["Implantar as ferramentas do ONTAP para o VMware vSphere"] Usando o OVA baixado do site de suporte da NetApp.
 +
-** As ferramentas do ONTAP 10,0 e posteriores oferecem suporte a vários servidores vCenter por dispositivo. Você não precisa mais implantar um dispositivo de ferramentas do ONTAP por vCenter.
+** O ONTAP Tools 10.0 e versões posteriores suportam vários servidores vCenter por appliance; não é mais necessário implantar um appliance ONTAP Tools por vCenter.
 +
-*** Se você planeja conetar vários vCenters a uma única instância de ferramentas do ONTAP, crie e instale certificados assinados pela CA.  https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/manage/certificate-manage.html["Gerenciar certificados"]Consulte para obter os passos.
+*** Se você planeja conectar vários vCenters a uma única instância do ONTAP Tools, você deve criar e instalar certificados assinados por uma Autoridade Certificadora (CA). Consulte https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/manage/certificate-manage.html["Gerenciar certificados"] para etapas.
 
 
-** Começando em 10,3, as ferramentas do ONTAP agora são implantadas como um dispositivo de tipo pequeno de nó único, adequado para a maioria dos workloads que não são vVols.
+** A partir da versão 10.3, as ferramentas ONTAP agora são implantadas como um dispositivo de pequeno porte com um único nó, adequado para a maioria das cargas de trabalho que não utilizam vVols.
 
 
 
 
 [TIP]
 ====
-* A prática recomendada é usar https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/manage/edit-appliance-settings.html["Ferramentas de ONTAP com escalabilidade horizontal"] o 10,3 e posterior para a configuração de alta disponibilidade (HA) de 3 nós para todos os workloads de produção. Para laboratórios ou fins de teste, é possível usar uma implantação de nó único.
-* A melhor prática recomendada para o uso de vVols de produção é eliminar qualquer ponto único de falha. Crie regras antiafinidade para impedir que as VMs das ferramentas do ONTAP sejam executadas juntas no mesmo host. Após a implantação inicial, também é recomendável usar o storage vMotion para colocar as VMs das ferramentas do ONTAP em diferentes armazenamentos de dados. Leia mais sobre https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/vsphere-resource-management-8-0/using-drs-clusters-to-manage-resources/using-affinity-rules-without-vsphere-drs.html["Usando o Affinity Rules sem o vSphere DRS"] ou https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/vsphere-resource-management-8-0/using-drs-clusters-to-manage-resources/create-a-vm-vm-affinity-rule.html["Crie uma regra de afinidade VM-VM"]. Você também deve agendar backups frequentes e/ou https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/manage/enable-backup.html#create-backup-and-download-the-backup-file["utilize o utilitário de cópia de segurança de configuração incorporado"].
+* A melhor prática recomendada é: https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/manage/edit-appliance-settings.html["Ferramentas de ONTAP com escalabilidade horizontal"] A partir da versão 10.3, foi implementada a configuração de alta disponibilidade (HA) de 3 nós para todas as cargas de trabalho de produção. Para fins de laboratório ou teste, é possível usar uma implantação de nó único.
+* A melhor prática recomendada para o uso de vVols em produção é eliminar qualquer ponto único de falha. Crie regras de antiafinidade para impedir que as VMs das ferramentas ONTAP sejam executadas juntas no mesmo host. Após a implantação inicial, também é recomendável usar o Storage vMotion para mover as VMs das ferramentas ONTAP para diferentes datastores. Leia mais sobre https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/vsphere-resource-management-8-0/using-drs-clusters-to-manage-resources/using-affinity-rules-without-vsphere-drs.html["Usando o Affinity Rules sem o vSphere DRS"] ou https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/vsphere-resource-management-8-0/using-drs-clusters-to-manage-resources/create-a-vm-vm-affinity-rule.html["Crie uma regra de afinidade VM-VM"]. Você também deve agendar backups frequentes e/ou https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/manage/backup-settings.html["utilize o utilitário de cópia de segurança de configuração incorporado"].
 
 
 ====
@@ -60,7 +60,7 @@ Você pode ignorar as duas primeiras etapas do processo de implantação se voc�
 *** Faça login na IU do Gerenciador de ferramentas do ONTAP
 *** https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/configure/add-storage-backend.html["Integrar o cluster de storage"]
 *** https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/configure/associate-storage-backend.html["Associar um back-end de storage a uma instância do vCenter Server"]
-*** Forneça as credenciais específicas do SVM ao administrador do vCenter que, em seguida, adicionará o SVM como um back-end de storage no menu de back-ends de storage de ferramentas do ONTAP no vCenter.
+*** Forneça as credenciais específicas da SVM ao administrador do vCenter, que então adicionará a SVM como um backend de armazenamento no menu de backends de armazenamento das ferramentas ONTAP no vCenter.
 
 
 
@@ -70,13 +70,13 @@ Você pode ignorar as duas primeiras etapas do processo de implantação se voc�
 [TIP]
 ====
 * É uma prática recomendada criar funções de RBAC para suas contas de storage.
-* As ferramentas do ONTAP incluem um arquivo JSON contendo as permissões de função necessárias necessárias necessárias para contas de armazenamento de ferramentas do ONTAP. Você pode fazer o upload do arquivo JSON para o Gerenciador de sistemas do ONTAP para simplificar a criação de funções e usuários do RBAC.
+* As ferramentas ONTAP incluem um arquivo JSON contendo as permissões de função necessárias para as contas de armazenamento das ferramentas ONTAP . Você pode carregar o arquivo JSON no ONTAP System Manager para simplificar a criação de funções e usuários RBAC.
 * Você pode ler mais sobre as funções RBAC do ONTAP em https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/configure/configure-user-role-and-privileges.html#svm-aggregate-mapping-requirements["Configurar as funções de usuário do ONTAP e o Privileges"].
 
 
 ====
 
-NOTE: O motivo pelo qual todo o cluster precisa ser integrado na IU do Gerenciador de ferramentas do ONTAP é porque muitas das APIs usadas para vVols só estão disponíveis no nível do cluster.
+NOTE: O motivo pelo qual todo o cluster precisa ser integrado à interface do usuário do gerenciador de ferramentas ONTAP é que muitas das APIs usadas para vVols estão disponíveis apenas no nível do cluster.
 
 
 
@@ -107,7 +107,7 @@ image:vvols-deploy-4.png["Função \"Thumb\" \"provision datastore wizard\",300"
 
 * É tão fácil!
 +
-** Ferramentas ONTAP 10,3 com ONTAP FAS, AFF e ASA Prior ASA R2.
+** Ferramentas ONTAP 10.3 com ONTAP FAS, AFF e ASA anteriores ao ASA r2.
 
 
 * Selecione o protocolo
@@ -120,7 +120,7 @@ image:vvols-deploy-5.png["Função \"Thumb\" \"provision datastore wizard\",300"
 
 image:vvols-deploy-5a.png["Função \"Thumb\" \"provision datastore wizard\",300"]
 
-* Clique em _adicionar novos volumes_ ou em _usar volume existente_ e especifique os atributos. Observe que nas ferramentas do ONTAP 10,3 você pode solicitar que vários volumes sejam criados ao mesmo tempo. Você também pode adicionar manualmente vários volumes para equilibrá-los no cluster do ONTAP. Clique em _next_
+* Clique em _adicionar novos volumes_ ou _usar volume existente_ e especifique os atributos. Note que nas ferramentas ONTAP 10.3, você pode solicitar a criação de vários volumes simultaneamente. Você também pode adicionar manualmente vários volumes para distribuí-los pelo cluster ONTAP . Clique em _próximo_
 
 
 image:vvols-deploy-6.png["Função \"Thumb\" \"provision datastore wizard\",300"]
@@ -150,7 +150,7 @@ A migração de VMs de datastores tradicionais para um datastore vVols é tão s
 
 == Gerenciamento de VMs com políticas
 
-Para automatizar o provisionamento de storage com gerenciamento baseado em políticas, você precisa criar políticas de storage de VM que sejam mapeadas para as funcionalidades de storage desejadas.
+Para automatizar o provisionamento de armazenamento com gerenciamento baseado em políticas, você precisa criar políticas de armazenamento de VM que correspondam aos recursos de armazenamento desejados.
 
 
 NOTE: As ferramentas do ONTAP 10,0 e posteriores não usam mais perfis de capacidade de armazenamento como as versões anteriores. Em vez disso, os recursos de storage são definidos diretamente na própria política de storage da VM.
@@ -159,7 +159,7 @@ NOTE: As ferramentas do ONTAP 10,0 e posteriores não usam mais perfis de capaci
 
 === Criando políticas de armazenamento de VM
 
-As políticas de armazenamento de VM são usadas no vSphere para gerenciar recursos opcionais, como Storage I/o Control ou vSphere Encryption. Eles também são usados com vVols para aplicar funcionalidades de storage específicas à VM. Use o tipo de armazenamento "NetApp.Clustered.Data.ONTAP.VP.vvol". Veja o link:vmware-vvols-ONTAP.exemplo de configuração de rede usando vVols sobre NFS v3] para um exemplo disso com as ferramentas do provedor VASA da ONTAP. As regras para o armazenamento "NetApp.Clustered.Data.ONTAP.VP.VASA10" devem ser usadas com datastores não baseados em vVols.
+As políticas de armazenamento de máquinas virtuais (VMs) são usadas no vSphere para gerenciar recursos opcionais, como o controle de E/S de armazenamento ou a criptografia do vSphere. Eles também são usados ​​com vVols para aplicar recursos de armazenamento específicos à máquina virtual. Utilize o tipo de armazenamento " NetApp ". Veja o link:vmware-vvols-ontap.html#Best Practices[exemplo de configuração de rede usando vVols sobre NFS v3] para um exemplo disso com o provedor VASA das ferramentas ONTAP . As regras para o armazenamento "NetApp" devem ser usadas com datastores que não ONTAP baseados em vVols.
 
 Uma vez criada a política de storage, ela pode ser usada ao provisionar novas VMs.
 
@@ -171,12 +171,12 @@ image:vmware-vvols-deploy-vmsp-01.png["Criação de políticas de armazenamento 
 
 As ferramentas da ONTAP usam seu próprio algoritmo de colocação equilibrada para colocar uma nova evolução no melhor FlexVol volume com sistemas ASA unificados ou clássicos, ou zona de disponibilidade de armazenamento (SAZ) com sistemas ASA R2, dentro de um datastore da vVols. O posicionamento é baseado na correspondência do armazenamento de backup com a política de armazenamento de VM. Isso garante que o armazenamento de dados e o armazenamento de backup possam atender aos requisitos de desempenho especificados.
 
-A alteração dos recursos de performance, como IOPS mín. E máx., requer alguma atenção à configuração específica.
+Alterar as capacidades de desempenho, como IOPS mínimo e máximo, requer atenção à configuração específica.
 
 * *IOPS mínimo e máximo* podem ser especificados em uma política de VM.
 +
-** A alteração do IOPS na política não alterará a QoS nos vVols até que a Política de VM seja reaplicada às VMs que a usam. Ou você pode criar uma nova política com o IOPS desejado e aplicá-la às VMs de destino. Geralmente, é recomendável simplesmente definir políticas de storage de VM separadas para diferentes níveis de serviço e simplesmente alterar a política de storage de VM na VM.
-** As personalidades ASA, ASA R2, AFF e FAS têm configurações diferentes de IOPs. Tanto o mínimo quanto o máximo estão disponíveis em sistemas all flash; no entanto, os sistemas que não sejam AFF só podem usar configurações de IOPs máximas.
+** Alterar o IOPS na política não alterará a QoS nos vVols até que a Política de VM seja reaplicada às VMs que a utilizam. Ou você pode criar uma nova política com o IOPS desejado e aplicá-la às VMs de destino. Em geral, recomenda-se simplesmente definir políticas de armazenamento de VM separadas para diferentes níveis de serviço e alterar a política de armazenamento da VM diretamente na VM.
+** As personalidades ASA, ASA r2, AFF e FAS possuem configurações de PIO (pressão intraocular) diferentes. As opções Min e Max estão disponíveis em todos os sistemas flash; no entanto, sistemas que não sejam AFF só podem usar as configurações de IOPS máximo.
 
 
 * As ferramentas do ONTAP criam políticas individuais de QoS não compartilhadas com versões atualmente suportadas do ONTAP. Portanto, cada VMDK individual receberá sua própria alocação de IOPs.

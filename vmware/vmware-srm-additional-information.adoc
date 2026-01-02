@@ -20,7 +20,7 @@ Para saber mais sobre as informações descritas neste documento, consulte os se
 * Ferramentas do ONTAP para recursos do VMware vSphere 9.x. link:https://mysupport.netapp.com/site/products/all/details/otv/docsandkb-tab["https://mysupport.netapp.com/site/products/all/details/otv/docsandkb-tab"]
 * TR-4597: VMware vSphere for ONTAP link:vmware-vsphere-overview.html["https://docs.netapp.com/us-en/ontap-apps-dbs/vmware/vmware-vsphere-overview.html"]
 * TR-4400: VMware vSphere Virtual volumes com ONTAP link:vmware-vvols-overview.html["https://docs.netapp.com/us-en/ontap-apps-dbs/vmware/vmware-vvols-overview.html"]
-* TR-4015 Guia de práticas recomendadas de configuração do SnapMirror para ONTAP 9 link:https://www.netapp.com/media/17229-tr4015.pdf?v=127202175503P["https://www.netapp.com/media/17229-tr4015.pdf?v=127202175503P"]
+* TR-4015 Guia de Melhores Práticas de Configuração do SnapMirror para ONTAP 9 link:https://www.netapp.com/pdf.html?item=/media/17229-tr-4015-snapmirror-configuration-ontap.pdf["https://www.netapp.com/pdf.html?item=/media/17229-tr-4015-snapmirror-configuration-ontap.pdf"]
 * Documentação do VMware Live Site Recovery link:https://techdocs.broadcom.com/us/en/vmware-cis/live-recovery/live-site-recovery/9-0.html["https://techdocs.broadcom.com/us/en/vmware-cis/live-recovery/live-site-recovery/9-0.html"]
 
 

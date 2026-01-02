@@ -105,7 +105,7 @@ Em um ambiente em que o SnapVault é usado, os snapshots nomeados especificament
 
 Um volume de origem pode ser criado em uma configuração em cascata na qual um volume é replicado para um destino SnapMirror no local de DR e, a partir daí, é abobadado para um destino SnapVault. Um volume de origem também pode ser criado em uma relação de fan-out em que um destino é um destino SnapMirror e o outro destino é um destino SnapVault. No entanto, o SRA não reconfigura automaticamente a relação do SnapVault para usar o volume de destino do SnapMirror como a origem do Vault quando ocorre failover ou reversão de replicação do VLSR.
 
-Para obter as informações mais recentes sobre o SnapMirror e o SnapVault for ONTAP 9, consulte https://www.netapp.com/media/17229-tr4015.pdf?v=127202175503P["TR-4015 Guia de práticas recomendadas de configuração do SnapMirror para ONTAP 9."^]
+Para obter as informações mais recentes sobre o SnapMirror e o SnapVault para ONTAP 9, consulte https://www.netapp.com/pdf.html?item=/media/17229-tr-4015-snapmirror-configuration-ontap.pdf["TR-4015 Guia de práticas recomendadas de configuração do SnapMirror para ONTAP 9."^]
 
 |===
 | Prática recomendada 

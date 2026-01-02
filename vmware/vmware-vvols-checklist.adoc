@@ -103,6 +103,6 @@ Use esta lista de verificação de instalação para garantir uma implantação 
 * Se estiver usando HA, os nós vMotion do storage dois e três para separar armazenamentos de dados (opcional, mas recomendado).
 * https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/manage/certificate-manage.html["utilize gerir certificados"] No Gerenciador de ferramentas do ONTAP para instalar todos os certificados assinados pela CA necessários.
 * Se você ativou o SRA para SRM/VLSR para proteger armazenamentos de dados tradicionais, https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/protect/configure-on-srm-appliance.html["Configure o SRA no VMware Live Site Recovery Appliance"].
-* Configurar backups nativos para https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/manage/enable-backup.html["Perto de RPO zero"]o .
+* Configure backups nativos para https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-10/manage/backup-settings.html["Perto de RPO zero"].
 * Configure backups regulares para outras Mídias de armazenamento.
 

@@ -32,7 +32,7 @@ Para armazenamentos de dados NFS, você pode visualizar facilmente arquivos de V
 
 Para datastores VMFS, você pode criar um FlexClone do datastore com base no snapshot desejado. Isso permite que você crie um novo datastore baseado no snapshot, que pode ser usado para fins de teste ou desenvolvimento. O FlexClone só consumirá espaço para as alterações feitas após o snapshot ser obtido, tornando-o uma maneira eficiente de espaço para criar uma cópia do datastore. Uma vez que o FlexClone é criado, você pode mapear o LUN ou namespace para um host ESXi como um datastore comum. Isso permite que você restaure arquivos de VM específicos, além de permitir a criação rápida de ambientes de teste ou desenvolvimento com base em dados de produção sem impactar a performance do ambiente de produção.
 
-Para obter mais informações sobre instantâneos, consulte a documentação do ONTAP. Os seguintes links fornecem detalhes adicionais: https://docs.netapp.com/us-en/ontap/data-protection/manage-local-snapshot-copies-concept.html["Cópias Snapshot locais do ONTAP"^] https://docs.netapp.com/us-en/ontap/data-protection/manage-snapmirror-replication.html["Replicação ONTAP SnapMirror"^]
+Para obter mais informações sobre snapshots, consulte a documentação do ONTAP . Os links a seguir fornecem detalhes adicionais: https://docs.netapp.com/us-en/ontap/data-protection/manage-local-snapshot-copies-concept.html["Cópias Snapshot locais do ONTAP"^] https://docs.netapp.com/us-en/ontap/data-protection/snapmirror-replication-workflow-concept.html["Fluxo de trabalho de replicação do ONTAP SnapMirror"^]
 
 
 
