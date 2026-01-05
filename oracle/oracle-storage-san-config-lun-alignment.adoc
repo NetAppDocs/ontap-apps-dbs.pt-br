@@ -17,7 +17,11 @@ searchtitle: Alinhamento LUN para e/S de banco de dados Oracle
 [role="lead"]
 Alinhamento LUN refere-se a otimizar e/S em relação ao layout do sistema de arquivos subjacente.
 
-Diretiva não resolvida no <stdin> - incluir::lun-alignment.adoc[]
+Em um sistema ONTAP, o storage é organizado em 4KB unidades. Um bloco 8KB do banco de dados ou do sistema de arquivos deve ser mapeado para exatamente dois blocos 4KB. Se um erro na configuração de LUN mudar o alinhamento em 1KB em qualquer direção, cada bloco 8KB existiria em três blocos de armazenamento 4KB diferentes em vez de dois. Esse arranjo causaria maior latência e causaria a realização de e/S adicionais no sistema de storage.
+
+O alinhamento também afeta arquiteturas LVM. Se um volume físico dentro de um grupo de volumes lógicos for definido em todo o dispositivo da unidade (nenhuma partição é criada), o primeiro bloco 4KB no LUN se alinha com o primeiro bloco 4KB no sistema de armazenamento. Este é um alinhamento correto. Problemas surgem com partições porque eles mudam o local inicial onde o sistema operacional usa o LUN. Desde que o deslocamento seja deslocado em unidades inteiras de 4KB, o LUN é alinhado.
+
+Em ambientes Linux, crie grupos de volume lógicos em todo o dispositivo de unidade. Quando uma partição for necessária, verifique o alinhamento executando `fdisk -u` e verificando se o início de cada partição é um múltiplo de oito. Isso significa que a partição começa em um múltiplo de oito setores de 512 bytes, que é 4KB.
 
 Consulte também a discussão sobre o alinhamento do bloco de compressão na link:oracle-ontap-config-efficiency.html["Eficiência"]seção . Qualquer layout que esteja alinhado com os limites do bloco de compressão 8KBD também está alinhado com os limites 4KBD.
 
@@ -25,7 +29,11 @@ Consulte também a discussão sobre o alinhamento do bloco de compressão na lin
 
 == Avisos de desalinhamento
 
-Diretiva não resolvida no <stdin> - include::database-misalignment-warnings.adoc[]
+O log de refazer/transações do banco de dados normalmente gera e/S desalinhadas que podem causar avisos enganosos sobre LUNs desalinhados no ONTAP.
+
+O log executa uma gravação sequencial do arquivo de log com gravações de tamanho variável. Uma operação de gravação de log que não esteja alinhada aos limites do 4KB normalmente não causa problemas de desempenho porque a próxima operação de gravação de log completa o bloco. O resultado é que o ONTAP é capaz de processar quase todas as gravações como blocos 4KB completos, mesmo que os dados em cerca de 4KB blocos tenham sido gravados em duas operações separadas.
+
+Verifique o alinhamento usando utilitários como `sio` ou `dd` que podem gerar e/S em um tamanho de bloco definido. As estatísticas de alinhamento de e/S no sistema de storage podem ser visualizadas com o `stats` comando. Consulte link:../notes/wafl_alignment_verification.html["Verificação do alinhamento do WAFL"] para obter mais informações.
 
 O alinhamento em ambientes Solaris é mais complicado.  http://support.netapp.com/documentation/productlibrary/index.html?productID=61343["Configuração do host SAN ONTAP"^]Consulte para obter mais informações.
 
