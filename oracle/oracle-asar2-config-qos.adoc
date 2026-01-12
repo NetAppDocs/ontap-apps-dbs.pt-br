@@ -1,0 +1,49 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-asar2-config-qos.html 
+keywords: qos, bandwidth, minimum, guaranteed, adaptive, ASA r2, oracle 
+summary: Gerenciamento de desempenho do banco de dados Oracle com ONTAP QoS no ASA r2 
+searchtitle: Gerenciamento de desempenho do banco de dados Oracle com ONTAP QoS no ASA r2 
+---
+= Gerenciamento de desempenho com ONTAP QoS em sistemas ASA r2
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Gerenciar com segurança e eficiência vários bancos de dados Oracle no ASA r2 requer uma estratégia de QoS eficaz. Isso é especialmente importante porque os sistemas ASA r2 são plataformas SAN totalmente em flash, projetadas para desempenho extremamente alto e consolidação de cargas de trabalho.
+
+Um número relativamente pequeno de SSDs pode saturar até mesmo os controladores mais potentes, portanto, os controles de QoS são essenciais para garantir um desempenho previsível em diversas cargas de trabalho. Como referência, os sistemas ASA r2, como o ASA A1K ou A90, podem fornecer centenas de milhares a mais de um milhão de IOPS com latência inferior a um milissegundo. Pouquíssimas cargas de trabalho individuais consumiriam esse nível de desempenho, portanto, a utilização plena normalmente envolve a hospedagem de vários bancos de dados ou aplicativos. Fazer isso com segurança requer políticas de QoS para evitar a disputa por recursos.
+
+O ONTAP QoS no ASA r2 funciona da mesma forma que nos sistemas AFF/ FAS , com dois tipos principais de controles: IOPS e largura de banda. Os controles de QoS podem ser aplicados a SVMs e LUNs.
+
+
+
+== QoS de IOPS
+
+A QoS baseada em IOPS limita o total de IOPS para um determinado recurso. No ASA r2, as políticas de QoS podem ser aplicadas no nível do SVM e a objetos de armazenamento individuais, como LUNs. Quando uma carga de trabalho atinge seu limite de IOPS, solicitações adicionais de E/S são enfileiradas para obtenção de tokens, o que introduz latência. Esse é o comportamento esperado e impede que uma única carga de trabalho monopolize os recursos do sistema.
+
+
+NOTE: Tenha cautela ao aplicar controles de QoS aos dados de log de transações/refazer do banco de dados. Essas cargas de trabalho são intermitentes, e um limite de QoS que parece razoável para a atividade média pode ser muito baixo para picos de atividade, causando sérios problemas de desempenho. Em geral, o registro de refazer e arquivar não deve ser limitado pela QoS.
+
+
+
+== QoS de largura de banda
+
+A QoS baseada em largura de banda limita a taxa de transferência em Mbps. Isso é útil quando as cargas de trabalho executam leituras ou gravações de blocos grandes, como varreduras completas de tabelas ou operações de backup, que consomem uma largura de banda significativa, mas relativamente poucas operações de E/S (IOPS). A combinação de limites de IOPS e de largura de banda pode proporcionar um controle mais preciso.
+
+
+
+== QoS mínima/garantida
+
+As políticas mínimas de QoS reservam o desempenho para cargas de trabalho críticas. Por exemplo, em um ambiente misto com bancos de dados de produção e desenvolvimento, aplique o máximo de QoS às cargas de trabalho de desenvolvimento e o mínimo de QoS às cargas de trabalho de produção para garantir um desempenho previsível.
+
+
+
+== QoS adaptável
+
+O QoS adaptativo ajusta os limites com base no tamanho do objeto de armazenamento. Embora raramente utilizado para bancos de dados (porque o tamanho não se correlaciona com as necessidades de desempenho), pode ser útil para cargas de trabalho de virtualização, onde os requisitos de desempenho aumentam com a capacidade.

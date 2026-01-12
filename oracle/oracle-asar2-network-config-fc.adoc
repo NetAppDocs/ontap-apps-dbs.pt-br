@@ -1,0 +1,36 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-asar2-network-config-fc.html 
+keywords: SAN, zoning, ASA r2 
+summary: Configuração de rede FC para bancos de dados Oracle com ASA r2 
+searchtitle: Configuração FC SAN para bancos de dados Oracle com ASA r2 
+---
+= Configuração de FC SAN
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+A configuração de FC SAN para bancos de dados Oracle em sistemas ASA r2 consiste principalmente em seguir as melhores práticas padrão de SAN.
+
+O ASA r2 é otimizado para cargas de trabalho exclusivas de SAN, portanto, os princípios permanecem os mesmos do AFF/ FAS, com foco em desempenho, resiliência e simplicidade. Isso inclui medidas típicas de planejamento, como garantir largura de banda suficiente na SAN entre o host e o sistema de armazenamento, verificar se todos os caminhos SAN existem entre todos os dispositivos necessários, usar as configurações de porta FC exigidas pelo fornecedor do switch FC, evitar conflitos de ISL e usar o monitoramento adequado da estrutura SAN.
+
+
+
+== Zoneamento
+
+Uma zona FC nunca deve conter mais de um iniciador. Tal arranjo pode parecer funcionar inicialmente, mas a conversa cruzada entre iniciadores eventualmente interfere com o desempenho e a estabilidade.
+
+As zonas de destino múltiplo são geralmente consideradas seguras, embora em raras circunstâncias o comportamento das portas de destino FC de diferentes fornecedores tenha causado problemas. Por exemplo, evite incluir as portas de destino de um storage array NetApp e não NetApp na mesma zona. Além disso, é ainda mais provável que colocar um sistema de storage NetApp e um dispositivo de fita na mesma zona cause problemas.
+
+[NOTE]
+====
+* O ASA r2 usa Zonas de Disponibilidade de Armazenamento em vez de agregados, mas isso não altera os princípios de zoneamento do FC.
+* O multipathing (MPIO) continua sendo o principal mecanismo de resiliência; no entanto, para sistemas ASA r2 que suportam multipathing ativo-ativo simétrico, todos os caminhos para um LUN estão ativos e são usados ​​para E/S simultaneamente.
+
+
+====

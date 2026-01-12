@@ -1,0 +1,78 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-asar2-host-config-aix.html 
+keywords: oracle, database, ASA r2, ontap, aix, cio 
+summary: Bancos de dados Oracle com AIX no ASA r2 
+searchtitle: Bancos de dados Oracle com IBM AIX no ASA r2 
+---
+= AIX
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Tópicos de configuração para banco de dados Oracle no IBM AIX com ASA r2 ONTAP.
+
+[NOTE]
+====
+O AIX é compatível com o NetApp ASA r2 para hospedagem de bancos de dados Oracle, desde que:
+
+* Você configurou o Oracle corretamente para E/S simultânea.
+* Você utiliza protocolos SAN compatíveis (FC/iSCSI/NVMe).
+* Você executa o ONTAP 9.16.x ou posterior no ASA r2.
+
+
+====
+
+
+== E/S simultânea
+
+Para obter o desempenho ideal no IBM AIX com ASA r2, é necessário utilizar E/S simultânea. Sem E/S simultânea, é provável que haja limitações de desempenho, pois o AIX realiza E/S serializada e atômica, o que acarreta uma sobrecarga significativa.
+
+Originalmente, a NetApp recomendava o uso do `cio` A opção de montagem forçava a E/S simultânea no sistema de arquivos, mas esse processo tinha desvantagens e não é mais necessário. Desde a introdução do AIX 5.2 e do Oracle 10gR1, o Oracle no AIX pode abrir arquivos individuais para E/S simultânea, em vez de forçar E/S simultânea em todo o sistema de arquivos.
+
+O melhor método para ativar e/S concorrente é definir o `init.ora` parâmetro `filesystemio_options` como `setall`. Isso permite que a Oracle abra arquivos específicos para uso com e/S concorrente
+
+Usar o cio como opção de montagem força o uso de E/S simultânea, o que pode ter consequências negativas. Por exemplo, forçar E/S simultânea desativa a leitura antecipada nos sistemas de arquivos, o que pode prejudicar o desempenho de E/S que ocorrem fora do software de banco de dados Oracle, como copiar arquivos e realizar backups em fita. Além disso, produtos como o Oracle GoldenGate e o SAP BR*Tools não são compatíveis com o uso da opção de montagem cio em determinadas versões do Oracle.
+
+[TIP]
+====
+*A NetApp recomenda* o seguinte:
+
+* Não use a `cio` opção de montagem no nível do sistema de arquivos. Em vez disso, ative a e/S concorrente através do uso `filesystemio_options=setall` do .
+* Use apenas o `cio` opção de montagem se não for possível definir `filesystemio_options=setall`.
+
+
+====
+
+NOTE: Como o ASA r2 não suporta NAS, todas as implementações do Oracle no AIX devem usar protocolos de bloco.
+
+
+
+== AIX jfs/jfs2 Opções de montagem
+
+A tabela a seguir lista as opções de montagem do AIX jfs/jfs2.
+
+|===
+| Tipo de ficheiro | Opções de montagem 
+
+
+| ADR Home | Predefinições 
+
+
+| Arquivos de controle | Predefinições 
+
+
+| Arquivos de dados | Predefinições 
+
+
+| Logs de refazer | Predefinições 
+
+
+| ORACLE_HOME | Predefinições 
+|===
+Antes de usar o AIX `hdisk` dispositivos em qualquer ambiente, incluindo bancos de dados, verifique o parâmetro `queue_depth`. Este parâmetro não se refere à profundidade da fila HBA; em vez disso, relaciona-se à profundidade da fila SCSI do dispositivo individual. `hdisk device`. Dependendo de como os LUNs do ASA r2 estão configurados, o valor para `queue_depth` Pode ser muito baixo para um bom desempenho. Os testes demonstraram que o valor ideal é 64.

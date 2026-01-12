@@ -1,0 +1,83 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-asar2-network-config-lifs.html 
+keywords: LIF, multipath, multipathing, ASA r2, oracle 
+summary: Projeto de interface lógica para bancos de dados Oracle com ASA r2 
+searchtitle: Projeto de interface lógica para bancos de dados Oracle com ASA r2 
+---
+= Interfaces lógicas
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Os bancos de dados Oracle precisam de acesso ao armazenamento. Interfaces lógicas (LIFs) são o encanamento de rede que coneta uma máquina virtual de armazenamento (SVM) à rede e, por sua vez, ao banco de dados. O design de LIF adequado é necessário para garantir que haja largura de banda suficiente para cada workload de banco de dados, e o failover não resulta em perda de serviços de storage.
+
+Esta seção fornece uma visão geral dos principais princípios de design LIF para sistemas ASA r2, otimizados para ambientes exclusivamente SAN. Para obter documentação mais completa, consulte o link:https://docs.netapp.com/us-en/ontap/network-management/index.html["Documentação do Gerenciamento de rede da ONTAP"]. Assim como em outros aspectos da arquitetura de banco de dados, as melhores opções para o projeto de máquina virtual de armazenamento (SVM, conhecida como vserver na linha de comando) e interface lógica (LIF) dependem muito dos requisitos de escalabilidade e das necessidades do negócio.
+
+Considere os seguintes tópicos principais ao criar uma estratégia de LIF:
+
+* *Desempenho.* A largura de banda da rede é suficiente para as cargas de trabalho do Oracle?
+* *Resiliência.* Há algum ponto único de falha no projeto?
+* *Capacidade de gerenciamento.* A rede pode ser dimensionada sem interrupções?
+
+
+Esses tópicos se aplicam à solução completa, desde o host até os switches até o sistema de storage.
+
+
+
+== Tipos de LIF
+
+Existem vários tipos de LIF. link:https://docs.netapp.com/us-en/ontap/networking/lif_compatibility_with_port_types.html["Documentação do ONTAP sobre tipos de LIF"] Forneça informações mais completas sobre este tópico, mas de uma perspetiva funcional os LIFs podem ser divididos nos seguintes grupos:
+
+* *LIFs de gerenciamento de clusters e nós.* LIFs usadas para gerenciar o cluster de armazenamento.
+* *LIFs de gerenciamento de SVM.* Interfaces que permitem o acesso a um SVM por meio da API REST ou ONTAPI (também conhecida como ZAPI) para funções como criação de snapshot ou redimensionamento de volume. Produtos como o SnapManager para Oracle (SMO) precisam ter acesso a um LIF de gerenciamento de SVM.
+* *Fichas de dados LIF.* Interfaces compatíveis apenas com protocolos SAN: FC, iSCSI, NVMe/FC, NVMe/TCP. Os protocolos NAS (NFS, SMB/CIFS) não são suportados em sistemas ASA r2.
+
+
+
+NOTE: Não é possível configurar uma interface para tráfego iSCSI (ou NVMe/TCP) e tráfego de gerenciamento simultaneamente, apesar de ambos utilizarem um protocolo IP. É necessário um LIF de gerenciamento separado em ambientes iSCSI ou NVMe/TCP. Para garantir resiliência e desempenho, configure várias LIFs de dados SAN por protocolo por nó e distribua-as por diferentes portas físicas e estruturas. Diferentemente dos sistemas AFF/ FAS , o ASA r2 não permite tráfego NFS ou SMB, portanto não há opção de reutilizar uma LIF de dados NAS para gerenciamento.
+
+
+
+== Design de SAN LIF
+
+O design de LIF em um ambiente SAN é relativamente simples por um motivo: Multipathing. Todas as implementações de SAN modernas permitem que um cliente acesse dados em vários caminhos de rede independentes e selecione o melhor caminho ou caminhos para acesso. Como resultado, o desempenho em relação ao design de LIF é mais simples de abordar, pois os clientes SAN equilibram automaticamente a e/S de carga nos melhores caminhos disponíveis.
+
+Se um caminho ficar indisponível, o cliente selecionará automaticamente um caminho diferente. A simplicidade resultante do design torna os LIFs SAN geralmente mais gerenciáveis. Isso não significa que um ambiente SAN sempre seja gerenciado com mais facilidade, porque há muitos outros aspectos do storage SAN que são muito mais complicados do que o NFS. Isso significa simplesmente que o design de SAN LIF é mais fácil.
+
+
+
+=== Desempenho
+
+O fator mais importante a considerar em relação ao desempenho de uma LIF em um ambiente SAN é a largura de banda. Por exemplo, um cluster ASA r2 de dois nós com duas portas FC de 32 Gb por nó permite até 64 Gb de largura de banda de/para cada nó. Da mesma forma, para NVMe/TCP ou iSCSI, assegure conectividade suficiente de 25GbE ou 100GbE para cargas de trabalho Oracle.
+
+
+
+=== Resiliência
+
+As interfaces LIF SAN não realizam failover da mesma forma que as interfaces LIF NAS. Os sistemas ASA r2 dependem de multipathing do host (MPIO/ALUA) para resiliência. Se uma SAN LIF ficar indisponível devido a uma falha do controlador, o software de multipathing do cliente detecta a perda de um caminho e redireciona a E/S para um caminho alternativo. O ASA r2 pode realizar a realocação do LIF após um breve atraso para restaurar a disponibilidade total do caminho, mas isso não interrompe a E/S porque já existem caminhos ativos no nó parceiro. O processo de failover ocorre para restaurar o acesso do host em todas as portas definidas.
+
+
+
+=== Capacidade de gerenciamento
+
+Não há necessidade de migrar uma LIF em um ambiente SAN quando os volumes são realocados dentro do par HA. Isso ocorre porque, após a conclusão da movimentação do volume, o ONTAP envia uma notificação ao SAN sobre uma alteração nos caminhos, e os clientes SAN se reotimizam automaticamente. A migração de LIF com SAN está principalmente associada a grandes alterações físicas de hardware. Por exemplo, se for necessária uma atualização não disruptiva dos controladores, uma SAN LIF é migrada para o novo hardware. Caso uma porta FC apresente defeito, uma LIF pode ser migrada para uma porta não utilizada.
+
+
+
+=== Recomendações de design
+
+A NetApp faz as seguintes recomendações para ambientes SAN ASA r2:
+
+* Não crie mais caminhos do que o necessário. O número excessivo de caminhos torna o gerenciamento geral mais complicado e pode causar problemas com failover de caminho em alguns hosts. Além disso, alguns hosts têm limitações de caminho inesperadas para configurações como inicialização por SAN.
+* Poucas configurações devem exigir mais de quatro caminhos para um LUN. O valor de ter mais de dois nós anunciando caminhos para LUNs é limitado porque o host agregado de um LUN fica inacessível se o nó proprietário do LUN e seu parceiro de HA falhar. A criação de caminhos em nós que não o par de HA principal não é útil em tal situação.
+* Embora o número de caminhos de LUN visíveis possa ser gerenciado selecionando quais portas estão incluídas nas zonas FC, geralmente é mais fácil incluir todos os pontos de destino potenciais na zona FC e controlar a visibilidade de LUN no nível ONTAP.
+* Utilize o recurso de mapeamento seletivo de LUN (SLM), que está ativado por padrão. Com o SLM, qualquer novo LUN é automaticamente anunciado a partir do nó que possui o agregado subjacente e do parceiro HA do nó. Essa configuração evita a necessidade de criar conjuntos de portas ou configurar o zoneamento para limitar o acesso às portas. Cada LUN está disponível no número mínimo de nós necessários para desempenho e resiliência ideais.
+* Caso seja necessário migrar um LUN para fora dos dois controladores, os nós adicionais podem ser adicionados com o `lun mapping add-reporting-nodes` comando para que os LUNs sejam anunciados nos novos nós. Ao fazer isso, são criados caminhos SAN adicionais para os LUNs, permitindo a migração dos mesmos. No entanto, o host precisa realizar uma operação de descoberta para usar os novos caminhos.
+* Não se preocupe excessivamente com o tráfego indireto. É melhor evitar o tráfego indireto em um ambiente com uso intenso de e/S para o qual cada microssegundo de latência é crítico, mas o efeito de performance visível é insignificante para workloads típicos.
+

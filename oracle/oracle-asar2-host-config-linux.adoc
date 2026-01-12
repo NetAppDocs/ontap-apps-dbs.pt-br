@@ -1,0 +1,84 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-asar2-host-config-linux.html 
+keywords: oracle, database, ASA r2, ontap, linux, nfs, xfs, ext4, slot tables 
+summary: Bancos de dados Oracle com Linux no ASA r2 
+searchtitle: Bancos de dados Oracle com Linux no ASA r2 
+---
+= Linux
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Tópicos de configuração específicos para o sistema operacional Linux com ASA r2 ONTAP.
+
+[NOTE]
+====
+O Linux (Oracle Linux, RHEL, SUSE) é compatível com o ASA r2 para bancos de dados Oracle. Utilize protocolos SAN, configure o multipathing corretamente e aplique as melhores práticas da Oracle para otimização de ASM e E/S.
+
+====
+
+
+== Programador de e/S.
+
+O kernel Linux permite um controle de baixo nível sobre a maneira como e/S para bloquear dispositivos é agendada. Os padrões em várias distribuições do Linux variam consideravelmente. Testes mostram que o prazo geralmente oferece os melhores resultados, mas ocasionalmente o NOOP foi um pouco melhor. A diferença de desempenho é mínima, mas teste ambas as opções se for necessário extrair o máximo desempenho possível de uma configuração de banco de dados. O CFQ é o padrão em muitas configurações e demonstrou problemas significativos de desempenho com cargas de trabalho de banco de dados.
+
+Consulte a documentação relevante do fornecedor do Linux para obter instruções sobre como configurar o agendador de e/S.
+
+
+
+== Multipathing
+
+Alguns clientes encontraram falhas durante a interrupção da rede porque o daemon multipath não estava sendo executado em seu sistema. Em versões recentes do Linux, o processo de instalação do sistema operacional e do daemon multipathing podem deixar esses sistemas operacionais vulneráveis a esse problema. Os pacotes são instalados corretamente, mas não são configurados para inicialização automática após uma reinicialização.
+
+Por exemplo, a configuração padrão do daemon multipath no RHEL 9.7 pode ser a seguinte:
+
+....
+[root@host1 ~]# systemctl list-unit-files --type=service | grep multipathd
+multipathd.service                      disabled
+....
+Isso pode ser corrigido com os seguintes comandos:
+
+....
+[root@host1 ~]# systemctl enable multipathd.service
+[root@host1 ~]# systemctl list-unit-files --type=service | grep multipathd
+multipathd.service                      enabled
+....
+
+
+== Profundidade da fila
+
+Defina a profundidade de fila adequada para os dispositivos SAN a fim de evitar gargalos de E/S. A profundidade de fila padrão no Linux geralmente é definida como 128, o que pode causar problemas de desempenho com bancos de dados Oracle. Configurar uma profundidade de fila muito alta pode causar enfileiramento excessivo de operações de E/S, levando ao aumento da latência e à redução da taxa de transferência. Definir um valor muito baixo pode limitar o número de solicitações de E/S pendentes, reduzindo o desempenho geral. Uma profundidade de fila de 64 costuma ser um bom ponto de partida para cargas de trabalho de banco de dados Oracle no ASA r2, mas pode precisar ser ajustada com base nas características específicas da carga de trabalho e nos testes de desempenho.
+
+
+
+== Espelhamento ASM
+
+O espelhamento ASM pode exigir alterações nas configurações de multipath do Linux para permitir que o ASM reconheça um problema e alterne para um grupo de falhas alternativo. A maioria das configurações ASM no ONTAP usa redundância externa, o que significa que a proteção de dados é fornecida pelo array externo e o ASM não espelha dados. Alguns sites usam ASM com redundância normal para fornecer espelhamento bidirecional, normalmente em diferentes sites.
+
+Para sistemas ASA r2 que suportam multipathing ativo-ativo, essas configurações de multipathing devem ser ajustadas. Como todos os caminhos estão ativos e com balanceamento de carga, o enfileiramento indefinido não é necessário. Em vez disso, os parâmetros de múltiplos caminhos devem priorizar o desempenho e a rápida recuperação em caso de falha. Esse comportamento é importante para o espelhamento ASM, pois o ASM precisa receber uma falha de E/S para tentar novamente a E/S em um LUN alternativo. Se as operações de E/S forem enfileiradas indefinidamente, o ASM não poderá acionar um failover.
+
+Defina os seguintes parâmetros no arquivo Linux `multipath.conf` para LUNs ASM usados com espelhamento ASM:
+
+....
+polling_interval 5
+no_path_retry 24
+failback immediate
+path_grouping_policy multibus
+path_selector "service-time 0"
+....
+Essas configurações criam um tempo limite de 120 segundos para dispositivos ASM. O tempo limite é calculado como `polling_interval` * `no_path_retry` como segundos. O valor exato pode precisar ser ajustado em algumas circunstâncias, mas um tempo limite de 120 segundos deve ser suficiente para a maioria dos usos. Especificamente, 120 segundos devem permitir que uma tomada de controle ou giveback ocorra sem produzir um erro de e/S que resultaria em que o grupo de falha fosse colocado offline.
+
+Um valor menor `no_path_retry` pode reduzir o tempo necessário para que o ASM alterne para um grupo de falhas alternativo, mas isso também aumenta o risco de um failover indesejado durante atividades de manutenção, como um controle de controle. O risco pode ser atenuado por um monitoramento cuidadoso do estado de espelhamento do ASM. Se ocorrer um failover indesejado, os espelhos podem ser ressinced rapidamente se a ressincronização for executada de forma relativamente rápida. Para obter informações adicionais, consulte a documentação Oracle sobre ASM Fast Mirror Resync para a versão do software Oracle em uso.
+
+
+
+== Opções de montagem Linux xfs, ext3 e ext4
+
+
+TIP: * A NetApp recomenda* o uso das opções de montagem padrão. Ao criar sistemas de arquivos em LUNs, assegure-se de que o alinhamento esteja correto.

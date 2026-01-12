@@ -1,0 +1,41 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-asar2-storage-san-config-lun-resizing.html 
+keywords: SAN, ASM, LVM, oracle, LUN, ASA r2 
+summary: Redimensionamento de LUN e LVM com bancos de dados Oracle no ASA r2 
+searchtitle: Redimensionamento de LUN e redimensionamento de LVM em banco de dados Oracle com ASA r2 
+---
+= Redimensionamento LUN e redimensionamento LVM
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Quando um sistema de arquivos baseado em SAN ou um grupo de discos Oracle ASM atinge seu limite de capacidade no ASA r2, existem duas opções para aumentar o espaço disponível:
+
+* Aumentar o tamanho das LUNs (unidades de armazenamento) existentes.
+* Adicione um novo LUN a um grupo de discos ASM ou grupo de volumes LVM existente e expanda o volume lógico contido.
+
+
+Embora o redimensionamento de LUN seja suportado no ASA r2, geralmente é melhor usar um Gerenciador de Volumes Lógicos (LVM), como o Oracle ASM. Uma das principais razões para a existência dos LVMs é evitar a necessidade de redimensionamento frequente de LUNs. Com um LVM, vários LUNs são combinados em um pool virtual de armazenamento. Os volumes lógicos criados a partir desse pool podem ser facilmente redimensionados sem afetar a configuração de armazenamento subjacente.
+
+Outros benefícios do uso de LVM ou ASM incluem:
+
+* Otimização de desempenho: Distribui as operações de E/S por vários LUNs, reduzindo os pontos de acesso intenso.
+* Flexibilidade: Adicione novos LUNs sem interromper as cargas de trabalho existentes.
+* Migração transparente: ASM ou LVM podem realocar extensões para novos LUNs para balanceamento ou tiering sem tempo de inatividade do host.
+
+
+[NOTE]
+====
+Principais considerações sobre a ASA r2:
+
+* O redimensionamento de LUN é realizado no nível da unidade de armazenamento dentro de uma Máquina Virtual de Armazenamento (SVM), utilizando a capacidade da Zona de Disponibilidade de Armazenamento (SAZ).
+* Para a Oracle, a melhor prática é adicionar LUNs aos grupos de discos ASM em vez de redimensionar os LUNs existentes, para manter o striping e o paralelismo.
+
+
+====

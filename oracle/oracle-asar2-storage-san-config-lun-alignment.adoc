@@ -1,0 +1,57 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-asar2-storage-san-config-lun-alignment.html 
+keywords: SAN, ASM, LVM, oracle, ASA r2 
+summary: Alinhamento de LUN com bancos de dados Oracle no ASA r2 
+searchtitle: Alinhamento de LUN para E/S de banco de dados Oracle com ASA r2 
+---
+= Alinhamento LUN
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Alinhamento LUN refere-se a otimizar e/S em relação ao layout do sistema de arquivos subjacente.
+
+Os sistemas ASA r2 utilizam a mesma arquitetura ONTAP que o AFF/ FAS , mas com um modelo de configuração simplificado. Os sistemas ASA r2 usam Zonas de Disponibilidade de Armazenamento (SAZ) em vez de agregados, mas os princípios de alinhamento permanecem os mesmos porque o ONTAP gerencia o layout de blocos de forma consistente em todas as plataformas. No entanto, observe estes pontos específicos da ASA:
+
+* Os sistemas ASA r2 fornecem caminhos simétricos ativo-ativo para todos os LUNs, o que elimina preocupações com assimetria de caminho durante o alinhamento.
+* As unidades de armazenamento (LUNs) são provisionadas dinamicamente por padrão; o alinhamento não altera esse comportamento.
+* A reserva de snapshots e a exclusão automática de snapshots podem ser configuradas durante a criação do LUN (ONTAP 9.18.1 e posterior).
+
+
+Em um sistema ONTAP, o storage é organizado em 4KB unidades. Um bloco 8KB do banco de dados ou do sistema de arquivos deve ser mapeado para exatamente dois blocos 4KB. Se um erro na configuração de LUN mudar o alinhamento em 1KB em qualquer direção, cada bloco 8KB existiria em três blocos de armazenamento 4KB diferentes em vez de dois. Esse arranjo causaria maior latência e causaria a realização de e/S adicionais no sistema de storage.
+
+O alinhamento também afeta arquiteturas LVM. Se um volume físico dentro de um grupo de volumes lógicos for definido em todo o dispositivo da unidade (nenhuma partição é criada), o primeiro bloco 4KB no LUN se alinha com o primeiro bloco 4KB no sistema de armazenamento. Este é um alinhamento correto. Problemas surgem com partições porque eles mudam o local inicial onde o sistema operacional usa o LUN. Desde que o deslocamento seja deslocado em unidades inteiras de 4KB, o LUN é alinhado.
+
+Em ambientes Linux, crie grupos de volume lógicos em todo o dispositivo de unidade. Quando uma partição for necessária, verifique o alinhamento executando `fdisk -u` e verificando se o início de cada partição é um múltiplo de oito. Isso significa que a partição começa em um múltiplo de oito setores de 512 bytes, que é 4KB.
+
+Consulte também a discussão sobre o alinhamento do bloco de compressão na link:oracle-ontap-config-efficiency.html["Eficiência"]seção . Qualquer layout que esteja alinhado com os limites do bloco de compressão 8KBD também está alinhado com os limites 4KBD.
+
+
+
+== Avisos de desalinhamento
+
+O log de refazer/transações do banco de dados normalmente gera e/S desalinhadas que podem causar avisos enganosos sobre LUNs desalinhados no ONTAP.
+
+O log executa uma gravação sequencial do arquivo de log com gravações de tamanho variável. Uma operação de gravação de log que não esteja alinhada aos limites do 4KB normalmente não causa problemas de desempenho porque a próxima operação de gravação de log completa o bloco. O resultado é que o ONTAP é capaz de processar quase todas as gravações como blocos 4KB completos, mesmo que os dados em cerca de 4KB blocos tenham sido gravados em duas operações separadas.
+
+Verifique o alinhamento usando utilitários como `sio` ou `dd` que pode gerar E/S em um tamanho de bloco definido. As estatísticas de alinhamento de E/S no sistema de armazenamento podem ser visualizadas com o `stats` comando. Ver link:../notes/wafl_alignment_verification.html["Verificação do alinhamento do WAFL"] Para obter mais informações.
+
+O alinhamento em ambientes Solaris é mais complicado.  http://support.netapp.com/documentation/productlibrary/index.html?productID=61343["Configuração do host SAN ONTAP"^]Consulte para obter mais informações.
+
+[CAUTION]
+====
+Nos ambientes Solaris x86, tenha cuidado adicional com o alinhamento adequado, pois a maioria das configurações tem várias camadas de partições. Os cortes de partição do Solaris x86 geralmente existem em cima de uma tabela de partição de Registro de inicialização principal padrão.
+
+====
+Boas práticas adicionais:
+
+* Verifique as configurações de firmware e sistema operacional do HBA em relação à ferramenta NetApp Interoperability Matrix Tool (IMT).
+* Utilize os utilitários do sanlun para confirmar a integridade e o alinhamento do caminho.
+* Para Oracle ASM e LVM, certifique-se de que os arquivos de configuração (/etc/lvm/lvm.conf, /etc/sysconfig/oracleasm) estejam configurados corretamente para evitar problemas de alinhamento.
+

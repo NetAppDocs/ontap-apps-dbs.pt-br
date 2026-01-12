@@ -1,0 +1,68 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-asar2-config-thin-provisioning.html 
+keywords: thin provisioning, oracle, ASA r2 
+summary: Provisionamento dinâmico do Oracle e do ONTAP com o ASA r2 
+searchtitle: Provisionamento dinâmico com bancos de dados Oracle no ASA r2 
+---
+= Thin Provisioning
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O provisionamento dinâmico (thin provisioning) para um banco de dados Oracle no ASA r2 requer um planejamento cuidadoso, pois envolve a configuração de mais espaço lógico do que o fisicamente disponível. Quando implementado corretamente, o provisionamento dinâmico proporciona economias de custos significativas e melhor gerenciamento.
+
+O provisionamento dinâmico (thin provisioning) é parte integrante do ASA r2 e está intimamente relacionado às tecnologias de eficiência do ONTAP , pois ambos permitem o armazenamento de mais dados lógicos do que a capacidade física do sistema. Os sistemas ASA r2 são exclusivamente SAN e o provisionamento dinâmico se aplica a unidades de armazenamento e LUNs dentro das Zonas de Disponibilidade de Armazenamento (SAZ).
+
+
+NOTE: As unidades de armazenamento ASA r2 são provisionadas dinamicamente por padrão.
+
+Quase toda utilização de snapshots envolve provisionamento dinâmico. Por exemplo, um banco de dados típico de 10 TiB com snapshots dos últimos 30 dias pode aparecer como 310 TiB de dados lógicos, mas apenas 12 TiB a 15 TiB de espaço físico são consumidos, pois os snapshots armazenam somente os blocos alterados.
+
+Da mesma forma, a clonagem é outra forma de provisionamento dinâmico. Um ambiente de desenvolvimento com 40 clones de um banco de dados de 80 TiB exigiria 3,2 PiB se totalmente implementado, mas na prática consome muito menos, pois apenas as alterações são armazenadas.
+
+
+
+== Gerenciamento de espaço
+
+É preciso ter cuidado com o provisionamento dinâmico em um ambiente de aplicação, pois as taxas de alteração de dados podem aumentar inesperadamente. Por exemplo, o consumo de espaço devido a snapshots pode crescer rapidamente se as tabelas do banco de dados forem reindexadas ou se patches em larga escala forem aplicados às máquinas virtuais VMware. Um backup mal posicionado pode gravar uma grande quantidade de dados em um curto período de tempo. Por fim, pode ser difícil recuperar algumas aplicações se um LUN ficar sem espaço livre inesperadamente.
+
+No ASA r2, esses riscos são mitigados por meio de *provisionamento dinâmico*, *monitoramento proativo* e *políticas de redimensionamento de LUN*, em vez de recursos do ONTAP como crescimento automático de volume ou exclusão automática de snapshots. Os administradores devem:
+
+* Ativar provisionamento dinâmico em LUNs (`space-reserve disabled`) - esta é a configuração padrão no ASA r2
+* Monitore a capacidade usando alertas do Gerenciador de Sistemas ou automação baseada em API.
+* Use o redimensionamento de LUN agendado ou programado para acomodar o crescimento.
+* Configure a reserva de snapshots e a exclusão automática de snapshots através do Gerenciador de Sistemas (GUI).
+
+
+
+CAUTION: O planejamento cuidadoso dos limites de espaço e dos scripts de automação é essencial, pois o ASA r2 não oferece suporte ao crescimento automático de volumes nem à exclusão de snapshots controlada pela linha de comando.
+
+O ASA r2 não utiliza configurações de reserva fracionária porque é uma arquitetura exclusiva de SAN que abstrai as opções de volume baseadas em WAFL. Em vez disso, a eficiência de espaço e a proteção contra sobrescrita são gerenciadas no nível do LUN. Por exemplo, se você tiver um LUN de 250 GiB provisionado a partir de uma unidade de armazenamento, os snapshots consomem espaço com base nas alterações reais de bloco, em vez de reservar uma quantidade igual de espaço antecipadamente. Isso elimina a necessidade de grandes reservas estáticas, que eram comuns em ambientes ONTAP tradicionais que utilizavam reserva fracionária.
+
+
+NOTE: Caso seja necessária proteção garantida contra sobrescrita e o monitoramento não seja viável, os administradores devem provisionar capacidade suficiente na unidade de armazenamento e configurar a reserva de snapshots adequadamente. No entanto, o design do ASA r2 torna a reserva fracionária desnecessária para a maioria das cargas de trabalho.
+
+
+
+== Compactação e deduplicação
+
+A compressão e a deduplicação no ASA r2 são tecnologias de eficiência de espaço, não mecanismos tradicionais de provisionamento dinâmico. Essas funcionalidades reduzem a necessidade de armazenamento físico, eliminando dados redundantes e comprimindo blocos, permitindo o armazenamento de mais dados lógicos do que a capacidade bruta permitiria de outra forma.
+
+Por exemplo, um conjunto de dados de 50 TiB pode ser compactado para 30 TiB, economizando 20 TiB de espaço físico. Do ponto de vista da aplicação, ainda existem 50 TiB de dados, embora ocupem apenas 30 TiB em disco.
+
+
+NOTE: A compressibilidade de um conjunto de dados pode mudar ao longo do tempo, o que pode aumentar o consumo de espaço físico. Portanto, a compressão e a desduplicação devem ser gerenciadas proativamente por meio de monitoramento e planejamento de capacidade.
+
+
+
+== Espaço livre e alocação de espaço LVM
+
+O provisionamento dinâmico em ambientes ASA r2 pode perder eficiência ao longo do tempo se os blocos excluídos não forem recuperados. A menos que o espaço seja liberado usando TRIM/UNMAP ou sobrescrito com zeros (via ASMRU - Utilitário Automático de Gerenciamento e Recuperação de Espaço), os dados excluídos continuam a consumir capacidade física. Em muitos ambientes de banco de dados Oracle, o provisionamento dinâmico oferece benefícios limitados, pois os arquivos de dados normalmente são pré-alocados em seu tamanho total durante a criação.
+
+Um planejamento cuidadoso da configuração do LVM pode melhorar a eficiência e minimizar a necessidade de provisionamento de armazenamento e redimensionamento de LUNs. Quando um LVM como o Veritas VxVM ou o Oracle ASM é utilizado, os LUNs subjacentes são divididos em extensões que são usadas somente quando necessário. Por exemplo, se um conjunto de dados começar com 2 TiB de tamanho, mas puder crescer para 10 TiB ao longo do tempo, esse conjunto de dados poderá ser colocado em 10 TiB de LUNs com provisionamento dinâmico, organizadas em um grupo de discos LVM. Ocuparia apenas 2 TiB de espaço no momento da criação e só exigiria espaço adicional à medida que extensões fossem alocadas para acomodar o crescimento dos dados. Este processo é seguro desde que o espaço seja monitorado.

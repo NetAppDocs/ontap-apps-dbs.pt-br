@@ -1,0 +1,195 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-asar2-host-config-solaris.html 
+keywords: oracle, database, ASA r2, ontap, solaris, zfs 
+summary: Bancos de dados Oracle com Solaris no ASA r2 
+searchtitle: Bancos de dados Oracle com Solaris no ASA r2 
+---
+= Solaris
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Tópicos de configuração específicos para o sistema operacional Solaris com ASA r2 ONTAP.
+
+
+
+== Opções de montagem do Solaris UFS
+
+A NetApp recomenda fortemente o uso da opção de montagem de log para que a integridade dos dados seja preservada no caso de uma falha de host do Solaris ou a interrupção da conetividade FC. A opção de montagem de log também preserva a usabilidade dos backups Snapshot.
+
+
+
+== Solaris ZFS
+
+O Solaris ZFS deve ser instalado e configurado cuidadosamente para oferecer o melhor desempenho.
+
+
+
+=== mvector
+
+O Solaris 11 incluiu uma mudança na forma como processa grandes operações de e/S, o que pode resultar em graves problemas de desempenho em matrizes de armazenamento SAN. O problema está documentado no relatório de bug de rastreamento do NetApp 630173, "regressão de desempenho do Solaris 11 ZFS".
+
+Este não é um bug do ONTAP. É um defeito do Solaris que é rastreado sob os defeitos Solaris 7199305 e 7082975.
+
+Você pode consultar o suporte Oracle para saber se sua versão do Solaris 11 é afetada ou testar a solução alternativa alterando `zfs_mvector_max_size` para um valor menor.
+
+Você pode fazer isso executando o seguinte comando como root:
+
+....
+[root@host1 ~]# echo "zfs_mvector_max_size/W 0t131072" |mdb -kw
+....
+Se surgir algum problema inesperado dessa alteração, ela pode ser facilmente revertida executando o seguinte comando como root:
+
+....
+[root@host1 ~]# echo "zfs_mvector_max_size/W 0t1048576" |mdb -kw
+....
+
+
+== Kernel
+
+O desempenho confiável do ZFS requer um kernel Solaris corrigido contra problemas de alinhamento de LUN. A correção foi introduzida com o patch 147440-19 no Solaris 10 e com o SRU 10,5 para Solaris 11. Utilize apenas o Solaris 10 e posterior com o ZFS.
+
+
+
+== Configuração LUN
+
+Para configurar um LUN, execute as seguintes etapas:
+
+. Crie um LUN do tipo `solaris`.
+. Instale o Kit de Utilitário do host (HUK) apropriado especificado pelo link:https://imt.netapp.com/matrix/#search["Ferramenta de Matriz de interoperabilidade NetApp (IMT)"^].
+. Siga as instruções no HUK exatamente como descrito. Os passos básicos estão descritos abaixo, mas consulte o link:https://docs.netapp.com/us-en/ontap-sanhost/index.html["documentação mais recente"^] para obter o procedimento adequado.
++
+.. Execute o `host_config` utilitário para atualizar o `sd.conf/sdd.conf` arquivo. Isso permite que as unidades SCSI descubram corretamente LUNs ONTAP.
+.. Siga as instruções dadas pelo `host_config` utilitário para ativar a entrada/saída multipath (MPIO).
+.. Reinicie. Esta etapa é necessária para que quaisquer alterações sejam reconhecidas em todo o sistema.
+
+
+. Particione os LUNs e verifique se eles estão alinhados corretamente. Consulte o "Apêndice B: Verificação do alinhamento do WAFL" para obter instruções sobre como testar e confirmar diretamente o alinhamento.
+
+
+
+
+=== zpools
+
+Um zpool só deve ser criado após as etapas no link:oracle-host-config-solaris.html#lun-configuration["Configuração LUN"] serem executadas. Se o procedimento não for feito corretamente, pode resultar em degradação grave do desempenho devido ao alinhamento de e/S. O desempenho ideal no ONTAP requer que a e/S seja alinhada a um limite de 4K mm numa unidade. Os sistemas de arquivos criados em um zpool usam um tamanho de bloco efetivo que é controlado por meio de um parâmetro `ashift` chamado , que pode ser visualizado executando o comando `zdb -C`.
+
+O valor `ashift` padrão é 9, o que significa 2 9, ou 512 bytes. Para um desempenho ideal, o `ashift` valor deve ser 12 (2 12 4K). Esse valor é definido no momento em que o zpool é criado e não pode ser alterado, o que significa que os dados em zpools com `ashift` outros que não 12 devem ser migrados copiando dados para um zpool recém-criado.
+
+Depois de criar um zpool, verifique o valor de `ashift` antes de continuar. Se o valor não for 12, os LUNs não foram detetados corretamente. Destrua o zpool, verifique se todas as etapas mostradas na documentação relevante dos Utilitários do host foram executadas corretamente e recrie o zpool.
+
+
+
+=== Zpools e Solaris LDOMs
+
+Os Solaris LDOMs criam um requisito adicional para garantir que o alinhamento de e/S esteja correto. Embora um LUN possa ser encontrado corretamente como um dispositivo 4K, um dispositivo vdsk virtual em um LDOM não herda a configuração do domínio de e/S. O vdsk baseado nesse LUN retorna para um bloco de 512 bytes.
+
+É necessário um ficheiro de configuração adicional. Primeiro, os LDOM individuais devem ser corrigidos para o bug Oracle 15824910 para habilitar as opções de configuração adicionais. Este patch foi portado para todas as versões usadas atualmente do Solaris. Uma vez que o LDOM é corrigido, ele está pronto para a configuração dos novos LUNs corretamente alinhados da seguinte forma:
+
+. Identifique o LUN ou LUNs a serem usados no novo zpool. Neste exemplo, é o dispositivo c2d1.
++
+....
+[root@LDOM1 ~]# echo | format
+Searching for disks...done
+AVAILABLE DISK SELECTIONS:
+  0. c2d0 <Unknown-Unknown-0001-100.00GB>
+     /virtual-devices@100/channel-devices@200/disk@0
+  1. c2d1 <SUN-ZFS Storage 7330-1.0 cyl 1623 alt 2 hd 254 sec 254>
+     /virtual-devices@100/channel-devices@200/disk@1
+....
+. Recupere a instância vdc dos dispositivos a serem usados para um pool ZFS:
++
+....
+[root@LDOM1 ~]#  cat /etc/path_to_inst
+#
+# Caution! This file contains critical kernel state
+#
+"/fcoe" 0 "fcoe"
+"/iscsi" 0 "iscsi"
+"/pseudo" 0 "pseudo"
+"/scsi_vhci" 0 "scsi_vhci"
+"/options" 0 "options"
+"/virtual-devices@100" 0 "vnex"
+"/virtual-devices@100/channel-devices@200" 0 "cnex"
+"/virtual-devices@100/channel-devices@200/disk@0" 0 "vdc"
+"/virtual-devices@100/channel-devices@200/pciv-communication@0" 0 "vpci"
+"/virtual-devices@100/channel-devices@200/network@0" 0 "vnet"
+"/virtual-devices@100/channel-devices@200/network@1" 1 "vnet"
+"/virtual-devices@100/channel-devices@200/network@2" 2 "vnet"
+"/virtual-devices@100/channel-devices@200/network@3" 3 "vnet"
+"/virtual-devices@100/channel-devices@200/disk@1" 1 "vdc" << We want this one
+....
+.  `/platform/sun4v/kernel/drv/vdc.conf`Editar :
++
+....
+block-size-list="1:4096";
+....
++
+Isso significa que a instância 1 do dispositivo recebe um tamanho de bloco de 4096MB.
+
++
+Como exemplo adicional, suponha que as instâncias 1 a 6 do vdsk precisem ser configuradas para um tamanho de bloco 4K e `/etc/path_to_inst` lerem da seguinte forma:
+
++
+....
+"/virtual-devices@100/channel-devices@200/disk@1" 1 "vdc"
+"/virtual-devices@100/channel-devices@200/disk@2" 2 "vdc"
+"/virtual-devices@100/channel-devices@200/disk@3" 3 "vdc"
+"/virtual-devices@100/channel-devices@200/disk@4" 4 "vdc"
+"/virtual-devices@100/channel-devices@200/disk@5" 5 "vdc"
+"/virtual-devices@100/channel-devices@200/disk@6" 6 "vdc"
+....
+. O arquivo final `vdc.conf` deve conter o seguinte:
++
+....
+block-size-list="1:8192","2:8192","3:8192","4:8192","5:8192","6:8192";
+....
++
+[CAUTION]
+====
+O LDOM deve ser reinicializado depois que o vdc.conf é configurado e o vdsk é criado. Este passo não pode ser evitado. A alteração do tamanho do bloco só entra em vigor após uma reinicialização. Prossiga com a configuração do zpool e certifique-se de que o ashift está corretamente configurado para 12, conforme descrito anteriormente.
+
+====
+
+
+
+
+=== Registo intenção ZFS (ZIL)
+
+Geralmente, não há razão para localizar o ZFS Intent Log (ZIL) em um dispositivo diferente. O log pode compartilhar espaço com a piscina principal. O uso principal de um ZIL separado é quando se usa unidades físicas que não têm os recursos de armazenamento em cache de gravação em arrays de armazenamento modernos.
+
+
+
+=== logbias
+
+Defina `logbias` o parâmetro em sistemas de arquivos ZFS que hospedam dados Oracle.
+
+....
+zfs set logbias=throughput <filesystem>
+....
+O uso desse parâmetro reduz os níveis gerais de gravação. Sob os padrões, os dados escritos são comprometidos primeiro com o ZIL e depois para o pool de armazenamento principal. Essa abordagem é apropriada para uma configuração usando uma configuração de unidade simples, que inclui um dispositivo ZIL baseado em SSD e Mídia giratória para o pool de armazenamento principal. Isso ocorre porque permite que um commit ocorra em uma única transação de e/S na Mídia de menor latência disponível.
+
+Ao usar um storage array moderno que inclua sua própria funcionalidade de armazenamento em cache, essa abordagem geralmente não é necessária. Em circunstâncias raras, pode ser desejável submeter uma gravação com uma única transação ao log, como uma carga de trabalho que consiste em gravações aleatórias altamente concentradas e sensíveis à latência. Há consequências na forma de amplificação de gravação porque os dados registrados são gravados no pool de armazenamento principal, resultando em uma duplicação da atividade de gravação.
+
+
+
+=== E/S direta
+
+Muitas aplicações, incluindo produtos Oracle, podem ignorar o cache de buffer do host habilitando a e/S direta Esta estratégia não funciona como esperado com sistemas de arquivos ZFS. Embora o cache do buffer do host seja ignorado, o próprio ZFS continua a armazenar dados em cache. Essa ação pode resultar em resultados enganosos ao usar ferramentas como fio ou sio para realizar testes de desempenho, pois é difícil prever se a e/S está chegando ao sistema de armazenamento ou se está sendo armazenada em cache localmente no sistema operacional. Essa ação também torna muito difícil usar esses testes sintéticos para comparar o desempenho do ZFS com outros sistemas de arquivos. Na prática, há pouca ou nenhuma diferença no desempenho do sistema de arquivos em workloads reais do usuário.
+
+
+
+=== Vários zpools
+
+Backups, restaurações, clones e arquivamento baseados em snapshot de dados baseados em ZFS devem ser executados no nível do zpool e, geralmente, exigem vários zpools. Um zpool é análogo a um grupo de discos LVM e deve ser configurado usando as mesmas regras. Por exemplo, um banco de dados provavelmente é melhor definido com os datafiles que residem em `zpool1` e os logs de arquivo, arquivos de controle e logs de refazer que residem em `zpool2`. Essa abordagem permite um hot backup padrão no qual o banco de dados é colocado no modo hot backup, seguido por um snapshot de `zpool1`. O banco de dados é então removido do modo hot backup, o arquivo de log é forçado e um snapshot de `zpool2` é criado. Uma operação de restauração requer a desmontagem dos sistemas de arquivos zfs e a remoção do zpool em sua totalidade, seguindo-se uma operação de restauração do SnapRestore. O zpool pode então ser colocado on-line novamente e o banco de dados recuperado.
+
+
+
+=== sistema de arquivos_options
+
+O parâmetro Oracle `filesystemio_options` funciona de forma diferente com o ZFS. Se `setall` ou `directio` for usado, as operações de gravação são síncronas e ignoram o cache do buffer do sistema operacional, mas as leituras são armazenadas em buffer pelo ZFS. Essa ação causa dificuldades na análise de desempenho, pois às vezes, a e/S é intercetada e atendida pelo cache ZFS, tornando a latência do armazenamento e a e/S total menos do que parece ser.

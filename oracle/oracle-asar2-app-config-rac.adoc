@@ -1,0 +1,74 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-asar2-app-config-rac.html 
+keywords: oracle, database, ASA r2, ontap, rac, disktimeout, misscount 
+summary: Tempo limite do Oracle RAC com ASA r2 
+searchtitle: Tempo limite do Oracle Real Application Clusters com ASA r2 
+---
+= Tempos limite do RAC
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O Oracle RAC é um produto exclusivo com vários tipos de processos internos de heartbeat que monitoram a integridade do cluster.
+
+Os sistemas ASA r2 usam ONTAP da mesma forma que o AFF/ FAS, portanto, os mesmos princípios se aplicam aos parâmetros de tempo limite do Oracle RAC. Não há alterações específicas do ASA nas recomendações de tempo limite de disco ou contagem de erros. No entanto, o ASA r2 é otimizado para cargas de trabalho SAN e failover de baixa latência, o que torna essas práticas recomendadas ainda mais críticas.
+
+
+NOTE: As informações em link:#misscount["número de identificação"] Esta seção inclui informações críticas para ambientes Oracle RAC que utilizam armazenamento em rede e, em muitos casos, as configurações padrão do Oracle RAC precisarão ser alteradas para garantir que o cluster RAC sobreviva a alterações no caminho da rede e operações de failover de armazenamento.
+
+
+
+== disktimeout
+
+O parâmetro RAC principal relacionado ao armazenamento é `disktimeout`. Este parâmetro controla o limite dentro do qual a e/S do arquivo de votação deve ser concluída. Se o `disktimeout` parâmetro for excedido, o nó RAC será despejado do cluster. O padrão para este parâmetro é 200. Este valor deve ser suficiente para os procedimentos normais de aquisição de armazenamento e de giveback.
+
+A NetApp recomenda fortemente testar cuidadosamente as configurações do RAC antes de colocá-las em produção, pois muitos fatores afetam uma aquisição ou a giveback. Além do tempo necessário para a conclusão do failover de armazenamento, também é necessário tempo adicional para que as alterações do protocolo de controle de agregação de link (LACP) se propaguem. Além disso, o software de multipathing SAN deve detetar um tempo limite de e/S e tentar novamente em um caminho alternativo. Se um banco de dados estiver extremamente ativo, uma grande quantidade de e/S deve ser enfileirada e tentada novamente antes de o disco de votação ser processado.
+
+Se não for possível executar uma aquisição de armazenamento real ou giveback, o efeito poderá ser simulado com testes de pull de cabo no servidor de banco de dados.
+
+[TIP]
+====
+*A NetApp recomenda* o seguinte:
+
+* Deixando o `disktimeout` parâmetro no valor padrão de 200.
+* Sempre teste uma configuração RAC completamente.
+
+
+====
+
+
+== número de identificação
+
+O `misscount` parâmetro normalmente afeta apenas o batimento cardíaco da rede entre nós RAC. O padrão é 30 segundos. Se os binários de grade estiverem em um storage array ou a unidade de inicialização do sistema operacional não for local, esse parâmetro pode se tornar importante. Isso inclui hosts com unidades de inicialização localizadas em uma SAN FC, sistemas operacionais iniciados por NFS e unidades de inicialização localizados em datastores de virtualização, como um arquivo VMDK.
+
+Se o acesso a uma unidade de inicialização for interrompido por uma aquisição de armazenamento ou giveback, é possível que a localização binária da grade ou todo o sistema operacional fique temporariamente suspenso. O tempo necessário para o ONTAP concluir a operação de storage e para o sistema operacional alterar caminhos e retomar e/S pode exceder o `misscount` limite. Como resultado, um nó é despejado imediatamente após a conetividade com o LUN de inicialização ou binários de grade ser restaurada. Na maioria dos casos, o despejo e a reinicialização subsequente ocorrem sem mensagens de Registro para indicar o motivo da reinicialização. Nem todas as configurações são afetadas, portanto, teste qualquer host baseado em SAN-boot, NFS-boot ou datastore em um ambiente RAC para que o RAC permaneça estável se a comunicação com a unidade de inicialização for interrompida.
+
+No caso de unidades de inicialização não locais ou binários de hospedagem de sistemas de arquivos não locais `grid`, o `misscount` precisará ser alterado para corresponder `disktimeout`ao . Se esse parâmetro for alterado, realize testes adicionais para identificar também quaisquer efeitos no comportamento do RAC, como o tempo de failover do nó.
+
+[TIP]
+====
+*A NetApp recomenda* o seguinte:
+
+* Deixe o `misscount` parâmetro no valor padrão de 30, a menos que uma das seguintes condições se aplique:
++
+** `grid` Os arquivos binários estão localizados em uma unidade conectada à rede, incluindo unidades iSCSI, FC e unidades baseadas em armazenamento de dados.
+** O sistema operacional é inicializado pela SAN.
+
+
+* Nesses casos, avalie o efeito das interrupções da rede que afetam o acesso ao sistema operacional ou `GRID_HOME` aos sistemas de arquivos. Em alguns casos, tais interrupções fazem com que os daemons do Oracle RAC parem, o que pode levar a um `misscount` tempo limite e despejo baseado em -. O tempo limite padrão é 27 segundos, que é o valor de `misscount` menos `reboottime`. Nesses casos, aumente `misscount` para 200 para corresponder `disktimeout`.
+
+
+====
+[NOTE]
+====
+* O design otimizado para SAN do ASA r2 reduz a latência de failover, mas os tempos limite ainda precisam ser ajustados para inicialização em rede ou binários de grid.
+* Para configurações RAC extensas ou ativas-ativas (por exemplo, sincronização ativa SnapMirror ), o ajuste de tempo limite continua sendo essencial para arquiteturas de RPO zero.
+
+
+====

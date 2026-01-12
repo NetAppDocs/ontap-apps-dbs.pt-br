@@ -1,0 +1,39 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-asar2-config-failover.html 
+keywords: failover, takeover, ASA r2, oracle 
+summary: É necessário compreender a função de transferência de armazenamento para garantir que as operações do banco de dados Oracle não sejam interrompidas por essas operações. Além disso, os argumentos utilizados pela operação de tomada de controle podem afetar a integridade dos dados se forem usados incorretamente. 
+searchtitle: Failover de bancos de dados Oracle e controlador ONTAP no ASA r2 
+---
+= Failover do ONTAP
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+É necessário compreender as funções de transferência de armazenamento para garantir que as operações do banco de dados Oracle não sejam interrompidas durante essas operações. Além disso, os argumentos utilizados em operações de aquisição podem afetar a integridade dos dados se forem usados incorretamente.
+
+Em condições normais, as gravações recebidas por um determinado controlador são espelhadas de forma síncrona em seu parceiro de alta disponibilidade (HA). Em um ambiente ASA r2 com SnapMirror Active Sync (SM-as), as gravações também são espelhadas para um controlador remoto no site secundário. Até que uma gravação seja armazenada em mídia não volátil em todos os locais, ela não será confirmada para o aplicativo host.
+
+O meio que armazena os dados de gravação é chamado de memória não volátil (NVMEM). Às vezes é chamada de memória de acesso aleatório não volátil (NVRAM) e pode ser considerada um diário de escrita em vez de um cache. Durante o funcionamento normal, os dados da NVMEM não são lidos; ela é usada apenas para proteger os dados em caso de falha de software ou hardware. Quando os dados são gravados nas unidades, eles são transferidos da RAM do sistema, e não da NVMEM.
+
+Durante uma operação de tomada de controle, um nó em um par de alta disponibilidade assume as operações de seu parceiro. No ASA r2, a troca de recursos não é aplicável porque o MetroCluster não é suportado; em vez disso, o SnapMirror Active Sync fornece redundância em nível de site. As operações de transferência de armazenamento durante a manutenção de rotina devem ser transparentes, exceto por uma breve pausa nas operações enquanto os caminhos de rede são alterados. A criação de redes pode ser complexa e erros são fáceis de cometer, por isso a NetApp recomenda enfaticamente testar minuciosamente as operações de takeover antes de colocar um sistema de armazenamento em produção. Essa é a única maneira de garantir que todos os caminhos de rede estejam configurados corretamente. Em um ambiente SAN, verifique o status do caminho usando o comando `sanlun lun show -p` ou as ferramentas nativas de multipathing do sistema operacional para garantir que todos os caminhos esperados estejam disponíveis. Os sistemas ASA r2 fornecem todos os caminhos ativos otimizados para LUNs, e os clientes que usam namespaces NVMe devem depender de ferramentas nativas do sistema operacional, pois os caminhos NVMe não são cobertos pelo sanlun.
+
+É preciso ter cautela ao decretar uma tomada de posse forçada. Forçar uma alteração na configuração de armazenamento significa que o estado do controlador que detém as unidades é desconsiderado e o nó alternativo assume o controle das unidades à força. A execução incorreta de uma operação de takeover pode resultar em perda ou corrupção de dados, pois um takeover forçado pode descartar o conteúdo da NVMEM. Após a conclusão da aquisição, a perda desses dados significa que os dados armazenados nos discos podem retornar a um estado ligeiramente anterior do ponto de vista do banco de dados.
+
+Uma tomada de controle forçada com um par HA normal raramente deve ser necessária. Em praticamente todos os cenários de falha, um nó é desligado e informa o parceiro para que ocorra uma transição automática. Existem alguns casos extremos, como uma falha sequencial em que a interconexão entre os nós é perdida e, em seguida, um dos controladores falha, situação em que é necessária uma intervenção forçada. Nessa situação, o espelhamento entre os nós é perdido antes da falha do controlador, o que significa que o controlador sobrevivente não possui mais uma cópia das gravações em andamento. A tomada de controle precisa então ser forçada, o que significa que dados podem ser perdidos.
+
+[TIP]
+====
+A NetApp recomenda tomar as seguintes precauções:
+
+* Tenha muito cuidado para não forçar uma aquisição acidentalmente. Normalmente, forçar a alteração não é necessário e pode causar perda de dados.
+* Caso seja necessária uma tomada de controle forçada, certifique-se de que os aplicativos estejam fechados, todos os sistemas de arquivos estejam desmontados e os grupos de volumes do gerenciador de volumes lógicos (LVM) estejam desativados (variegate). Os grupos de discos ASM devem ser desmontados.
+* Em caso de falha no nível do site ao usar SM-as, o failover automático não planejado assistido pelo ONTAP Mediator será iniciado no cluster sobrevivente, resultando em uma breve pausa de E/S e, em seguida, as transições de banco de dados continuarão a partir do cluster sobrevivente. Para obter mais informações, consulte o https://docs.netapp.com/us-en/asa-r2/data-protection/configure-snapmirror-active-sync.html["Sincronização ativa do SnapMirror em sistemas ASA r2"] Para obter instruções detalhadas de configuração.
+
+
+====

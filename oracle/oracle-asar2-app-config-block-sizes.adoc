@@ -1,0 +1,41 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-asar2-app-config-block-sizes.html 
+keywords: oracle, database, ASA r2, ontap, SAN, ASM, blocks 
+summary: Tamanhos de bloco do banco de dados Oracle com ASA r2 
+searchtitle: Tamanhos de bloco do banco de dados Oracle com ASA r2 
+---
+= Tamanhos de blocos
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+Internamente, o ONTAP utiliza um tamanho de bloco variável, o que significa que os bancos de dados Oracle podem ser configurados com qualquer tamanho de bloco desejado. No entanto, o tamanho dos blocos do sistema de arquivos pode afetar o desempenho e, em alguns casos, um tamanho maior para o bloco de refazer pode melhorar o desempenho.
+
+O ASA r2 não introduz nenhuma alteração nas recomendações de tamanho de bloco do Oracle em comparação com os sistemas AFF/ FAS . O comportamento do ONTAP permanece consistente em todas as plataformas.
+
+
+
+== Tamanhos de blocos de arquivos de dados
+
+Alguns sistemas operacionais oferecem uma escolha de tamanhos de bloco de sistema de arquivos. Para sistemas de arquivos que suportam datafiles Oracle, o tamanho do bloco deve ser 8KB quando a compactação é usada. Quando a compressão não é necessária, um tamanho de bloco de 8KB ou 4KB pode ser usado.
+
+Se um arquivo de dados for colocado em um sistema de arquivos com um bloco de 512 bytes, arquivos desalinhados são possíveis. O LUN e o sistema de arquivos podem estar alinhados adequadamente com base nas recomendações do NetApp, mas a e/S do arquivo estaria desalinhada. Tal desalinhamento causaria graves problemas de desempenho.
+
+
+
+== Refazer tamanhos de bloco
+
+Os sistemas de arquivos que suportam os logs de refazer devem usar um tamanho de bloco que seja um múltiplo do tamanho do bloco de refazer. Isso geralmente requer que o sistema de arquivos de log refazer e o log refazer usem um tamanho de bloco de 512 bytes.
+
+Com taxas de recozimento muito altas, é possível que 4KB tamanhos de bloco tenham um melhor desempenho, pois altas taxas de recozimento permitem que a e/S seja executada em operações cada vez menores e mais eficientes. Se as taxas de refazer forem maiores que 50Mbps, considere testar um tamanho de bloco 4KB.
+
+Alguns problemas de clientes foram identificados com bancos de dados usando logs de refazer com um tamanho de bloco de 512 bytes em um sistema de arquivos com um tamanho de bloco de 4KB e muitas transações muito pequenas. A sobrecarga envolvida na aplicação de várias alterações de 512 bytes a um único bloco de sistema de arquivos 4KB levou a problemas de desempenho que foram resolvidos alterando o sistema de arquivos para usar um tamanho de bloco de 512 bytes.
+
+
+TIP: *A NetApp recomenda* que você não altere o tamanho do bloco refazer, a menos que seja aconselhado por uma organização de suporte ao cliente ou serviços profissionais relevante ou que a alteração seja baseada na documentação oficial do produto.
