@@ -1,0 +1,64 @@
+---
+sidebar: sidebar 
+permalink: vmware/vmware-vsphere-datastores-fp.html 
+keywords: vSphere, datastore, FabricPool 
+summary: Esta página descreve as melhores práticas para implementar FabricPool para datastores VMware. 
+---
+= FabricPool para datastores VMware
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+O armazenamento de máquina virtual flui das camadas do sistema operacional convidado e do hipervisor até o ONTAP, onde FabricPool tiering e WAFL proporcionam desempenho, eficiência e otimização de custos.
+
+A partir da versão 9.6 do ONTAP, FabricPool oferece suporte a cargas de trabalho virtualizadas, incluindo datastores VMware. Agora é possível armazenar em camadas blocos frios de volumes FlexVol que suportam datastores VMware (modelos de VM, VMs desligadas, snapshots, backups etc.) para storage de objetos, mantendo os dados ativos localmente.
+
+Dito isso, existem algumas nuances das quais você precisa estar ciente.
+
+image:vmware-vsphere-datastores-fp-1.png["alt=Hypervisor pilha de storage com FabricPool,width=525,height=500"]
+
+
+
+== Camadas de computação e disco virtual
+
+O sistema operacional convidado é executado em formatos de disco virtual como VMDK, QCOW2 ou VHDX, que criam as camadas de computação e de dispositivos de bloco acessíveis a aplicativos e usuários.
+
+É importante observar que o sistema operacional convidado vê os discos virtuais como dispositivos de bloco; portanto, os tempos limite dos dispositivos de bloco no sistema convidado devem ser considerados ao planejar a tolerância de falhas durante atualizações não disruptivas, falhas de hardware ou outros eventos não planejados.
+
+
+TIP: Seguindo o link:https://www.netapp.com/pdf.html?item=/media/17239-tr-4598.pdf["Práticas recomendadas do FabricPool"], você deve tratar volumes FlexVol que hospedam datastores de máquina virtual como armazenamento SAN, mesmo ao usar protocolos NAS, devido à natureza em blocos dos arquivos de disco virtual em relação aos sistemas operacionais convidados. Portanto, a NetApp recomenda o uso da política de armazenamento em camadas somente com snapshots. A política automática pode ser usada para dados não críticos, mas esteja ciente de que uma desconexão da camada de nuvem pode resultar em falhas nas máquinas ou em um estado somente leitura.
+
+
+
+== Função de hipervisor
+
+O hipervisor serve de intermediário entre as máquinas virtuais em execução e os recursos físicos, como CPU, memória e storage. No caso de uso de NAS, o hipervisor monta o compartilhamento NAS e apresenta os arquivos de disco virtual às máquinas virtuais como dispositivos de bloco.
+
+O caminho do sistema de arquivos do hipervisor envolve o armazenamento da máquina virtual via LUNs conectados por iSCSI/FCP ou namespaces NVMe formatados por sistemas de arquivos específicos do hipervisor, como VMFS, NTFS, EXT4, etc.
+
+O caminho do sistema de arquivos NAS fornece acesso ao nível do arquivo diretamente, usando os protocolos NFS ou SMB, aos volumes ONTAP para armazenamento de máquina virtual.
+
+Ambos os caminhos convergem na camada WAFL do ONTAP, possibilitando serviços de dados consistentes, como snapshots e gerenciamento de metadados.
+
+
+
+== FabricPool Integração em camadas
+
+FabricPool gerencia de forma inteligente o posicionamento de dados entre o armazenamento local de alto desempenho e as camadas de storage de objetos na nuvem de menor custo.
+
+FabricPool organiza os dados automaticamente em camadas entre armazenamento local de alto desempenho e storage de objetos em nuvem escalável com base na política de organização em camadas FabricPool aplicada ao conjunto de dados.
+
+A integração do FabricPool do ONTAP permite o posicionamento eficiente de dados em ambientes de nuvem híbrida sem sacrificar o desempenho das leituras locais.
+
+
+
+== Eficiência e gerenciamento de storage
+
+É importante entender como FabricPool funciona antes de habilitá-lo. A configuração adequada ajuda a melhorar o desempenho, reduzir riscos e otimizar TCO armazenando os dados corretos na camada correta.
+
+Os caminhos dos protocolos de arquivo SAN/NVMe e NAS convergem na camada WAFL. O sistema de arquivos WAFL garante a consistência dos metadados, suporta snapshots, clonagem e otimiza as gravações para SSD, HDD e storage de objetos.
