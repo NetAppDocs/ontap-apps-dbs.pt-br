@@ -4,9 +4,9 @@
 
 Especificamente, o aumento da adoção do storage all-flash possibilitou a consolidação de workloads. Os storage arrays que dependem de Mídia giratória costumavam dar suporte a apenas um número limitado de workloads de e/S com uso intenso de e/S devido aos recursos limitados de IOPS da tecnologia de unidade de rotação mais antiga. Um ou dois bancos de dados altamente ativos saturariam as unidades subjacentes muito antes que as controladoras de storage atingissem seus limites. Isso mudou. A capacidade de desempenho de um número relativamente pequeno de unidades SSD pode saturar até mesmo os controladores de armazenamento mais poderosos. Isso significa que todos os recursos das controladoras podem ser aproveitados sem o medo de colapso repentino da performance na medida em que picos de latência de Mídia giratórios.
 
-Como exemplo de referência, um simples sistema HA AFF A800 de dois nós é capaz de atender a até um milhão de IOPS aleatórios antes que a latência suba acima de um milissegundo. Espera-se que muito poucas cargas de trabalho individuais alcancem tais níveis. A utilização total desse array de sistema AFF A800 envolverá o hospedar vários workloads e isso com segurança, garantindo a previsibilidade requer controles de QoS.
+Como exemplo de referência, um sistema HA AFF A800 de dois nós mais antigo é capaz de atender até um milhão de IOPS aleatórios antes que a latência ultrapasse um milissegundo. Espera-se que pouquíssimas cargas de trabalho individuais atinjam tais níveis. A utilização plena desse array de sistema AFF A800 envolverá a hospedagem de múltiplas cargas de trabalho e, para fazer isso com segurança enquanto se garante a previsibilidade, são necessários controles de QoS.
 
-Há dois tipos de qualidade de serviço (QoS) no ONTAP: IOPS e largura de banda. Controles de QoS podem ser aplicados a SVMs, volumes, LUNs e arquivos.
+Existem dois tipos de qualidade do serviço (QoS) no ONTAP: IOPS e largura de banda. Os controles de QoS podem ser aplicados a AFF SVMs, AFF volumes, AFF arquivos e AFF/ASA LUNs e namespaces.
 
 
 

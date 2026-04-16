@@ -4,7 +4,7 @@
 
 O SnapMirror active Sync oferece suporte a dois tipos de operações de failover de storage: Planejadas e não planejadas, que funcionam de maneiras ligeiramente diferentes. Um failover planejado é iniciado manualmente pelo administrador para o switchover rápido para um local remoto, enquanto o failover não planejado é iniciado automaticamente pelo mediador no terceiro local. O principal objetivo de um failover planejado é executar patches e atualizações incrementais, executar testes de recuperação de desastres ou adotar uma política formal de alternar as operações entre locais ao longo do ano para provar a capacidade de sincronização ativa total.
 
-Os diagramas mostram o que acontece durante operações normais de failover e failback. Para facilitar a ilustração, eles retratam um LUN replicado. Em uma configuração de sincronização ativa do SnapMirror real, a replicação é baseada em volumes, onde cada volume contém um ou mais LUNs, mas para simplificar a imagem, a camada de volume foi removida.
+Os diagramas mostram o que acontece durante as operações normais, de failover e de failback. Para facilitar a ilustração, eles representam um LUN replicado. Em uma configuração real de SnapMirror active sync, a replicação é baseada em volumes AFF, onde cada volume contém um ou mais LUNs, mas para simplificar a visualização, a camada de volume foi removida.
 
 
 

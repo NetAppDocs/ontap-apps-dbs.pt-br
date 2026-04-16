@@ -109,15 +109,15 @@ CAUTION: Se um volume for provisionado de forma grossa, deve-se ter cuidado para
 
 
 
-=== Padrões do AFF
+=== Padrões AFF e ASA
 
-Os volumes criados no ONTAP executados em um sistema all-flash AFF são thin Provisioning com todos os recursos de eficiência in-line habilitados. Embora os bancos de dados geralmente não se beneficiem da deduplicação e possam incluir dados não compressíveis, as configurações padrão são, no entanto, apropriadas para quase todas as cargas de trabalho. O ONTAP foi projetado para processar com eficiência todos os tipos de dados e padrões de e/S, resultando ou não em economia. Os padrões só devem ser alterados se os motivos forem totalmente compreendidos e houver um benefício para se desviar.
+Os volumes criados no ONTAP em sistemas AFF e os LUNs/namespaces em sistemas ASA são provisionados dinamicamente com todos os recursos de eficiência inline ativados. Embora os bancos de dados geralmente não se beneficiem da deduplicação e possam incluir dados não compressíveis, as configurações padrão são adequadas para quase todas as cargas de trabalho. ONTAP foi projetado para processar com eficiência todos os tipos de dados e padrões de E/S, independentemente de resultarem em economia ou não. As configurações padrão só devem ser alteradas se os motivos forem totalmente compreendidos e houver um benefício em alterá-las.
 
 
 
 === Recomendações gerais
 
-* Se os volumes e/ou LUNs não estiverem provisionados de forma fina, você deverá desativar todas as configurações de eficiência porque o uso desses recursos não oferece economia e a combinação de provisionamento espesso com eficiência de espaço habilitada pode causar comportamento inesperado, incluindo erros fora do espaço.
+* Se os volumes, LUNs ou namespaces do AFF não estiverem com thin provisioning, você deve desativar todas as configurações de eficiência, pois o uso desses recursos não gera economia e a combinação de thick provisioning com a eficiência de espaço ativada pode causar comportamentos inesperados, incluindo erros de falta de espaço.
 * Se os dados não estiverem sujeitos a sobrescritas, como backups ou logs de transação de banco de dados, você poderá obter maior eficiência ativando o TSSE com um período de resfriamento baixo.
 * Alguns arquivos podem conter uma quantidade significativa de dados não compressíveis, por exemplo, quando a compactação já está ativada no nível de aplicativo de arquivos são criptografados. Se qualquer um desses cenários for verdadeiro, considere desativar a compactação para permitir uma operação mais eficiente em outros volumes que contenham dados compressíveis.
 * Não use a compactação e a deduplicação do 32KB com backups de bancos de dados. Consulte a secção <<Compressão adaptável>> para obter detalhes.

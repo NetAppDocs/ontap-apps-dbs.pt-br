@@ -102,9 +102,9 @@ O ONTAP não permite um failover quando os dados estão fora de sincronia, a men
 
 Os bancos de dados são especialmente vulneráveis à corrupção se um failover for forçado porque os bancos de dados mantêm grandes caches internos de dados no disco. Se ocorrer um failover forçado, as alterações anteriormente confirmadas serão efetivamente descartadas. O conteúdo da matriz de armazenamento salta efetivamente para trás no tempo, e o estado do cache do banco de dados não reflete mais o estado dos dados no disco.
 
-Para proteger os dados contra essa situação, o ONTAP permite que os volumes sejam configurados para proteção especial contra falhas do NVRAM. Quando acionado, esse mecanismo de proteção resulta em um volume entrando em um estado chamado NVFAIL. Esse estado resulta em erros de e/S que causam o desligamento de um aplicativo para que eles não usem dados obsoletos. Os dados não devem ser perdidos porque qualquer gravação reconhecida deve estar presente no storage array.
+Para proteger os dados dessa situação, ONTAP permite que volumes, LUNs ou namespaces NVMe sejam configurados para proteção especial contra falhas de NVRAM. Quando acionado, esse mecanismo de proteção faz com que recursos de storage entrem em um estado chamado NVFAIL. Esse estado resulta em erros de E/S que causam o encerramento do aplicativo para que ele não utilize dados obsoletos. Os dados não devem ser perdidos, pois qualquer gravação confirmada deve estar presente no array de storage.
 
-As próximas etapas usuais são para que um administrador desligue totalmente os hosts antes de colocar manualmente os LUNs e volumes novamente on-line. Embora essas etapas possam envolver algum trabalho, essa abordagem é a maneira mais segura de garantir a integridade dos dados. Nem todos os dados exigem essa proteção, e é por isso que o comportamento do NVFAIL pode ser configurado volume a volume.
+Os próximos passos habituais são o desligamento completo dos hosts por um administrador, antes de colocar manualmente os LUNs, namespaces ou volumes NFS on-line novamente. Embora esses passos possam envolver algum trabalho, essa abordagem é a maneira mais segura de garantir a integridade de dados. Nem todos os dados exigem essa proteção, por isso o comportamento do NVFAIL pode ser configurado em um nível granular.
 
 
 

@@ -15,7 +15,7 @@ searchtitle: Ferramentas de automação e gerenciamento de banco de dados Oracle
 
 
 [role="lead"]
-O principal valor do ONTAP em um ambiente de banco de dados Oracle vem das principais tecnologias da ONTAP, como cópias Snapshot instantâneas, replicação simples do SnapMirror e criação eficiente de volumes do FlexClone.
+O principal valor do ONTAP em um ambiente de banco de dados Oracle vem das tecnologias essenciais do ONTAP, como cópias instantâneas de Snapshot, replicação simples com SnapMirror e criação eficiente de volumes clonados, LUNs e namespaces.
 
 Em alguns casos, a configuração simples desses principais recursos diretamente no ONTAP atende aos requisitos, mas as necessidades mais complicadas exigem uma camada de orquestração.
 

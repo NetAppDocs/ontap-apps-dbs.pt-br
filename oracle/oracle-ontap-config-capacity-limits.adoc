@@ -17,13 +17,13 @@ searchtitle: Bancos de dados Oracle e gerenciamento de capacidade de storage
 [role="lead"]
 Gerenciar um banco de dados ou outra aplicação empresarial com storage empresarial previsível, gerenciável e de alta performance exige espaço livre nas unidades para gerenciamento de dados e metadados. A quantidade de espaço livre necessária depende do tipo de unidade usada e dos processos de negócios.
 
-O espaço livre é definido como qualquer espaço que não é usado para dados reais e inclui espaço não alocado no próprio agregado e espaço não utilizado dentro dos volumes constituintes. O thin Provisioning também deve ser considerado. Por exemplo, um volume pode conter um LUN de 1TB, dos quais apenas 50% são utilizados por dados reais. Em um ambiente thin Provisioning, isso parece estar consumindo 500GBMB de espaço corretamente. No entanto, em um ambiente totalmente provisionado, a capacidade total de 1TB TB parece estar em uso. O 500GB de espaço não alocado está oculto. Este espaço não é utilizado pelos dados reais e, portanto, deve ser incluído no cálculo do espaço livre total.
+Espaço livre é definido como qualquer espaço não utilizado para dados reais e inclui espaço não alocado no próprio agregado e espaço não utilizado dentro dos volumes constituintes. Thin provisioning também deve ser considerado. Por exemplo, um AFF volume pode conter um LUN de 1TB, do qual apenas 50% é utilizado por dados reais. Em um ambiente com thin provisioning, isso apareceria corretamente como consumindo 500GB de espaço. No entanto, em um ambiente com provisionamento completo, a capacidade total de 1TB aparece em uso. Os 500GB de espaço não alocado ficam ocultos. Esse espaço não é utilizado por dados reais e, portanto, deve ser incluído no cálculo do espaço livre total.
 
 As recomendações da NetApp para sistemas de storage usados para aplicações empresariais são as seguintes:
 
 
 
-== Agregados SSD, incluindo sistemas AFF
+== Agregados SSD AFF e Zonas de Disponibilidade de Armazenamento ASA
 
 
 TIP: *A NetApp recomenda* um mínimo de 10% de espaço livre. Isso inclui todo o espaço não utilizado, incluindo espaço livre dentro do agregado ou de um volume e qualquer espaço livre alocado devido ao uso de provisionamento completo, mas não é usado por dados reais. O espaço lógico não é importante, a questão é quanto espaço físico livre real está disponível para armazenamento de dados.

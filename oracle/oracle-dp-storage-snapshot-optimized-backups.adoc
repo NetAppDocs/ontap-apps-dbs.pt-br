@@ -36,15 +36,15 @@ Para obter detalhes completos, consulte a documentação da Oracle sobre o tópi
 
 == Layout de dados
 
-O layout mais simples é isolar os arquivos de dados em um ou mais volumes dedicados. Eles devem ser não contaminados por qualquer outro tipo de arquivo. Isso é para garantir que os volumes de arquivo de dados possam ser restaurados rapidamente com uma operação SnapRestore sem destruir um log de refazer importante, controlfile ou log de arquivo.
+A configuração mais simples consiste em isolar os arquivos de dados em volumes dedicados, LUNs ou namespaces NVMe. Os recursos de storage devem estar livres de qualquer outro tipo de arquivo. Isso garante que os arquivos de dados possam ser restaurados rapidamente por meio de uma operação SnapRestore sem destruir um importante redo log, arquivo de controle ou log de arquivamento.
 
-A SAN tem requisitos semelhantes para isolamento de arquivos de dados dentro de volumes dedicados. Com um sistema operacional como o Microsoft Windows, um único volume pode conter vários LUNs de arquivo de dados, cada um com um sistema de arquivos NTFS. Com outros sistemas operacionais, geralmente há um gerenciador de volume lógico também. Por exemplo, com o Oracle ASM, a opção mais simples seria limitar grupos de discos a um único volume que pode ser feito backup e restaurado como uma unidade. Se forem necessários volumes adicionais por motivos de gerenciamento de performance ou capacidade, criar um grupo de discos adicional no novo volume resulta em gerenciamento mais fácil.
+A SAN possui requisitos semelhantes para isolamento de arquivos de dados em recursos dedicados. Com um sistema operacional como Microsoft Windows usando armazenamento AFF, um único volume pode conter múltiplos LUNs de arquivos de dados, cada um com um sistema de arquivos NTFS. Em outros sistemas operacionais, geralmente existe um gerenciador de volumes lógico. Por exemplo, com Oracle ASM, a opção mais simples seria confinar os LUNs de um grupo de discos ASM a um único volume que possa ser copiado e restaurado como uma unidade. Se volumes adicionais forem necessários por motivos de desempenho ou gerenciamento de capacidade, a criação de um grupo de discos adicional no novo volume resulta em um gerenciamento mais simples.
 
-Se essas diretrizes forem seguidas, os snapshots poderão ser agendados diretamente no ONTAP sem a necessidade de realizar um snapshot de grupo de consistência. O motivo é que backups otimizados para snapshot não exigem que sejam feitos backup de dados ao mesmo tempo.
+ASA não possui abstração em nível de volume. Em vez disso, utiliza grupos de consistência. Em muitos casos, um único LUN ou namespace NVMe pode atender aos requisitos de gerenciamento e desempenho de um banco de dados. Se forem necessários vários LUNs ou namespaces, recursos adicionais podem ser adicionados e agrupados como um grupo de consistência que se torna o contêiner de arquivos de dados.
 
-Uma complicação surge em situações como um grupo de discos ASM que é distribuído entre volumes. Nesses casos, um cg-snapshot deve ser executado para garantir que os metadados ASM sejam consistentes em todos os volumes constituintes.
+Se essas diretrizes forem seguidas, os snapshots podem ser agendados diretamente no sistema de storage.
 
-[Nota]Verifique se os arquivos ASM spfile e passwd não estão no grupo de discos que hospeda os arquivos de dados. Isso interfere na capacidade de restaurar seletivamente datafiles e apenas datafiles.
+*Atenção:* Verifique se o ASM `spfile` e `passwd` os arquivos não estão no grupo de discos que hospeda os arquivos de dados. Isso interfere na capacidade de restaurar seletivamente datafiles e apenas datafiles.
 
 
 
@@ -53,7 +53,7 @@ Uma complicação surge em situações como um grupo de discos ASM que é distri
 Este procedimento pode ser conduzido manualmente ou através de uma aplicação como o SnapCenter. O procedimento básico é o seguinte:
 
 . Encerre o banco de dados.
-. Recupere o(s) volume(s) de arquivo de dados para o instantâneo imediatamente antes do ponto de restauração desejado.
+. Recupere os volumes de arquivos de dados, LUNs ou namespaces para o Snapshot imediatamente anterior ao ponto de restauração desejado.
 . Reproduza registos de arquivo até ao ponto pretendido.
 
 
@@ -74,7 +74,7 @@ Este procedimento pode ser conduzido manualmente ou através de uma aplicação 
 . Reproduza registos de arquivo até ao ponto pretendido.
 
 
-Este procedimento pressupõe que os registos de arquivo desejados ainda estão presentes no sistema de ficheiros ativo. Se não estiverem, os registos de arquivo devem ser restaurados colocando os LUNs de registo de arquivo offline e executando uma restauração. Este também é um exemplo no qual dividir os logs de arquivo em volumes dedicados é útil. Se os logs do arquivo compartilharem um grupo de volumes com os logs de refazer, os logs de refazer devem ser copiados em outro lugar antes da restauração do conjunto geral de LUNs para evitar perder as transações registradas finais.
+Este procedimento pressupõe que os logs de arquivamento desejados ainda estejam presentes no sistema de arquivos ativo. Caso contrário, os logs de arquivamento devem ser restaurados colocando os LUNs de log de arquivamento offline e executando uma restauração. Este também é um exemplo em que separar os logs de arquivamento em volumes, LUNs ou namespaces dedicados é útil. Se os logs de arquivamento compartilharem um grupo de volume com os redo logs, os redo logs devem ser copiados para outro local antes da restauração do conjunto completo de LUNs para evitar a perda das transações finais registradas.
 
 
 

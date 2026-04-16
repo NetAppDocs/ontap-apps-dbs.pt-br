@@ -121,7 +121,7 @@ Para configurar um LUN, execute as seguintes etapas:
 .. Reinicie. Esta etapa é necessária para que quaisquer alterações sejam reconhecidas em todo o sistema.
 
 
-. Particione os LUNs e verifique se eles estão alinhados corretamente. Consulte o "Apêndice B: Verificação do alinhamento do WAFL" para obter instruções sobre como testar e confirmar diretamente o alinhamento.
+. Particione os LUNs e verifique se estão alinhados corretamente. Consulte link:oracle-notes-wafl-alignment-verification.html["Alinhamento WAFL"] as instruções sobre como testar e confirmar o alinhamento diretamente.
 
 
 

@@ -19,3 +19,12 @@ O cache pode ocorrer na camada de aplicativo ou servidor. Por exemplo, uma confi
 Um uso menos óbvio do cache está na camada do sistema de arquivos do sistema operacional. Blocos de um sistema de arquivos NFS montado podem ser armazenados em cache no sistema operacional. Como alternativa, um sistema de arquivos em cluster baseado em LUNs localizados no site principal pode ser montado em servidores no local remoto e, mais uma vez, os dados podem ser armazenados em cache. Uma falha do NVRAM ou de uma tomada forçada ou comutação forçada nessas situações pode resultar em corrupção do sistema de arquivos.
 
 O ONTAP protege bancos de dados e sistemas operacionais desse cenário com o NVFAIL e suas configurações associadas.
+
+[NOTE]
+====
+* Em bancos de dados Oracle, o NVFAIL deve ser habilitado em todos os LUNs que hospedam componentes críticos (datafiles, redo logs, control files).
+* Em sistemas AFF, o NVFAIL opera na camada de volume e se aplica a todos os dados contidos.
+* No ASA, o NVFAIL opera na camada LUN ou de namespace.
+
+
+====

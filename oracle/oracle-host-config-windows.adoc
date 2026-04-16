@@ -16,7 +16,7 @@ Tópicos de configuração para banco de dados Oracle no Microsoft Windows com O
 
 == NFS
 
-A Oracle suporta o uso do Microsoft Windows com o cliente NFS direto. Esse recurso oferece um caminho para os benefícios de gerenciamento do NFS, incluindo a capacidade de exibir arquivos entre ambientes, redimensionar volumes dinamicamente e utilizar um protocolo IP menos caro. Consulte a documentação oficial da Oracle para obter informações sobre como instalar e configurar um banco de dados no Microsoft Windows usando DNFS. Não existem boas práticas especiais.
+A Oracle oferece suporte ao uso do Microsoft Windows com o cliente NFS direto. Essa funcionalidade oferece um caminho para os benefícios de gerenciamento do NFS, incluindo a capacidade de visualizar arquivos em diferentes ambientes, redimensionar volumes NFS dinamicamente e aproveitar um protocolo IP mais econômico. Consulte a documentação oficial da Oracle para obter informações sobre como instalar e configurar um banco de dados no Microsoft Windows usando DNFS. Não existem práticas recomendadas específicas.
 
 
 

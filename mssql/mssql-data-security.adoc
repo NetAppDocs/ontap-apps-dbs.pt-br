@@ -35,7 +35,7 @@ Para obter mais informações sobre instantâneos, consulte a. link:https://docs
 
 == Snapshots à prova de violações
 
-A partir do ONTAP 9.12.1, os instantâneos não são apenas de leitura, mas também podem ser protegidos contra exclusões acidentais ou intencionais. O recurso é chamado de instantâneos à prova de violações. Um período de retenção pode ser definido e aplicado por meio da política de snapshot. Os instantâneos resultantes não podem ser eliminados até que tenham atingido a data de validade. Não há substituições administrativas ou do centro de suporte.
+Desde o ONTAP 9.12.1, os snapshots não são apenas somente leitura, mas também podem ser protegidos contra exclusão acidental ou intencional. Esse recurso é chamado de tamperproof snapshots. Um período de retenção pode ser definido e aplicado por meio de uma política de snapshot. Os snapshots resultantes não podem ser excluídos até atingirem a data de expiração. Não há substituições administrativas ou do centro de suporte.
 
 Isso garante que um intruso, um insider malicioso, ou mesmo um ataque de ransomware não seja capaz de comprometer os backups, mesmo que isso tenha resultado no acesso ao próprio sistema ONTAP. Quando combinado a uma programação de snapshot frequente, o resultado é uma proteção de dados extremamente poderosa com RPO muito baixo.
 

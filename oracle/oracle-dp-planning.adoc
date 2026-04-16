@@ -35,19 +35,19 @@ No entanto, os snapshots locais nunca devem ser a única estratégia de backup. 
 
 
 
-== Backups de grupos de consistência
+== Backups consistentes com falhas
 
-Um backup de grupo de consistência envolve a captura do estado de um conjunto de dados (ou vários conjuntos de dados) em um único ponto atômico no tempo. Como exemplo de banco de dados, isso inclui todos os componentes do banco de dados, como datafiles, arquivos de log e outros arquivos diretamente associados ao banco de dados. Isso funciona com quase todos os produtos de banco de dados relacionais, incluindo Oracle RDBMS, Microsoft SQL Server, SAP HANA, PostgreSQL, MySQL e MariaDB. Proteger uma configuração VMware com um backup de grupo de consistência seria semelhante - capturar todos os datastores e, potencialmente, os LUNs de inicialização do ESX em um único ponto atômico no tempo.
+Um backup consistente com falhas envolve capturar o estado de um conjunto de dados (ou múltiplos conjuntos de dados) em um único ponto atômico no tempo. Como exemplo de banco de dados, isso inclui todos os componentes do banco de dados, como arquivos de dados, arquivos de log e outros arquivos diretamente associados ao banco de dados. Isso funciona com quase todos os produtos de banco de dados relacionais, incluindo Oracle RDBMS, Microsoft SQL Server, SAP HANA, PostgreSQL, MySQL e MariaDB. Proteger uma configuração VMware com um backup de grupo de consistência seria semelhante — capturando todos os datastores e, potencialmente, os LUNs de inicialização do ESX em um único ponto atômico no tempo.
 
-A criação de um snapshot desse grupo de consistência basicamente simula uma falha, e é por isso que esses backups são frequentemente chamados de backups consistentes com falhas. Às vezes há preocupações com o suporte para cenários de recuperação, mas é importante entender que nenhum procedimento de recuperação é geralmente necessário. Quando o aplicativo é iniciado depois de restaurar um backup de grupo de consistência, ele executa os processos de recuperação de log usuais, replays de diário do sistema de arquivos e outras tarefas para reproduzir qualquer e/S que estava em andamento no ponto do backup. O aplicativo então começa como de costume.
+A criação de um backup desse tipo é essencialmente uma simulação de uma falha, razão pela qual esses backups são chamados de backups consistentes com falhas. Às vezes, há preocupações com o suporte a cenários de recuperação, mas é importante entender que geralmente nenhum procedimento de recuperação é necessário. Quando o aplicativo é iniciado após a restauração de um backup de grupo de consistência, ele executa os processos usuais de recuperação de logs, reproduções do diário do sistema de arquivos e outras tarefas para reproduzir qualquer E/S que estivesse em andamento no ponto do backup. O aplicativo então inicia normalmente.
 
 Essencialmente, qualquer aplicativo que possa suportar uma falha de energia ou falha do servidor sem corrupção de dados pode ser protegido dessa maneira. O fato de que isso funciona também pode ser demonstrado pelo grande número de aplicativos protegidos com produtos de espelhamento síncrono e assíncrono de muitos fornecedores diferentes. Se um desastre de repente atinge o local principal, o site de réplica contém uma imagem consistente do ambiente original no momento em que o desastre ocorreu. Mais uma vez, nenhum procedimento especial de recuperação é necessário.
 
-O RPO para essa abordagem geralmente é limitado ao ponto do backup. Como regra geral, o RPO mínimo para snapshots de volume único é de uma hora. Por exemplo, 48 snapshots por hora mais outros 30 dias de snapshots noturnos são razoáveis e não exigiriam a retenção de um número excessivo de snapshots. Torna-se mais difícil alcançar um RPO inferior a uma hora. Não é recomendável primeiro consultar os Serviços profissionais da NetApp para entender os requisitos de ambiente, escala e proteção de dados.
+O RPO para essa abordagem geralmente é limitado ao ponto do backup. Como regra geral, o RPO mínimo para backup consistente com falhas é de uma hora. Por exemplo, 48 snapshots horários mais outros 30 dias de snapshots noturnos são razoáveis e não exigiriam a retenção de um número excessivo de snapshots. Um RPO inferior a uma hora torna-se mais difícil de alcançar e não é recomendado sem antes consultar os NetApp Professional Services para entender o ambiente, a escala e os requisitos de proteção de dados.
 
-Normalmente, o rto pode ser medido em segundos. Um aplicativo é desligado, os volumes são restaurados e o aplicativo é reiniciado.
+O RTO geralmente pode ser medido em segundos. Quando um aplicativo é encerrado, os volumes NFS, LUNs ou namespaces NVMe são restaurados e o aplicativo é reiniciado.
 
-A abordagem mais simples é colocar todos os arquivos ou LUNs em um único grupo de consistência de volume, o que permite que uma criação de snapshot seja agendada diretamente no ONTAP. Quando um conjunto de dados deve abranger volumes, é necessário um snapshot de grupo de consistência (cg-snapshot). Isso pode ser configurado usando chamadas de API RESTful ou Gerenciador de sistema. Além disso, o SnapCenter é capaz de criar um snapshot de grupo de consistência simples em uma lista definida de volumes.
+A abordagem mais simples é colocar todos os arquivos ou LUNs em um único volume AFF ou LUN/namespace ASA. Quando um conjunto de dados precisa abranger vários recursos de storage, um grupo de consistência é necessário. Isso pode ser configurado usando System Manager ou chamadas de API REST, além de o SnapCenter ser capaz de criar um snapshot simples de grupo de consistência.
 
 
 
@@ -59,7 +59,7 @@ O DR RPO é limitado pela largura de banda da rede disponível e pelo tamanho to
 
 Por exemplo, um banco de dados 10TB com uma taxa de mudança semanal de 10% é de aproximadamente 6GB por hora do total de alterações. Com 10Gb GB de conetividade, esse banco de dados requer aproximadamente seis minutos para ser transferido. A taxa de alteração varia de acordo com a variação na taxa de alteração do banco de dados, mas, no geral, um intervalo de atualização de 15 minutos e, portanto, um RPO de 15 minutos deve ser alcançado. Se houver 100 desses bancos de dados, então 600 minutos serão necessários para transferir os dados. Portanto, um RPO de uma hora não é possível. Da mesma forma, uma réplica de um único banco de dados de tamanho 100TB com uma taxa de alteração semanal de 10% não pode ser atualizada de forma confiável em uma hora.
 
-Fatores adicionais podem afetar a replicação, como sobrecarga de replicação e limitações no número de operações de replicação simultâneas. No entanto, o Planejamento geral para uma estratégia de replicação de volume único pode ser baseado na largura de banda disponível, e um RPO de replicação de uma hora geralmente é possível. Torna-se mais difícil alcançar um RPO inferior a uma hora, e só deve ser realizado após consulta aos Serviços profissionais da NetApp. Em alguns casos, 15 minutos é viável com uma conetividade de rede local-a-local muito boa. No entanto, no geral, quando um RPO abaixo de uma hora é necessário, a arquitetura de repetição de logs em vários volumes produz melhores resultados.
+Outros fatores podem afetar a replicação, como a sobrecarga de replicação e as limitações no número de operações de replicação simultâneas. No entanto, o planejamento geral de uma estratégia de replicação de recurso único pode ser baseado na largura de banda, e um RPO de replicação de uma hora geralmente é alcançável. Um RPO inferior a uma hora torna-se mais difícil de alcançar e só deve ser realizado após consultar NetApp Professional Services. Em alguns casos, 15 minutos são viáveis com uma conectividade de rede site-to-site muito boa. Contudo, de modo geral, quando um RPO inferior a uma hora é necessário, a arquitetura de reprodução de logs com múltiplos recursos apresenta melhores resultados.
 
 O rto com replicação de grupo de consistência em um cenário de recuperação de desastres é excelente, normalmente medido em segundos do ponto de vista de storage. A abordagem mais simples é simplesmente quebrar o espelho, e o banco de dados está pronto para ser iniciado. O tempo de inicialização do banco de dados geralmente é de cerca de 10 segundos, mas bancos de dados muito grandes com muitas transações registradas podem levar alguns minutos.
 
@@ -67,21 +67,29 @@ O fator mais importante para determinar o rto não é o sistema de storage, mas 
 
 Em alguns casos, os clientes prepararam instâncias de recuperação de desastres com antecedência com o storage pré-descoberto em sistemas operacionais. Nesses casos, ativar o cenário de recuperação de desastres não pode exigir nada mais do que quebrar um espelho e iniciar o aplicativo. Em outros casos, o sistema operacional e os aplicativos associados podem ser espelhados ao lado do banco de dados como um disco de máquina virtual ESX (VMDK). Nesses casos, o RPO é determinado pelo quanto um cliente investiu na automação para inicializar rapidamente o VMDK para que os aplicativos possam ser iniciados.
 
-O tempo de retenção é controlado em parte pelo limite do instantâneo. Por exemplo, os volumes no ONTAP têm um limite de 1024 snapshots. Em alguns casos, os clientes multiplexaram a replicação para aumentar o limite. Por exemplo, se forem necessários 2000 dias de backups, uma fonte pode ser replicada para dois volumes com atualizações ocorrendo em dias alternados. Isso requer um aumento no espaço inicial necessário, mas ainda representa uma abordagem muito mais eficiente do que um sistema de backup tradicional, que envolve vários backups completos.
+O tempo de retenção é controlado, em parte, pelo limite de snapshots. Por exemplo, AFF volumes e ASA LUNs no ONTAP têm um limite de 1024 snapshots. Em alguns casos, os clientes utilizam replicação multiplexada para aumentar esse limite. Por exemplo, se forem necessários 2000 dias de backups, uma origem pode ser replicada para dois destinos diferentes, com atualizações ocorrendo em dias alternados. Isso requer um aumento no espaço inicial necessário, mas ainda representa uma abordagem muito mais eficiente do que um sistema de backup tradicional, que envolve múltiplos backups completos.
 
 
 
-=== Grupo de consistência de volume único
+=== Grupo de consistência de volume único (AFF)
 
-A abordagem mais simples é colocar todos os arquivos ou LUNs em um único grupo de consistência de volume, o que permite que as atualizações do SnapMirror e do SnapVault sejam agendadas diretamente no sistema de storage. Nenhum software externo é necessário.
+A abordagem mais simples é colocar todos os arquivos ou LUNs em um único volume. Um volume é um grupo de consistência por si só, o que significa que as atualizações do SnapMirror e do SnapVault podem ser agendadas diretamente no sistema de storage. Nenhum software externo é necessário.
+
+
+
+=== Grupo de consistência de LUN/namespace único (ASA)
+
+Embora possa parecer estranho colocar um banco de dados inteiro em um único LUN/namespace, isso está se tornando cada vez mais comum. O motivo original da criação dos gerenciadores de volume foi superar as limitações de desempenho e capacidade dos discos físicos. Com os arrays modernos, um único dispositivo de bloco apresentado a um host já é abstraído em vários discos. O tamanho pode ser ajustado dinamicamente e o desempenho é muito superior ao de um disco individual.
+
+O resultado é que cargas de trabalho que variam de um datastore ESX a um banco de dados Oracle podem, muitas vezes, ser hospedadas em um único dispositivo de bloco. Isso não apenas simplifica enormemente o gerenciamento de dados, mas também traz efeitos colaterais úteis, como tempos de reinicialização do host mais rápidos devido ao número reduzido de dispositivos que precisam ser descobertos.
 
 
 
 === Grupo de consistência de vários volumes
 
-Quando um banco de dados precisa abranger volumes, é necessário um snapshot de grupo de consistência (cg-snapshot). Como mencionado acima, isso pode ser configurado usando chamadas do Gerenciador de sistema ou API RESTful, além de o SnapCenter ser capaz de criar um snapshot de grupo de consistência simples em uma lista definida de volumes.
+Quando um banco de dados precisa abranger volumes AFF ou LUNs/namespaces ASA, é necessário um snapshot de grupo de consistência. Como mencionado acima, isso pode ser configurado usando System Manager ou chamadas de API REST, além de o SnapCenter ser capaz de criar um snapshot de grupo de consistência simples.
 
-Há também uma consideração adicional sobre o uso de snapshots consistentes e multivolumes para fins de recuperação de desastres. Ao executar uma atualização de vários volumes, é possível que um desastre possa ocorrer enquanto uma transferência ainda estiver em andamento. O resultado seria um conjunto de volumes que não são consistentes uns com os outros. Se isso aconteceu, alguns dos volumes devem ser restaurados para um estado de snapshot anterior para entregar uma imagem de banco de dados consistente com falhas e pronta para uso.
+Há também uma consideração adicional sobre o uso de snapshots consistentes de múltiplos volumes do AFF ou de múltiplos LUNs do ASA para fins de recuperação de desastres. Ao realizar uma atualização de múltiplos relacionamentos de SnapMirror, é possível que ocorra um desastre enquanto a transferência ainda está em andamento. O resultado seria um conjunto de volumes, LUNs ou namespaces que não são consistentes entre si. Se isso acontecer, alguns dos volumes devem ser restaurados para um estado de snapshot anterior para fornecer uma imagem de banco de dados que seja consistente com falhas e esteja pronta para uso.
 
 
 

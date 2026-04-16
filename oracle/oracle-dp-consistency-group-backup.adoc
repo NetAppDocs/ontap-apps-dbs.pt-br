@@ -10,15 +10,15 @@ searchtitle: Backups de grupos de consistência de banco de dados Oracle
 
 
 [role="lead"]
-Para o backup mais simples possível, basta colocar todo o banco de dados Oracle em um único volume ONTAP
+Para o backup mais simples possível, basta colocar todo o banco de dados Oracle em um único volume ONTAP, LUN ou namespace NVMe.
 
-Proteger os arquivos de dados, Registros de arquivamento, logs de refazer e controlfiles com um único snapshot é um método válido de backup, restauração e replicação. No entanto, o RPO está limitado ao ponto do próprio backup. Ele é adequado para RPO de uma hora ou mais. Se um banco de dados abranger volumes, os instantâneos cg são necessários usando uma das ferramentas discutidas anteriormente.
+Proteger os arquivos de dados, logs de arquivamento, redo logs e arquivos de controle com um único Snapshot é um método válido de backup, restauração e replicação. No entanto, o RPO é limitado ao ponto do próprio backup. É adequado para um RPO de uma hora ou mais. Se um banco de dados abranger volumes AFF ou unidades de storage ASA, grupos de consistência serão necessários usando uma das ferramentas discutidas anteriormente.
 
-Como exemplo, todo o banco de dados pode estar em um único volume com o seguinte agendamento de snapshot:
+Por exemplo, todo o banco de dados pode estar em um único volume AFF com a seguinte programação de snapshots:
 
 * 72 instantâneos por hora
 * 30 instantâneos todas as noites
 * 12 instantâneos mensais
 
 
-Ele fornece um RPO de uma hora durante o período contínuo das 72 horas anteriores, além de backups adicionais todos os dias e mensais. Vários bancos de dados ou arquivos de aplicações também podem ser incluídos no único volume ou no conjunto de snapshots cg para fornecer backups consistentes em um ambiente maior.
+Isso proporciona um RPO de uma hora no período contínuo das 72 horas anteriores, além de backups noturnos e mensais adicionais. Vários bancos de dados ou arquivos de aplicativos também podem ser incluídos em um único volume ou conjunto de snapshots de grupo de consistência para fornecer backups consistentes em um ambiente maior.
