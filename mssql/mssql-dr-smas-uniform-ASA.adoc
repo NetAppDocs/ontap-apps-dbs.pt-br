@@ -1,44 +1,9 @@
 ---
 sidebar: sidebar 
 permalink: mssql/mssql-dr-smas-uniform-ASA.html 
-keywords: MSSQL,SQL Server, SnapMirror active sync, SMBC, overview 
-summary: Microsoft SQL Server e SM-as acesso uniforme 
-searchtitle: Microsoft SQL Server e SM-as acesso uniforme 
+redirect: mssql/mssql-dr-smas-uniform.html 
 ---
-= Acesso uniforme
+= 
 :allow-uri-read: 
-:imagesdir: ../media/
 
 
-[role="lead"]
-Rede de acesso uniforme significa que os hosts são capazes de acessar caminhos em ambos os sites (ou domínios de falha dentro do mesmo site).
-
-Um recurso importante do SM-as é a capacidade de configurar os sistemas de storage para saber onde os hosts estão localizados. Quando você mapeia os LUNs para um determinado host, você pode indicar se eles são ou não proximais a um determinado sistema de armazenamento.
-
-Os sistemas NetApp ASA oferecem multipathing ativo-ativo em todos os caminhos em um cluster. Isso também se aplica às configurações SM-as.
-
-image:smas-uniform-SQL-ASA.png["SnapMirror ative Sync ASA rede uniforme"]
-
-Com acesso uniforme, o IO estaria atravessando a WAN. É um cluster de rede de malha completa e isso pode ou não ser desejável para todos os casos de uso.
-
-Se os dois locais estivessem a 100 metros de distância com conetividade de fibra, não deveria haver latência adicional detetável cruzando a WAN, mas se os locais estivessem a uma distância longa, então o desempenho de leitura sofreria em ambos os locais. O ASA com rede de acesso não uniforme seria uma opção para obter os benefícios de custo e recursos do ASA sem incorrer em uma penalidade de acesso à latência entre sites ou usar o recurso de proximidade do host para permitir acesso local de leitura/gravação para ambos os sites.
-
-O ASA com SM-as em uma configuração de baixa latência oferece dois benefícios interessantes. Primeiro, ele basicamente *dobra* a performance de qualquer host porque a e/S pode ser atendida por duas vezes mais controladoras usando o dobro de caminhos. Em segundo lugar, em um ambiente de local único, ele oferece disponibilidade extrema porque todo um sistema de storage pode ser perdido sem interromper o acesso de host.
-
-
-
-== Definições de proximidade
-
-Proximidade refere-se a uma configuração por cluster que indica que um determinado host WWN ou ID de iniciador iSCSI pertence a um host local. É uma segunda etapa opcional para configurar o acesso LUN.
-
-O primeiro passo é a configuração usual do igroup. Cada LUN deve ser mapeado para um grupo que contenha as IDs WWN/iSCSI dos hosts que precisam de acesso a esse LUN. Isso controla qual host tem _access_ para um LUN.
-
-A segunda etapa opcional é configurar a proximidade do host. Isso não controla o acesso, ele controla _Priority_.
-
-Por exemplo, um host no local A pode ser configurado para acessar um LUN que é protegido pela sincronização ativa do SnapMirror e, como a SAN é estendida entre sites, há caminhos disponíveis para esse LUN usando armazenamento no local A ou armazenamento no local B.
-
-Sem configurações de proximidade, esse host usará ambos os sistemas de storage igualmente porque ambos os sistemas de storage anunciarão caminhos ativos/otimizados. Se a latência da SAN e/ou a largura de banda entre locais for limitada, isso pode não ser desejado e você pode querer garantir que, durante a operação normal, cada host utilize preferencialmente caminhos para o sistema de armazenamento local. Isso é configurado adicionando o ID WWN/iSCSI do host ao cluster local como um host proximal. Isso pode ser feito na CLI ou no SystemManager.
-
-Os caminhos aparecerão como mostrado abaixo quando a proximidade do host for configurada.
-
-image:smas-uniform-SQL-ASA-Proximity.png["SnapMirror ative Sync ASA rede uniforme com proximidade"]

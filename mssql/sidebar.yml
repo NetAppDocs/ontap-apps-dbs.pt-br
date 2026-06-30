@@ -15,8 +15,8 @@ entries:
     url: "/mssql/mssql-shared-vs-dedicated.html"
   - title: Arquivos tempdb
     url: "/mssql/mssql-tempdb.html"
-- title: Configuração de storage em sistemas AFF/FAS
-  pdf-filename: Microsoft SQL Server em sistemas AFF/FAS
+- title: Configuração de armazenamento
+  pdf-filename: Configuração de storage para Microsoft SQL Server
   entries:
   - title: Visão geral
     url: "/mssql/mssql-storage-considerations.html"
@@ -25,8 +25,9 @@ entries:
   - title: Eficiência de storage
     url: "/mssql/mssql-storage-efficiency.html"
   - title: Proteção de dados
-    url: "/mssql/mssql-data-protection.html"
     entries:
+    - title: Visão geral
+      url: "/mssql/mssql-data-protection.html"
     - title: Grupo de disponibilidade do SQL Server com SnapCenter
       url: "/mssql/mssql-ag-snapcenter.html"
   - title: Recuperação de desastres
@@ -49,48 +50,13 @@ entries:
         url: "/mssql/mssql-dr-smas-mediator.html"
       - title: Site preferido
         url: "/mssql/mssql-dr-smas-preferred-site.html"
-      - title: Topologia de rede
-        entries:
-        - title: Acesso uniforme
-          url: "/mssql/mssql-dr-smas-uniform.html"
-        - title: Acesso não uniforme
-          url: "/mssql/mssql-dr-smas-nonuniform.html"
+      - title: Acesso uniforme à rede
+        url: "/mssql/mssql-dr-smas-uniform.html"
+      - title: Acesso à rede não uniforme
+        url: "/mssql/mssql-dr-smas-nonuniform.html"
       - title: SQL Server com SM-as
         url: "/mssql/mssql-dr-smas-sql.html"
       - title: Cenários de falha
         url: "/mssql/mssql-dr-smas-failure-scenarios.html"
-- title: Configuração de storage em sistemas ASA R2
-  pdf-filename: Microsoft SQL Server em sistemas ASA
-  entries:
-  - title: Visão geral
-    url: "/mssql/mssql-storage-considerations-ASA.html"
-  - title: Arquivos de banco de dados e grupos de arquivos
-    url: "/mssql/mssql-files-and-filegroups-ASA.html"
-  - title: Proteção de dados
-    url: "/mssql/mssql-data-protection-ASA.html"
-  - title: Recuperação de desastres
-    entries:
-    - title: Visão geral
-      url: "/mssql/mssql-disaster-recovery-ASA.html"
-    - title: SnapMirror
-      url: "/mssql/mssql-dr-snapmirror-ASA.html"
-    - title: Sincronização ativa do SnapMirror
-      entries:
-      - title: Visão geral
-        url: "/mssql/mssql-dr-smas-overview-ASA.html"
-      - title: ONTAP Mediador
-        url: "/mssql/mssql-dr-smas-mediator-ASA.html"
-      - title: Site preferido
-        url: "/mssql/mssql-dr-smas-preferred-site-ASA.html"
-      - title: Topologia de rede
-        entries:
-        - title: Acesso uniforme
-          url: "/mssql/mssql-dr-smas-uniform-ASA.html"
-        - title: Acesso não uniforme
-          url: "/mssql/mssql-dr-smas-nonuniform-ASA.html"
-      - title: SQL Server com SM-as
-        url: "/mssql/mssql-dr-smas-sql-ASA.html"
-      - title: Cenários de falha
-        url: "/mssql/mssql-dr-smas-failure-scenarios-ASA.html"
 - title: Segurança dos dados
   url: "/mssql/mssql-data-security.html"

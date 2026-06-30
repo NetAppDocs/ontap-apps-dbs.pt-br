@@ -81,7 +81,7 @@ A QoS mínima e/ou máxima pode ser facilmente definida em VMs individuais ou VM
 Ao criar o perfil de capacidade de storage para o contêiner da VVol, especifique um valor máximo e/ou mínimo de IOPS sob a capacidade de desempenho e, em seguida, faça referência a esse SCP com a política de armazenamento da VM. Use essa política ao criar a VM ou aplicar a diretiva a uma VM existente.
 
 
-NOTE: O vVols requer o uso de ferramentas do ONTAP para VMware vSphere, que funciona como o provedor VASA para ONTAP. link:/vmware/vmware-vvols-overview.html["VMware vSphere Virtual volumes (vVols) com o ONTAP"]Consulte para obter as práticas recomendadas do vVols.
+NOTE: vVols requer o uso das ONTAP tools for VMware vSphere, que funcionam como o VASA Provider para ONTAP. Consulte link:vmware-vvols-overview.html["VMware vSphere Virtual volumes (vVols) com o ONTAP"] para as melhores práticas de vVols.
 
 
 

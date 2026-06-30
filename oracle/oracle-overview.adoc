@@ -2,7 +2,7 @@
 sidebar: sidebar 
 permalink: oracle/oracle-overview.html 
 keywords: oracle, database, ontap, TR-3633 
-summary: O ONTAP foi projetado para bancos de dados Oracle. Saiba como! 
+summary: ONTAP foi projetado para bancos de dados Oracle. 
 ---
 = Bancos de dados Oracle no ONTAP
 :allow-uri-read: 
