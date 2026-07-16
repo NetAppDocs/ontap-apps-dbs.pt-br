@@ -32,6 +32,7 @@ Consulte a documentação do PostgreSQL para obter uma lista completa dos parâm
 
 
 
+[[toast]]
 == BRINDE
 
 TOAST representa a técnica de armazenamento de atributos oversized. PostgreSQL usa um tamanho de página fixo (geralmente 8KB) e não permite que tuplas abranjam várias páginas. Portanto, não é possível armazenar grandes valores de campo diretamente. Quando você tenta armazenar uma linha que excede esse tamanho, O TOAST divide os dados de colunas grandes em "pedaços" menores e os armazena em uma MESA DE BRINDE.
@@ -40,6 +41,7 @@ Os grandes valores dos atributos tostados são retirados (se selecionados) apena
 
 
 
+[[vacuum]]
 == VÁCUO
 
 Na operação normal do PostgreSQL, tuplas que são excluídas ou tornadas obsoletas por uma atualização não são removidas fisicamente de sua tabela; elas permanecem presentes até que O VÁCUO seja executado. Portanto, você deve executar O VÁCUO periodicamente, especialmente em tabelas atualizadas com frequência. O espaço que ocupa deve ser recuperado para reutilização por novas linhas, para evitar a interrupção do espaço em disco. No entanto, ele não retorna o espaço para o sistema operacional.

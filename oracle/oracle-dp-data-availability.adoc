@@ -19,6 +19,7 @@ O ONTAP foi projetado para oferecer a máxima disponibilidade de banco de dados 
 
 
 
+[[ha-pairs]]
 == Pares HA
 
 A unidade básica de alta disponibilidade é o par de HA. Cada par contém links redundantes para suportar a replicação de dados para o NVRAM. NVRAM não é um cache de gravação. A RAM dentro do controlador serve como cache de gravação. O objetivo do NVRAM é registrar temporariamente os dados como uma salvaguarda contra falhas inesperadas do sistema. A este respeito, é semelhante a um log refazer banco de dados.
@@ -29,6 +30,7 @@ Se um controlador falhar abruptamente, é provável que haja alterações penden
 
 
 
+[[takeover-and-giveback]]
 == Takeover e giveback
 
 Takeover e giveback refere-se ao processo de transferência de responsabilidade por recursos de storage entre nós em um par de HA. Há dois aspetos para a aquisição e a giveback:
@@ -48,6 +50,7 @@ O segundo aspeto da aquisição e da giveback é a transferência da propriedade
 
 
 
+[[takeover-time]]
 == Tempo de takeover
 
 A e/S do host tem uma pequena pausa na e/S durante as operações de takeover e giveback, mas não deve haver interrupção do aplicativo em um ambiente configurado corretamente. O processo de transição real no qual a e/S é atrasada geralmente é medido em segundos, mas o host pode exigir tempo adicional para reconhecer a alteração nos caminhos de dados e reenviar operações de e/S.

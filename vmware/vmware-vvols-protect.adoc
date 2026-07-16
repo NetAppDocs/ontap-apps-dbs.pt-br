@@ -17,6 +17,7 @@ As seções a seguir descrevem os procedimentos e as práticas recomendadas para
 
 
 
+[[vasa-provider-high-availability]]
 == Alta disponibilidade do fornecedor VASA
 
 O Fornecedor NetApp VASA é executado como parte do dispositivo virtual juntamente com o plug-in do vCenter e o servidor de API REST (anteriormente conhecido como o console de armazenamento virtual [VSC]) e o adaptador de replicação de armazenamento. Se o provedor VASA não estiver disponível, as VMs que usam vVols continuarão a ser executadas. No entanto, novos datastores vVols não podem ser criados e o vVols não pode ser criado ou vinculado pelo vSphere. Isso significa que as VMs que usam vVols não podem ser ativadas, uma vez que o vCenter não poderá solicitar a criação da vVol de swap. E as VMs em execução não podem usar o vMotion para migração para outro host porque os vVols não podem ser vinculados ao novo host.
@@ -33,6 +34,7 @@ https://kb.netapp.com/mgmt/OTV/Virtual_Storage_Console/How_to_perform_a_VASA_Pro
 
 
 
+[[vvols-replication]]
 == Replicação do vVols
 
 Muitos clientes da ONTAP replicam seus armazenamentos de dados tradicionais para sistemas de storage secundário usando o NetApp SnapMirror e, em seguida, usam o sistema secundário para recuperar VMs individuais ou um local inteiro em caso de desastre. Na maioria dos casos, os clientes usam uma ferramenta de software para gerenciar isso, como um produto de software de backup, como o plug-in do NetApp SnapCenter para VMware vSphere ou uma solução de recuperação de desastres, como o Gerenciador de recuperação de site da VMware (juntamente com o adaptador de replicação de armazenamento nas ferramentas do ONTAP).
@@ -47,12 +49,14 @@ Atualmente, o VMware SRM é a única solução de automação de recuperação d
 
 
 
+[[vvols-replication-with-srm]]
 === Replicação do vVols com o SRM
 
 image:vvols-image17.png["Replicação do vVols com o SRM"]
 
 
 
+[[metrocluster-support]]
 == Suporte à MetroCluster
 
 Embora as ferramentas do ONTAP não sejam capazes de acionar um switchover do MetroCluster, ele oferece suporte a sistemas NetApp MetroCluster para vVols que suportam volumes em uma configuração uniforme de cluster de storage metro do vSphere (vmsc). O switchover de um sistema MetroCluster é Tratado da maneira normal.
@@ -69,6 +73,7 @@ https://kb.vmware.com/s/article/2031038["_VMware KB 2031038 suporte ao VMware vS
 
 
 
+[[vvols-backup-overview]]
 == Visão geral do vVols Backup
 
 Existem várias abordagens para proteger VMs, como usar agentes de backup in-Guest, anexar arquivos de dados da VM a um proxy de backup ou usar APIs definidas como VMware VADP. O vVols pode ser protegido usando os mesmos mecanismos e muitos parceiros da NetApp suportam backups de VM, incluindo vVols.
@@ -81,6 +86,7 @@ O suporte ao vSphere 8,0 foi introduzido com o SCV 4,7, que usou uma arquitetura
 
 
 
+[[vvols-backup-with-snapcenter-plugin-for-vmware-vsphere]]
 == Backup do vVols com o plug-in do SnapCenter para VMware vSphere
 
 Com o NetApp SnapCenter, agora você pode criar grupos de recursos para vVols com base em tags e/ou pastas para aproveitar automaticamente os snapshots baseados no FlexVol do ONTAP para VMs baseadas em vVols. Isso permite que você defina serviços de backup e recuperação que protegerão as VMs automaticamente à medida que elas são provisionadas dinamicamente em seu ambiente.
@@ -89,6 +95,7 @@ O plug-in do SnapCenter para VMware vSphere é implantado como um dispositivo au
 
 
 
+[[snapcenter-architecture]]
 === Arquitetura da SnapCenter
 
 image:snapcenter_arch.png["Arquitetura da SnapCenter"]
@@ -103,6 +110,7 @@ Para obter informações sobre o plug-in do SnapCenter para APIs REST do VMware 
 
 
 
+[[best-practices]]
 === Práticas recomendadas
 
 As práticas recomendadas a seguir podem ajudá-lo a aproveitar ao máximo sua implantação do SnapCenter.
@@ -153,12 +161,14 @@ As práticas recomendadas a seguir podem ajudá-lo a aproveitar ao máximo sua i
 |===
 
 
+[[resource-group-notification-options]]
 === Opções de notificação do grupo de recursos
 
 image:vvols-image19.png["Opções de notificação do grupo de recursos"]
 
 
 
+[[get-started-with-scv-using-these-documents]]
 === Comece a usar a SCV usando esses documentos
 
 https://docs.netapp.com/us-en/sc-plugin-vmware-vsphere/index.html["Saiba mais sobre o plug-in do SnapCenter para VMware vSphere"]

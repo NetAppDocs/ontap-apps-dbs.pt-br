@@ -19,6 +19,7 @@ As políticas de disposição em camadas controlam quais blocos de banco de dado
 
 
 
+[[default]]
 == Padrão
 
 Todos os volumes do FabricPool são inicialmente definidos como `default`, o que significa que o comportamento é controlado pela política de recuperação de nuvem. "O comportamento exato depende da política de disposição em camadas usada.
@@ -31,6 +32,7 @@ Todos os volumes do FabricPool são inicialmente definidos como `default`, o que
 
 
 
+[[on-read]]
 == Na leitura
 
 A configuração `cloud-retrieval-policy` como On-read substitui o comportamento padrão para que uma leitura de qualquer dado em camadas resulte no retorno desses dados ao nível de desempenho.
@@ -41,6 +43,7 @@ Se uma mudança inesperada nas necessidades de negócios exigir que alguns dos d
 
 
 
+[[promote]]
 == Promover
 
 O comportamento da política promover depende da política de disposição em camadas. Se a política de disposição em categorias for `auto`, a configuração do `cloud-retrieval-policy `to `promote` recuperará todos os blocos da camada de capacidade na próxima verificação de disposição em categorias.
@@ -51,6 +54,7 @@ No entanto, se os dados em um volume tiverem sido restaurados por uma operação
 
 
 
+[[never]]
 == Nunca
 
 Não recupere blocos da camada de capacidade.

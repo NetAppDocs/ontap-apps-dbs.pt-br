@@ -19,6 +19,7 @@ O provisionamento de armazenamentos de dados vVols envolve várias etapas. Os si
 
 
 
+[[preparing-to-create-vvols-datastores-with-ontap-tools]]
 == Preparando-se para criar datastores vVols com as ferramentas do ONTAP
 
 Você pode ignorar as duas primeiras etapas do processo de implantação se você já estiver usando ferramentas do ONTAP para gerenciar, automatizar e gerar relatórios sobre o seu storage VMFS existente ou baseado em NFS tradicional. Você também pode consultar este completo link:vmware-vvols-checklist.html["lista de verificação"] para implantar e configurar ferramentas do ONTAP.
@@ -80,6 +81,7 @@ NOTE: O motivo pelo qual todo o cluster precisa ser integrado à interface do us
 
 
 
+[[creating-vvols-datastores-with-ontap-tools]]
 == Criação de datastores vVols com as ferramentas do ONTAP
 
 Clique com o botão direito do Mouse no host, cluster ou datacenter no qual você deseja criar o datastore vVols e selecione _ONTAP Tools_ > _provision datastore_.
@@ -142,12 +144,14 @@ image:vvols-deploy-9.png["Função \"Thumb\" \"provision datastore wizard\",300"
 
 
 
+[[migrating-vms-from-traditional-datastores-to-vvols]]
 == Migração de VMs de datastores tradicionais para vVols
 
 A migração de VMs de datastores tradicionais para um datastore vVols é tão simples quanto mover VMs entre datastores tradicionais. Basta selecionar a(s) VM(s), depois selecionar migrar da lista de ações e selecionar um tipo de migração de _change storage only_. Quando solicitado, selecione uma política de armazenamento de VM que corresponda ao armazenamento de dados do vVols. As operações de cópia de migração podem ser descarregadas com o vSphere 6,0 e posterior para migrações SAN VMFS para vVols, mas não de VMDKs nas para vVols.
 
 
 
+[[managing-vms-with-policies]]
 == Gerenciamento de VMs com políticas
 
 Para automatizar o provisionamento de armazenamento com gerenciamento baseado em políticas, você precisa criar políticas de armazenamento de VM que correspondam aos recursos de armazenamento desejados.
@@ -157,6 +161,7 @@ NOTE: As ferramentas do ONTAP 10,0 e posteriores não usam mais perfis de capaci
 
 
 
+[[creating-vm-storage-policies]]
 === Criando políticas de armazenamento de VM
 
 As políticas de armazenamento de máquinas virtuais (VMs) são usadas no vSphere para gerenciar recursos opcionais, como o controle de E/S de armazenamento ou a criptografia do vSphere. Eles também são usados ​​com vVols para aplicar recursos de armazenamento específicos à máquina virtual. Utilize o tipo de armazenamento " NetApp ". Veja o link:vmware-vvols-ontap.html#Best Practices[exemplo de configuração de rede usando vVols sobre NFS v3] para um exemplo disso com o provedor VASA das ferramentas ONTAP . As regras para o armazenamento "NetApp" devem ser usadas com datastores que não ONTAP baseados em vVols.

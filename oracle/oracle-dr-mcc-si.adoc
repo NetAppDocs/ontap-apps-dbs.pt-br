@@ -14,6 +14,7 @@ Como dito anteriormente, a presença de um sistema MetroCluster não necessariam
 
 
 
+[[failover-with-a-preconfigured-os]]
 == Failover com um SO pré-configurado
 
 O SyncMirror fornece uma cópia síncrona dos dados no local de recuperação de desastre, mas disponibilizar esses dados requer um sistema operacional e as aplicações associadas. A automação básica pode melhorar significativamente o tempo de failover do ambiente geral. Os produtos Clusterware, como o Veritas Cluster Server (VCS), são frequentemente usados para criar um cluster nos sites e, em muitos casos, o processo de failover pode ser conduzido com scripts simples.
@@ -32,6 +33,7 @@ O procedimento de ativação real é simples. Comandos como o reconhecimento LUN
 
 
 
+[[failover-with-a-virtualized-os]]
 == Failover com um sistema operacional virtualizado
 
 O failover de ambientes de banco de dados pode ser estendido para incluir o próprio sistema operacional. Em teoria, esse failover pode ser feito com LUNs de inicialização, mas na maioria das vezes é feito com um sistema operacional virtualizado. O procedimento é semelhante aos seguintes passos:

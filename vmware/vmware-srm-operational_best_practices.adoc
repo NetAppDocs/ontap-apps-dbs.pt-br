@@ -18,6 +18,7 @@ As seções a seguir descrevem as práticas recomendadas operacionais para o sto
 
 
 
+[[datastores-and-protocols]]
 == Armazenamentos de dados e protocolos
 
 * Se possível, sempre use ferramentas do ONTAP para provisionar armazenamentos de dados e volumes. Isso garante que volumes, caminhos de junção, LUNs, grupos, políticas de exportação e outras configurações sejam configurados de maneira compatível.
@@ -39,6 +40,7 @@ snap autodelete modify -volume -commitment try
 
 
 
+[[about-array-pairs]]
 == Sobre os pares de array
 
 Um gerenciador de array é criado para cada par de array. Com as ferramentas SRM e ONTAP, cada emparelhamento de array é feito com o escopo de uma SVM, mesmo que você esteja usando credenciais de cluster. Isso permite segmentar fluxos de trabalho de DR entre locatários com base em quais SVMs eles foram atribuídos a gerenciar. Você pode criar vários gerenciadores de array para um determinado cluster, e eles podem ser assimétricos. Você pode fazer fan-out ou fan-out entre diferentes clusters do ONTAP 9. Por exemplo, você pode fazer a replicação do SVM-A e do SVM-B no Cluster-1 para SVM-C no Cluster-2, SVM-D no Cluster-3 ou vice-versa.
@@ -49,6 +51,7 @@ image:vsrm-ontap9_image6.jpg["cluster"]
 
 
 
+[[about-replication-groups]]
 == Sobre os grupos de replicação
 
 Os grupos de replicação contêm coleções lógicas de máquinas virtuais que são recuperadas juntas. Como a replicação do ONTAP SnapMirror ocorre no nível do volume, todas as VMs em um volume estão no mesmo grupo de replicação.
@@ -59,12 +62,14 @@ Uma consideração final para grupos de replicação é que cada um é, por sua 
 
 
 
+[[about-protection-groups]]
 == Sobre grupos de proteção
 
 Os grupos de proteção definem VMs e datastores em grupos que são recuperados juntos do site protegido. O local protegido é onde as VMs configuradas em um grupo de proteção existem durante operações normais de estado estacionário. É importante notar que, embora o SRM possa exibir vários gerenciadores de matriz para um grupo de proteção, um grupo de proteção não pode abranger vários gerenciadores de matriz. Por esse motivo, você não deve estender arquivos de VM entre armazenamentos de dados em diferentes SVMs.
 
 
 
+[[about-recovery-plans]]
 == Sobre planos de recuperação
 
 Os planos de recuperação definem quais grupos de proteção são recuperados no mesmo processo. Vários grupos de proteção podem ser configurados no mesmo plano de recuperação. Além disso, para permitir mais opções para a execução de planos de recuperação, um único grupo de proteção pode ser incluído em vários planos de recuperação.
@@ -77,6 +82,7 @@ A NetApp recomenda fortemente que você trabalhe com suas equipes de aplicaçõe
 
 
 
+[[test-failover]]
 == Failover de teste
 
 Como prática recomendada, sempre execute um failover de teste sempre que for feita uma alteração na configuração do storage de VM protegido. Isso garante que, no caso de um desastre, você possa confiar que o Site Recovery Manager pode restaurar serviços dentro do destino de rto esperado.
@@ -89,6 +95,7 @@ Depois que o teste tiver sido validado e não for mais necessário, execute uma 
 
 
 
+[[failover-considerations]]
 == Considerações sobre failover
 
 Há várias outras considerações quando se trata de falhar em um local, além da ordem de operações mencionada neste guia.
@@ -103,12 +110,14 @@ Para configurar o SRM para aplicar diferentes configurações de rede a várias 
 
 
 
+[[reprotect]]
 == Reproteger
 
 Após uma recuperação, o local de recuperação se torna o novo local de produção. Como a operação de recuperação quebrou a replicação do SnapMirror, o novo local de produção não fica protegido de nenhum desastre futuro. Uma prática recomendada é proteger o novo local de produção para outro local imediatamente após uma recuperação. Se o local de produção original estiver operacional, o administrador da VMware poderá usar o local de produção original como um novo local de recuperação para proteger o novo local de produção, invertendo efetivamente o sentido de proteção. A reproteção está disponível apenas em falhas não catastróficas. Portanto, os vCenter Servers originais, os servidores ESXi, os servidores SRM e os bancos de dados correspondentes devem ser eventualmente recuperáveis. Se eles não estiverem disponíveis, um novo grupo de proteção e um novo plano de recuperação devem ser criados.
 
 
 
+[[failback]]
 == Failback
 
 Uma operação de failback é fundamentalmente um failover em uma direção diferente do anterior. Como prática recomendada, você verifica se o site original está de volta aos níveis aceitáveis de funcionalidade antes de tentar failback ou, em outras palavras, failover para o site original. Se o local original ainda estiver comprometido, você deve atrasar o failback até que a falha seja suficientemente remediada.
@@ -117,6 +126,7 @@ Outra prática recomendada de failback é sempre executar um failover de teste a
 
 
 
+[[reprotecting-the-original-site]]
 == Reproteger o site original
 
 Após o failback, você deve confirmar com todas as partes interessadas que seus serviços foram devolvidos ao normal antes de executar o reprotect novamente,

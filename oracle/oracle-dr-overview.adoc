@@ -30,6 +30,7 @@ A sincronização ativa do SnapMirror (SM-as) é baseada no SnapMirror síncrono
 
 
 
+[[sm-as-and-mcc-comparison]]
 == Comparação de SM-as e MCC
 
 O SM-as e o MetroCluster são semelhantes na funcionalidade geral, mas há diferenças importantes na maneira como a replicação RPO-0 foi implementada e como ela é gerenciada. O SnapMirror assíncrono e síncrono também pode ser usado como parte de um plano de recuperação de desastres, mas não foram desenvolvidos como tecnologias de repliação de HA.

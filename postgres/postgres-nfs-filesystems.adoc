@@ -32,6 +32,7 @@ Se for esperado uma e/S sequencial grande, os tamanhos de transferência NFS pod
 
 
 
+[[nfs-transfer-sizes]]
 == Tamanhos de transferência NFS
 
 Por padrão, o ONTAP limita os tamanhos de e/S de NFS a 64K.
@@ -59,6 +60,7 @@ rw,hard,nointr,bg,vers=[3|4],proto=tcp,rsize=262144,wsize=262144
 ....
 
 
+[[nfsv3-tcp-slot-tables]]
 == NFSv3 Tabelas de slot TCP
 
 Se NFSv3 for usado com Linux, é fundamental definir corretamente as tabelas de slot TCP.

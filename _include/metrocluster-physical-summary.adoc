@@ -4,6 +4,7 @@
 
 
 
+[[metrocluster-is-avialable-in-3-different-configurations]]
 == O MetroCluster pode ser usado em 3 configurações diferentes
 
 * Pares HA com conetividade IP
@@ -16,6 +17,7 @@ NOTE: O termo 'conetividade' refere-se à conexão de cluster usada para replica
 
 
 
+[[metrocluster-ip]]
 == IP MetroCluster
 
 A configuração MetroCluster IP de par de HA usa dois ou quatro nós por local. Essa opção de configuração aumenta a complexidade e os custos em relação à opção de dois nós, mas oferece um benefício importante: A redundância intrasite. Uma simples falha do controlador não requer acesso aos dados na WAN. O acesso aos dados permanece local por meio do controlador local alternativo.
@@ -30,6 +32,7 @@ image:../media/mccip.png["Arquitetura IP do MetroCluster"]
 
 
 
+[[ha-pair-fc-san-attached-metrocluster]]
 == MetroCluster conectados a FC de par HA SAN
 
 A configuração de MetroCluster FC de par de HA usa dois ou quatro nós por local. Essa opção de configuração aumenta a complexidade e os custos em relação à opção de dois nós, mas oferece um benefício importante: A redundância intrasite. Uma simples falha do controlador não requer acesso aos dados na WAN. O acesso aos dados permanece local por meio do controlador local alternativo.
@@ -45,6 +48,7 @@ Algumas infraestruturas multisite não foram desenvolvidas para operações ativ
 
 
 
+[[two-node-fc-san-attached-metrocluster]]
 == MetroCluster com conexão SAN FC de dois nós
 
 A configuração do MetroCluster de dois nós usa apenas um nó por local. Esse design é mais simples do que a opção de par de HA, pois há menos componentes para configurar e manter. Ele também reduziu as demandas de infraestrutura em termos de cabeamento e switch FC. Finalmente, reduz custos.
@@ -55,6 +59,7 @@ O impactos óbvio desse projeto é que a falha do controlador em um único local
 
 
 
+[[metrocluster-resiliency-features]]
 == Recursos de resiliência do MetroCluster
 
 Não há pontos únicos de falha em uma solução MetroCluster:

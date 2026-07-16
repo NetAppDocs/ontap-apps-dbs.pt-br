@@ -8,6 +8,7 @@ A FabricPool soluciona esses problemas ao fornecer uma única solução com disp
 
 
 
+[[policies]]
 == Políticas
 
 O uso de uma `tiering-minimum-cooling-days` política de poucos dias resulta na retenção de blocos nos arquivos criados recentemente (que são os arquivos mais prováveis de serem necessários no curto prazo) na categoria de performance. Os blocos de dados de arquivos mais antigos são movidos para o nível de capacidade.

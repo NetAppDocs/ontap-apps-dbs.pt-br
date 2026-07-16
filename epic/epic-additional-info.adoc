@@ -20,6 +20,7 @@ Para saber mais sobre as informações descritas neste documento, consulte os se
 
 
 
+[[epic-customer-guidance-documents]]
 == Documentos épicos de orientação para o cliente
 
 A Epic fornece aos clientes os seguintes documentos para orientação sobre servidor, armazenamento e rede. Estes documentos são referenciados neste relatório técnico.

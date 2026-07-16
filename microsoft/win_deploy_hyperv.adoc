@@ -18,6 +18,7 @@ Este apêndice descreve a implantação de um cluster Hyper-V.
 
 
 
+[[prerequisites]]
 == Pré-requisitos
 
 * Existem pelo menos dois servidores Hyper-V conetados entre si.
@@ -30,6 +31,7 @@ Este apêndice descreve a implantação de um cluster Hyper-V.
 
 
 
+[[deployment]]
 == Implantação
 
 . Faça login em um dos servidores do Windows Hyper-V como membro do grupo de administradores.

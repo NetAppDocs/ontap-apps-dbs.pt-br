@@ -4,18 +4,21 @@
 
 
 
+[[efficiency-best-practices]]
 == Práticas recomendadas de eficiência
 
 *A NetApp recomenda* o seguinte:
 
 
 
+[[aff-and-asa-defaults]]
 === Padrões AFF e ASA
 
 Os volumes criados no ONTAP em sistemas AFF e os LUNs/namespaces em sistemas ASA são provisionados dinamicamente com todos os recursos de eficiência inline ativados. Embora os bancos de dados geralmente não se beneficiem da deduplicação e possam incluir dados não compressíveis, as configurações padrão são adequadas para quase todas as cargas de trabalho. ONTAP foi projetado para processar com eficiência todos os tipos de dados e padrões de E/S, independentemente de resultarem em economia ou não. As configurações padrão só devem ser alteradas se os motivos forem totalmente compreendidos e houver um benefício em alterá-las.
 
 
 
+[[general-recommendations]]
 === Recomendações gerais
 
 * Se os volumes, LUNs ou namespaces do AFF não estiverem com thin provisioning, você deve desativar todas as configurações de eficiência, pois o uso desses recursos não gera economia e a combinação de thick provisioning com a eficiência de espaço ativada pode causar comportamentos inesperados, incluindo erros de falta de espaço.

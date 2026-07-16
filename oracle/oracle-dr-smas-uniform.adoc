@@ -17,6 +17,7 @@ Um recurso importante do SM-as é a capacidade de configurar os sistemas de stor
 
 
 
+[[proximity-settings]]
 == Definições de proximidade
 
 Proximidade refere-se a uma configuração por cluster que indica que um determinado host WWN ou ID de iniciador iSCSI pertence a um host local. É uma segunda etapa opcional para configurar o acesso LUN.
@@ -31,6 +32,7 @@ Sem configurações de proximidade, esse host usará ambos os sistemas de storag
 
 
 
+[[aff]]
 == AFF
 
 Com um sistema AFF, os caminhos aparecerão como mostrado abaixo quando a proximidade do host for configurada.
@@ -45,6 +47,7 @@ Há caminhos redundantes pelo cluster local que não são mostrados nesses diagr
 
 
 
+[[asa]]
 == ASA
 
 Os sistemas NetApp ASA oferecem multipathing ativo-ativo em todos os caminhos em um cluster. Isso também se aplica às configurações SM-as.

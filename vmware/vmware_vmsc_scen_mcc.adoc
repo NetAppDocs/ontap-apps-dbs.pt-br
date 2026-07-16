@@ -18,6 +18,7 @@ As seções a seguir descrevem os resultados esperados de vários cenários de f
 
 
 
+[[single-storage-path-failure]]
 == Falha de caminho de storage único
 
 Nesse cenário, se componentes como a porta HBA, a porta de rede, a porta do switch de dados front-end ou um cabo FC ou Ethernet falharem, esse caminho específico para o dispositivo de armazenamento será marcado como morto pelo host ESXi. Se vários caminhos forem configurados para o dispositivo de storage fornecendo resiliência na porta HBA/rede/switch, o ESXi executará idealmente um switchover de caminho. Durante esse período, as máquinas virtuais permanecem em execução sem serem afetadas, pois a disponibilidade para o armazenamento é tratada fornecendo vários caminhos para o dispositivo de armazenamento.
@@ -27,6 +28,7 @@ NOTE: Não há nenhuma mudança no comportamento do MetroCluster neste cenário,
 
 
 
+[[best-practice]]
 === _Melhor prática_
 
 Em ambientes em que os volumes NFS/iSCSI são usados, a NetApp recomenda ter pelo menos dois uplinks de rede configurados para a porta NFS vmkernel no vSwitch padrão e o mesmo no grupo de portas em que a interface NFS vmkernel é mapeada para o vSwitch distribuído. O agrupamento de NIC pode ser configurado em ativo-ativo ou ativo-standby.
@@ -35,6 +37,7 @@ Além disso, para iSCSI LUNs, multipathing deve ser configurado vinculando as in
 
 
 
+[[best-practice]]
 === _Melhor prática_
 
 Em ambientes em que LUNs de Fibre Channel são usados, a NetApp recomenda ter pelo menos dois HBAs, o que garante resiliência no nível de HBA/porta. O NetApp também recomenda um iniciador único para o zoneamento de destino único como a melhor prática para configurar o zoneamento.
@@ -43,6 +46,7 @@ O VSC (Virtual Storage Console) deve ser usado para definir políticas de multip
 
 
 
+[[single-esxi-host-failure]]
 == Falha única do host ESXi
 
 image::../media/vmsc_5_1.png[Uma única falha de host.,624,598]
@@ -57,6 +61,7 @@ Não há nenhuma mudança no comportamento do MetroCluster neste cenário e todo
 
 
 
+[[esxi-host-isolation]]
 == Isolamento do host ESXi
 
 image::../media/vmsc_5_2.png[Isolamento do host ESXi,624,301]
@@ -67,6 +72,7 @@ Não há nenhuma mudança no comportamento do MetroCluster neste cenário e todo
 
 
 
+[[disk-shelf-failure]]
 == Falha no compartimento de disco
 
 Nesse cenário, há uma falha de mais de dois discos ou de uma gaveta inteira. Os dados são fornecidos do Plex sobrevivente sem interrupção para os serviços de dados. A falha do disco pode afetar um Plex local ou remoto. Os agregados serão apresentados como modo degradado porque apenas um Plex está ativo. Depois que os discos com falha forem substituídos, os agregados afetados serão ressincronizados automaticamente para reconstruir os dados. Após a ressincronização, os agregados retornarão automaticamente ao modo espelhado normal. Se mais de dois discos dentro de um único grupo RAID falharem, o Plex terá de ser reconstruído.
@@ -80,6 +86,7 @@ image::../media/vmsc_5_3.png[Falha em um compartimento de disco único.,624,576]
 
 
 
+[[single-storage-controller-failure]]
 == Falha no controlador de storage único
 
 Nesse cenário, um dos dois controladores de storage falha em um local. Como há um par de HA em cada local, uma falha de um nó aciona o failover automaticamente para o outro nó. Por exemplo, se o nó A1 falhar, o storage e os workloads serão transferidos automaticamente para o nó A2. As máquinas virtuais não serão afetadas porque todos os plexos permanecem disponíveis. Os segundo nós do local (B1 e B2) não são afetados. Além disso, o vSphere HA não tomará nenhuma ação porque o nó mestre no cluster ainda estará recebendo os batimentos cardíacos da rede.
@@ -90,10 +97,12 @@ Se o failover fizer parte de um desastre contínuo (nó A1 faz failover para A2)
 
 
 
+[[interswitch-link-failures]]
 == Avarias na ligação InterSwitch
 
 
 
+[[interswitch-link-failure-at-management-network]]
 === Falha de ligação InterSwitch na rede de gestão
 
 image::../media/vmsc_5_5.png[Falha do link do InterSwitch na rede de gerenciamento,624,184]
@@ -105,6 +114,7 @@ NOTE: Durante esse período, as máquinas virtuais permanecem em execução e n�
 
 
 
+[[interswitch-link-failure-at-storage-network]]
 === Falha na ligação InterSwitch na rede de armazenamento
 
 image::../media/vmsc_5_6.png[Falha de ligação InterSwitch na rede de armazenamento,624,481]
@@ -119,6 +129,7 @@ image::../media/vmsc_5_7.png[Uma VM que viola uma regra de afinidade DRS não co
 
 
 
+[[all-interswitch-failure-or-complete-data-center-partition]]
 === Todas as falhas do InterSwitch ou completa partição do data center
 
 Neste cenário, todos os links ISL entre os sites estão inativos e ambos os sites são isolados uns dos outros. Como discutido em cenários anteriores, como falha de ISL na rede de gerenciamento e na rede de armazenamento, as máquinas virtuais não são afetadas em falha completa de ISL.
@@ -133,6 +144,7 @@ image::../media/vmsc_5_9.png[Uma partição de data center onde VM1 violou uma r
 
 
 
+[[interswitch-link-failure-on-both-fabrics-in-netapp-metrocluster]]
 === Falha de ligação InterSwitch em ambas as malhas no NetApp MetroCluster
 
 Em um cenário de falha de um ou mais ISLs, o tráfego continua através dos links restantes. Se todos os ISLs em ambas as malhas falharem, de modo que não haja nenhum link entre os locais para armazenamento e replicação do NVRAM, cada controladora continuará fornecendo seus dados locais. Em um mínimo de um ISL é restaurado, a ressincronização de todos os plexos acontecerá automaticamente.
@@ -143,6 +155,7 @@ image::../media/vmsc_5_10.png[Falha do link do InterSwitch em ambas as telas no 
 
 
 
+[[peered-cluster-link-failure]]
 === Falha na ligação do cluster de peered
 
 Em um cenário de falha de enlace de cluster com peered, como os ISLs de malha ainda estão ativos, os serviços de dados (leituras e gravações) continuam em ambos os locais para ambos os plexos. Qualquer alteração na configuração de cluster (por exemplo, adicionar um novo SVM, provisionar um volume ou LUN em um SVM existente) não pode ser propagado para o outro local. Estes são mantidos nos volumes de metadados locais do CRS e propagados automaticamente para o outro cluster após a recuperação do link do cluster peered. Se for necessário um switchover forçado antes que o link do cluster com peering possa ser restaurado, as alterações pendentes na configuração do cluster serão reproduzidas automaticamente da cópia replicada remota dos volumes de metadados no local que sobreviveu como parte do processo de switchover.
@@ -151,6 +164,7 @@ image::../media/vmsc_5_11.png[Uma falha na ligação do cluster em contacto com 
 
 
 
+[[complete-site-failure]]
 === Falha no local completo
 
 Em um local completo Um cenário de falha, os hosts ESXi no local B não receberão o heartbeat da rede dos hosts ESXi no local A porque estão inoperantes. O mestre de HA no local B verificará se os batimentos cardíacos do armazenamento de dados não estão presentes, declarará que os hosts no local A estão com falha e tentará reiniciar o local Uma máquina virtual no local B. durante esse período, o administrador de storage executa um switchover para retomar os serviços dos nós com falha no local sobrevivente, o que restaurará todos os serviços de armazenamento do Local A no local B. após o local A volumes ou LUNs estarem disponíveis no local B, o agente de HA tentará reiniciar o local B.

@@ -21,6 +21,7 @@ O ONTAP tem alguns recursos que gravarão tentativas de montagem para que você 
 
 
 
+[[nfsv4-statefulness]]
 == NFSv4 declaração
 
 Em contraste, NFSv4 é stateful. O servidor NFSv4 rastreia quais clientes estão usando quais sistemas de arquivos, quais arquivos existem, quais arquivos e/ou regiões de arquivos estão bloqueados, etc. isso significa que precisa haver comunicação regular entre um servidor NFSv4 para manter os dados de estado atuais.
@@ -29,6 +30,7 @@ Os estados mais importantes que estão sendo gerenciados pelo servidor NFS são 
 
 
 
+[[nfsv4-locks]]
 == NFSv4 fechaduras
 
 Com o NFSv3, os bloqueios são consultivos. Um cliente NFS ainda pode modificar ou excluir um arquivo "bloqueado". Um bloqueio NFSv3 não expira por si só, ele deve ser removido. Isso cria problemas. Por exemplo, se você tiver um aplicativo em cluster que crie NFSv3 bloqueios e um dos nós falhar, o que você faz? Você pode codificar o aplicativo nos nós sobreviventes para remover os bloqueios, mas como você sabe que isso é seguro? Talvez o nó "falhou" esteja operacional, mas não esteja se comunicando com o restante do cluster?
@@ -37,6 +39,7 @@ Com NFSv4, os bloqueios têm uma duração limitada. Desde que o cliente que det
 
 
 
+[[nfsv4-leases]]
 == NFSv4 arrendamentos
 
 NFSv4 bloqueios estão associados a um leasing de NFSv4. Quando um cliente NFSv4 estabelece uma conexão com um servidor NFSv4, ele recebe um leasing. Se o cliente obtém um bloqueio (existem muitos tipos de bloqueios), então o bloqueio está associado ao leasing.
@@ -97,6 +100,7 @@ E se um tempo limite de 30 segundos não for aceitável? E se você gerenciar um
 
 
 
+[[nfsv4-grace-periods]]
 == NFSv4 períodos de carência
 
 Se um servidor NFSv3 for reinicializado, ele estará pronto para servir o IO quase instantaneamente. Não estava mantendo qualquer tipo de estado sobre os clientes. O resultado é que uma operação de aquisição da ONTAP geralmente parece estar próxima de instantânea. No momento em que um controlador estiver pronto para começar a fornecer dados, ele enviará um ARP para a rede que sinaliza a alteração na topologia. Os clientes normalmente detetam isso quase instantaneamente e os dados continuam fluindo.
@@ -130,6 +134,7 @@ Apenas altere estes valores com cautela e depois de compreender completamente os
 
 
 
+[[lease-timeouts-vs-grace-periods]]
 == Prazos de concessão vs períodos de carência
 
 O período de carência e o período de leasing estão ligados. Como mencionado acima, o tempo limite de leasing padrão é de 30 segundos, o que significa que NFSv4 clientes devem fazer check-in com o servidor pelo menos a cada 30 segundos ou perder seus arrendamentos e, por sua vez, seus bloqueios. O período de carência existe para permitir que um servidor NFS reconstrua dados de concessão/bloqueio e o padrão é de 45 segundos. O período de carência deve ser superior ao período de locação. Isso garante que um ambiente cliente NFS projetado para renovar contratos de arrendamento pelo menos a cada 30 segundos terá a capacidade de fazer check-in com o servidor após uma reinicialização. Um período de carência de 45 segundos garante que todos os clientes que esperam renovar seus arrendamentos pelo menos a cada 30 segundos definitivamente tenham a oportunidade de fazê-lo.

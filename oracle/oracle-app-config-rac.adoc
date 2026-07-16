@@ -17,6 +17,7 @@ NOTE: As informações na link:#misscount["número de identificação"] seção 
 
 
 
+[[disktimeout]]
 == disktimeout
 
 O parâmetro RAC principal relacionado ao armazenamento é `disktimeout`. Este parâmetro controla o limite dentro do qual a e/S do arquivo de votação deve ser concluída. Se o `disktimeout` parâmetro for excedido, o nó RAC será despejado do cluster. O padrão para este parâmetro é 200. Este valor deve ser suficiente para os procedimentos normais de aquisição de armazenamento e de giveback.
@@ -36,6 +37,7 @@ Se não for possível executar uma aquisição de armazenamento real ou giveback
 ====
 
 
+[[misscount]]
 == número de identificação
 
 O `misscount` parâmetro normalmente afeta apenas o batimento cardíaco da rede entre nós RAC. O padrão é 30 segundos. Se os binários de grade estiverem em um storage array ou a unidade de inicialização do sistema operacional não for local, esse parâmetro pode se tornar importante. Isso inclui hosts com unidades de inicialização localizadas em uma SAN FC, sistemas operacionais iniciados por NFS e unidades de inicialização localizados em datastores de virtualização, como um arquivo VMDK.

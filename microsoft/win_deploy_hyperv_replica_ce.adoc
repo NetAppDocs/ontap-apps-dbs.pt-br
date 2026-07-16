@@ -18,6 +18,7 @@ Saiba como implantar e configurar a réplica do Hyper-V com o Cluster de failove
 
 
 
+[[prerequisites]]
 == Pré-requisitos
 
 * Você precisa ter clusters do Hyper-V localizados no mesmo local ou em locais geográficos separados, servindo como clusters primários e de réplica. Reveja link:win_deploy_hyperv.html["Implantar o Hyper-V Cluster"] para obter mais detalhes.
@@ -27,6 +28,7 @@ Saiba como implantar e configurar a réplica do Hyper-V com o Cluster de failove
 
 
 
+[[deployment]]
 == Implantação
 
 . Ative regras de firewall em todos os nós de um cluster. Execute o cmdlet do PowerShell a seguir com o admin Privileges em todos os nós nos clusters primário e de réplica.
@@ -65,6 +67,7 @@ get-clusternode | ForEach-Object \{Invoke-command -computername $_.name -scriptb
 
 
 
+[[replication]]
 == Replicação
 
 A replicação é semelhante ao processo descrito na seção link:win_deploy_hyperv_replica_oce.html["Réplica fora de um ambiente em cluster"].

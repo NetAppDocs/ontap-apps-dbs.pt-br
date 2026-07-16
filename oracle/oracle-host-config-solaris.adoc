@@ -14,6 +14,7 @@ Tópicos de configuração específicos do Solaris os.
 
 
 
+[[solaris-nfs-mount-options]]
 == Opções de montagem do Solaris NFS
 
 A tabela a seguir lista as opções de montagem do Solaris NFS para uma única instância.
@@ -70,18 +71,21 @@ O motivo `actimeo=0` necessário para implantações compartilhadas `ORACLE_HOME
 
 
 
+[[solaris-ufs-mount-options]]
 == Opções de montagem do Solaris UFS
 
 A NetApp recomenda fortemente o uso da opção de montagem de log para que a integridade dos dados seja preservada no caso de uma falha de host do Solaris ou a interrupção da conetividade FC. A opção de montagem de log também preserva a usabilidade dos backups Snapshot.
 
 
 
+[[solaris-zfs]]
 == Solaris ZFS
 
 O Solaris ZFS deve ser instalado e configurado cuidadosamente para oferecer o melhor desempenho.
 
 
 
+[[mvector]]
 === mvector
 
 O Solaris 11 incluiu uma mudança na forma como processa grandes operações de e/S, o que pode resultar em graves problemas de desempenho em matrizes de armazenamento SAN. O problema está documentado no relatório de bug de rastreamento do NetApp 630173, "regressão de desempenho do Solaris 11 ZFS".
@@ -102,12 +106,14 @@ Se surgir algum problema inesperado dessa alteração, ela pode ser facilmente r
 ....
 
 
+[[kernel]]
 == Kernel
 
 O desempenho confiável do ZFS requer um kernel Solaris corrigido contra problemas de alinhamento de LUN. A correção foi introduzida com o patch 147440-19 no Solaris 10 e com o SRU 10,5 para Solaris 11. Utilize apenas o Solaris 10 e posterior com o ZFS.
 
 
 
+[[lun-configuration]]
 == Configuração LUN
 
 Para configurar um LUN, execute as seguintes etapas:
@@ -126,6 +132,7 @@ Para configurar um LUN, execute as seguintes etapas:
 
 
 
+[[zpools]]
 === zpools
 
 Um zpool só deve ser criado após as etapas no link:oracle-host-config-solaris.html#lun-configuration["Configuração LUN"] serem executadas. Se o procedimento não for feito corretamente, pode resultar em degradação grave do desempenho devido ao alinhamento de e/S. O desempenho ideal no ONTAP requer que a e/S seja alinhada a um limite de 4K mm numa unidade. Os sistemas de arquivos criados em um zpool usam um tamanho de bloco efetivo que é controlado por meio de um parâmetro `ashift` chamado , que pode ser visualizado executando o comando `zdb -C`.
@@ -136,6 +143,7 @@ Depois de criar um zpool, verifique o valor de `ashift` antes de continuar. Se o
 
 
 
+[[zpools-and-solaris-ldoms]]
 === Zpools e Solaris LDOMs
 
 Os Solaris LDOMs criam um requisito adicional para garantir que o alinhamento de e/S esteja correto. Embora um LUN possa ser encontrado corretamente como um dispositivo 4K, um dispositivo vdsk virtual em um LDOM não herda a configuração do domínio de e/S. O vdsk baseado nesse LUN retorna para um bloco de 512 bytes.
@@ -211,12 +219,14 @@ block-size-list="1:8192","2:8192","3:8192","4:8192","5:8192","6:8192";
 
 
 
+[[zfs-intent-log-zil]]
 === Registo intenção ZFS (ZIL)
 
 Geralmente, não há razão para localizar o ZFS Intent Log (ZIL) em um dispositivo diferente. O log pode compartilhar espaço com a piscina principal. O uso principal de um ZIL separado é quando se usa unidades físicas que não têm os recursos de armazenamento em cache de gravação em arrays de armazenamento modernos.
 
 
 
+[[logbias]]
 === logbias
 
 Defina `logbias` o parâmetro em sistemas de arquivos ZFS que hospedam dados Oracle.
@@ -230,18 +240,21 @@ Ao usar um storage array moderno que inclua sua própria funcionalidade de armaz
 
 
 
+[[direct-io]]
 === E/S direta
 
 Muitas aplicações, incluindo produtos Oracle, podem ignorar o cache de buffer do host habilitando a e/S direta Esta estratégia não funciona como esperado com sistemas de arquivos ZFS. Embora o cache do buffer do host seja ignorado, o próprio ZFS continua a armazenar dados em cache. Essa ação pode resultar em resultados enganosos ao usar ferramentas como fio ou sio para realizar testes de desempenho, pois é difícil prever se a e/S está chegando ao sistema de armazenamento ou se está sendo armazenada em cache localmente no sistema operacional. Essa ação também torna muito difícil usar esses testes sintéticos para comparar o desempenho do ZFS com outros sistemas de arquivos. Na prática, há pouca ou nenhuma diferença no desempenho do sistema de arquivos em workloads reais do usuário.
 
 
 
+[[multiple-zpools]]
 === Vários zpools
 
 Backups, restaurações, clones e arquivamento baseados em snapshot de dados baseados em ZFS devem ser executados no nível do zpool e, geralmente, exigem vários zpools. Um zpool é análogo a um grupo de discos LVM e deve ser configurado usando as mesmas regras. Por exemplo, um banco de dados provavelmente é melhor definido com os datafiles que residem em `zpool1` e os logs de arquivo, arquivos de controle e logs de refazer que residem em `zpool2`. Essa abordagem permite um hot backup padrão no qual o banco de dados é colocado no modo hot backup, seguido por um snapshot de `zpool1`. O banco de dados é então removido do modo hot backup, o arquivo de log é forçado e um snapshot de `zpool2` é criado. Uma operação de restauração requer a desmontagem dos sistemas de arquivos zfs e a remoção do zpool em sua totalidade, seguindo-se uma operação de restauração do SnapRestore. O zpool pode então ser colocado on-line novamente e o banco de dados recuperado.
 
 
 
+[[filesystemiooptions]]
 === sistema de arquivos_options
 
 O parâmetro Oracle `filesystemio_options` funciona de forma diferente com o ZFS. Se `setall` ou `directio` for usado, as operações de gravação são síncronas e ignoram o cache do buffer do sistema operacional, mas as leituras são armazenadas em buffer pelo ZFS. Essa ação causa dificuldades na análise de desempenho, pois às vezes, a e/S é intercetada e atendida pelo cache ZFS, tornando a latência do armazenamento e a e/S total menos do que parece ser.

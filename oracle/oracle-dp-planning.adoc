@@ -25,6 +25,7 @@ Finalmente, existem fatores fora do próprio processo de backup e recuperação.
 
 
 
+[[is-a-snapshot-a-backup]]
 == Um instantâneo é um backup?
 
 Uma objeção comumente levantada ao uso de snapshots como estratégia de proteção de dados é o fato de que os dados "reais" e os dados instantâneos estão localizados nas mesmas unidades. A perda dessas unidades resultaria na perda dos dados primários e do backup.
@@ -35,6 +36,7 @@ No entanto, os snapshots locais nunca devem ser a única estratégia de backup. 
 
 
 
+[[crash-consistent-backups]]
 == Backups consistentes com falhas
 
 Um backup consistente com falhas envolve capturar o estado de um conjunto de dados (ou múltiplos conjuntos de dados) em um único ponto atômico no tempo. Como exemplo de banco de dados, isso inclui todos os componentes do banco de dados, como arquivos de dados, arquivos de log e outros arquivos diretamente associados ao banco de dados. Isso funciona com quase todos os produtos de banco de dados relacionais, incluindo Oracle RDBMS, Microsoft SQL Server, SAP HANA, PostgreSQL, MySQL e MariaDB. Proteger uma configuração VMware com um backup de grupo de consistência seria semelhante — capturando todos os datastores e, potencialmente, os LUNs de inicialização do ESX em um único ponto atômico no tempo.
@@ -51,6 +53,7 @@ A abordagem mais simples é colocar todos os arquivos ou LUNs em um único volum
 
 
 
+[[replication-and-disaster-recovery-architecture]]
 == Arquitetura de replicação e recuperação de desastres
 
 Esta seção aborda a proteção de dados remota, para a qual os dados são replicados para um local remoto para fins de armazenamento externo seguro e recuperação de desastres. Observe que essas tabelas não abordam a proteção de dados de espelhamento síncrono. Para este requisito, consulte a documentação do NetApp MetroCluster, link:oracle-dr-mcc-failover.html["MetroCluster"] incluindo e. link:oracle-dr-smas-overview.html["Sincronização ativa do SnapMirror"]
@@ -71,12 +74,14 @@ O tempo de retenção é controlado, em parte, pelo limite de snapshots. Por exe
 
 
 
+[[single-volume-consistency-group-aff]]
 === Grupo de consistência de volume único (AFF)
 
 A abordagem mais simples é colocar todos os arquivos ou LUNs em um único volume. Um volume é um grupo de consistência por si só, o que significa que as atualizações do SnapMirror e do SnapVault podem ser agendadas diretamente no sistema de storage. Nenhum software externo é necessário.
 
 
 
+[[single-lunnamespace-consistency-group-asa]]
 === Grupo de consistência de LUN/namespace único (ASA)
 
 Embora possa parecer estranho colocar um banco de dados inteiro em um único LUN/namespace, isso está se tornando cada vez mais comum. O motivo original da criação dos gerenciadores de volume foi superar as limitações de desempenho e capacidade dos discos físicos. Com os arrays modernos, um único dispositivo de bloco apresentado a um host já é abstraído em vários discos. O tamanho pode ser ajustado dinamicamente e o desempenho é muito superior ao de um disco individual.
@@ -85,6 +90,7 @@ O resultado é que cargas de trabalho que variam de um datastore ESX a um banco 
 
 
 
+[[multi-volume-consistency-group]]
 === Grupo de consistência de vários volumes
 
 Quando um banco de dados precisa abranger volumes AFF ou LUNs/namespaces ASA, é necessário um snapshot de grupo de consistência. Como mencionado acima, isso pode ser configurado usando System Manager ou chamadas de API REST, além de o SnapCenter ser capaz de criar um snapshot de grupo de consistência simples.
@@ -93,16 +99,19 @@ Há também uma consideração adicional sobre o uso de snapshots consistentes d
 
 
 
+[[disaster-recovery-activation]]
 == Recuperação de desastres: Ativação
 
 
 
+[[nfs]]
 === NFS
 
 O processo de ativação da cópia de recuperação de desastres depende do tipo de armazenamento. Com o NFS, os sistemas de arquivos podem ser pré-montados no servidor de recuperação de desastres. Eles estão em um estado somente leitura e se tornam leitura-escrita quando o espelho é quebrado. Isso fornece um RPO extremamente baixo, e o processo geral de recuperação de desastres é mais confiável porque há menos peças para gerenciar.
 
 
 
+[[san]]
 === SAN
 
 Ativar configurações SAN em caso de recuperação de desastres se torna mais complicado. A opção mais simples geralmente é quebrar temporariamente os espelhos e montar os recursos SAN, incluindo etapas como descobrir a configuração do LVM (incluindo recursos específicos do aplicativo, como o Oracle Automatic Storage Management [ASM]) e adicionar entradas ao /etc/fstab.

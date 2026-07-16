@@ -23,18 +23,21 @@ O procedimento mostrado abaixo também é essencialmente uma operação clone do
 
 
 
+[[log-shipping-file-system-to-file-system]]
 == Envio de log - sistema de arquivos para sistema de arquivos
 
 Este exemplo demonstra a migração de um banco de dados chamado WAFFLE de um sistema de arquivos comum para outro sistema de arquivos comum localizado em um servidor diferente. Ele também ilustra o uso do SnapMirror para fazer uma cópia rápida dos arquivos de dados, mas isso não é parte integrante do procedimento geral.
 
 
 
+[[create-database-backup]]
 === Criar cópia de segurança da base de dados
 
 O primeiro passo é criar um backup de banco de dados. Especificamente, este procedimento requer um conjunto de arquivos de dados que podem ser usados para a repetição do log de arquivamento.
 
 
 
+[[environment]]
 === Ambiente
 
 Neste exemplo, o banco de dados de origem está em um sistema ONTAP. O método mais simples para criar um backup de um banco de dados é usando um snapshot. O banco de dados é colocado no modo hot backup por alguns segundos enquanto uma `snapshot create` operação é executada no volume que hospeda os arquivos de dados.
@@ -55,6 +58,7 @@ O resultado é um instantâneo no disco chamado `hotbackup` que contém uma imag
 
 
 
+[[restore-to-new-environment]]
 === Restauração de um novo ambiente
 
 Agora, o backup precisa ser restaurado no novo ambiente. Isso pode ser feito de várias maneiras, incluindo Oracle RMAN, restauração de um aplicativo de backup como NetBackup, ou uma operação de cópia simples de arquivos de dados que foram colocados no modo de backup ativo.
@@ -115,6 +119,7 @@ fas8060-nfs1:/vol_logs            9961472       128    9961344   1% /logs
 
 
 
+[[create-controlfile-creation-template]]
 === Criar modelo de criação de controlfile
 
 Em seguida, você deve criar um modelo de controlfile. O `backup controlfile to trace` comando cria comandos de texto para recriar um controlfile. Esta função pode ser útil para restaurar um banco de dados de backup em algumas circunstâncias, e é frequentemente usada com scripts que executam tarefas como clonagem de banco de dados.
@@ -136,6 +141,7 @@ waffle.ctrl                                              100% 5199     5.1KB/s  
 
 
 
+[[backup-parameter-file]]
 === Ficheiro de parâmetros de cópia de segurança
 
 Um arquivo de parâmetro também é necessário no novo ambiente. O método mais simples é criar um pfile a partir do spfile ou pfile atual. Neste exemplo, o banco de dados de origem está usando um spfile.
@@ -146,6 +152,7 @@ File created.
 ....
 
 
+[[create-oratab-entry]]
 === Crie uma entrada oratab
 
 A criação de uma entrada oratab é necessária para o bom funcionamento de utilitários como oraenv. Para criar uma entrada oratab, execute a seguinte etapa.
@@ -155,6 +162,7 @@ WAFFLE:/orabin/product/12.1.0/dbhome_1:N
 ....
 
 
+[[prepare-directory-structure]]
 === Prepare a estrutura do diretório
 
 Se os diretórios necessários ainda não estavam presentes, você deve criá-los ou o procedimento de inicialização do banco de dados falhar. Para preparar a estrutura de diretórios, preencha os seguintes requisitos mínimos.
@@ -171,6 +179,7 @@ The Oracle base has been set to /orabin
 ....
 
 
+[[parameter-file-updates]]
 === Atualizações do arquivo de parâmetros
 
 . Para copiar o arquivo de parâmetro para o novo servidor, execute os seguintes comandos. O local padrão é o `$ORACLE_HOME/dbs` diretório. Neste caso, o pfile pode ser colocado em qualquer lugar. Ele só está sendo usado como um passo intermediário no processo de migração.
@@ -224,6 +233,7 @@ File created.
 
 
 
+[[recreate-controlfiles]]
 === Recrie controlfiles
 
 Em uma etapa anterior, a saída do `backup controlfile to trace` foi copiada para o novo servidor. A parte específica da saída necessária é o `controlfile recreation` comando. Esta informação pode ser encontrada no ficheiro na secção marcada `Set #1. NORESETLOGS`. Começa com a linha `create controlfile reuse database` e deve incluir a palavra `noresetlogs`. Termina com o caractere ponto e vírgula (; ).
@@ -309,6 +319,7 @@ Se algum arquivo estiver perdido ou os parâmetros estiverem mal configurados, s
 
 
 
+[[initial-log-replication]]
 === Replicação inicial do log
 
 Pelo menos uma operação de resposta de log é necessária para tornar os arquivos de dados consistentes. Muitas opções estão disponíveis para reproduzir logs. Em alguns casos, o local do log do arquivo original no servidor original pode ser compartilhado por NFS e a resposta do log pode ser feita diretamente. Em outros casos, os logs do arquivo devem ser copiados.
@@ -330,6 +341,7 @@ oracle@jfsc1's password:
 ....
 
 
+[[initial-log-replay]]
 === Reprodução inicial do registo
 
 Depois que os arquivos estão no local do log de arquivamento, eles podem ser reproduzidos emitindo o comando `recover database until cancel` seguido da resposta `AUTO` para reproduzir automaticamente todos os logs disponíveis.
@@ -363,6 +375,7 @@ Se o banco de dados de origem puder ser desligado antes de copiar logs de arquiv
 
 
 
+[[incremental-log-replication-and-replay]]
 === Replicação e repetição de registos incrementais
 
 Na maioria dos casos, a migração não é realizada imediatamente. Pode ser dias ou mesmo semanas antes que o processo de migração seja concluído, o que significa que os logs devem ser enviados continuamente para o banco de dados de réplica e reproduzidos. Portanto, quando a transição chega, os dados mínimos devem ser transferidos e reproduzidos.
@@ -453,6 +466,7 @@ With the Partitioning, OLAP, Advanced Analytics and Real Application Testing opt
 ....
 
 
+[[cutover]]
 === Redução
 
 Quando você estiver pronto para cortar para o novo ambiente, você deve executar uma sincronização final que inclua Registros de arquivamento e os logs de refazer. Se a localização original do registo de refazer ainda não for conhecida, pode ser identificada da seguinte forma:
@@ -506,6 +520,7 @@ Database altered.
 
 
 
+[[log-shipping-asm-to-file-system]]
 == Registo de envio - ASM para o sistema de ficheiros
 
 Este exemplo demonstra o uso do Oracle RMAN para migrar um banco de dados. É muito semelhante ao exemplo anterior de sistema de arquivos para o envio de log do sistema de arquivos, mas os arquivos no ASM não são visíveis para o host. As únicas opções de migração de dados localizados em dispositivos ASM são a realocação do ASM LUN ou o Oracle RMAN para executar as operações de cópia.
@@ -516,6 +531,7 @@ Este exemplo mostra a realocação de um banco de dados chamado PANCAKE do armaz
 
 
 
+[[create-database-backup]]
 === Criar cópia de segurança da base de dados
 
 O primeiro passo é criar um backup do banco de dados para ser migrado para um servidor alternativo. Como a fonte usa o Oracle ASM, o RMAN deve ser usado. Um simples backup RMAN pode ser executado da seguinte forma. Este método cria um backup marcado que pode ser facilmente identificado pelo RMAN mais tarde no procedimento.
@@ -556,6 +572,7 @@ Finished backup at 24-MAY-16
 ....
 
 
+[[backup-controlfile]]
 === Ficheiro de controlo de cópia de segurança
 
 Um ficheiro de controlo de cópia de segurança é necessário mais tarde no procedimento para a `duplicate database` operação.
@@ -575,6 +592,7 @@ Finished backup at 24-MAY-16
 ....
 
 
+[[backup-parameter-file]]
 === Ficheiro de parâmetros de cópia de segurança
 
 Um arquivo de parâmetro também é necessário no novo ambiente. O método mais simples é criar um pfile a partir do spfile ou pfile atual. Neste exemplo, o banco de dados de origem usa um spfile.
@@ -585,6 +603,7 @@ Statement processed
 ....
 
 
+[[asm-file-rename-script]]
 === Script de renomeação do arquivo ASM
 
 Vários locais de arquivo atualmente definidos nos controlfiles mudam quando o banco de dados é movido. O script a seguir cria um script RMAN para facilitar o processo. Este exemplo mostra um banco de dados com um número muito pequeno de arquivos de dados, mas normalmente os bancos de dados contêm centenas ou até mesmo milhares de arquivos de dados.
@@ -628,6 +647,7 @@ duplicate target database for standby backup location '/rman/pancake';
 ....
 
 
+[[prepare-directory-structure]]
 === Prepare a estrutura do diretório
 
 Os scripts estão quase prontos para serem executados, mas primeiro a estrutura de diretórios deve estar no lugar. Se os diretórios necessários ainda não estiverem presentes, eles devem ser criados ou o procedimento de inicialização do banco de dados falha. O exemplo abaixo reflete os requisitos mínimos.
@@ -642,6 +662,7 @@ Os scripts estão quase prontos para serem executados, mas primeiro a estrutura 
 ....
 
 
+[[create-oratab-entry]]
 === Crie uma entrada oratab
 
 O comando a seguir é necessário para que utilitários como oraenv funcionem corretamente.
@@ -651,6 +672,7 @@ PANCAKE:/orabin/product/12.1.0/dbhome_1:N
 ....
 
 
+[[parameter-updates]]
 === Atualizações de parâmetros
 
 O arquivo pfile salvo deve ser atualizado para refletir quaisquer alterações de caminho no novo servidor. As alterações no caminho do arquivo de dados são alteradas pelo script de duplicação RMAN, e quase todos os bancos de dados exigem alterações nos `control_files` parâmetros e. `log_archive_dest` Também pode haver locais de arquivo de auditoria que devem ser alterados e parâmetros como `db_create_file_dest` podem não ser relevantes fora do ASM. Um DBA experiente deve analisar cuidadosamente as alterações propostas antes de prosseguir.
@@ -702,6 +724,7 @@ File created.
 ....
 
 
+[[startup-nomount]]
 === Nomunt de arranque
 
 A etapa final antes de replicar o banco de dados é abrir os processos do banco de dados, mas não montar os arquivos. Nesta etapa, os problemas com o spfile podem se tornar evidentes. Se o `startup nomount` comando falhar por causa de um erro de parâmetro, é simples desligar, corrigir o modelo pfile, recarregá-lo como um spfile e tentar novamente.
@@ -717,6 +740,7 @@ Redo Buffers                5455872 bytes
 ....
 
 
+[[duplicate-the-database]]
 === Duplique o banco de dados
 
 Restaurar o backup RMAN anterior para o novo local consome mais tempo do que outras etapas deste processo. O banco de dados deve ser duplicado sem uma alteração no ID do banco de dados (DBID) ou redefinir os logs. Isso impede que os logs sejam aplicados, que é uma etapa necessária para sincronizar totalmente as cópias.
@@ -819,6 +843,7 @@ Finished Duplicate Db at 24-MAY-16
 ....
 
 
+[[initial-log-replication]]
 === Replicação inicial do log
 
 Agora você deve enviar as alterações do banco de dados de origem para um novo local. Fazer isso pode exigir uma combinação de etapas. O método mais simples seria fazer com que o RMAN no banco de dados de origem escrevesse logs de arquivo em uma conexão de rede compartilhada. Se um local compartilhado não estiver disponível, um método alternativo é usar o RMAN para gravar em um sistema de arquivos local e, em seguida, usar RCP ou rsync para copiar os arquivos.
@@ -861,6 +886,7 @@ Finished backup at 24-MAY-16
 ....
 
 
+[[initial-log-replay]]
 === Reprodução inicial do registo
 
 Depois que os arquivos estão no local do log de arquivamento, eles podem ser reproduzidos emitindo o comando `recover database until cancel` seguido da resposta `AUTO` para reproduzir automaticamente todos os logs disponíveis. O arquivo de parâmetros está direcionando Registros de arquivo para `/logs/archive`, mas isso não corresponde ao local onde o RMAN foi usado para salvar logs. O local pode ser temporariamente redirecionado da seguinte forma antes de recuperar o banco de dados.
@@ -896,6 +922,7 @@ Se o banco de dados de origem puder ser desligado antes de copiar logs de arquiv
 
 
 
+[[incremental-log-replication-and-replay]]
 === Replicação e repetição de registos incrementais
 
 Na maioria dos casos, a migração não é realizada imediatamente. Pode ser dias ou mesmo semanas antes que o processo de migração seja concluído, o que significa que os logs devem ser continuamente enviados para o banco de dados de réplica e reproduzidos. Isso garante que os dados mínimos devem ser transferidos e reproduzidos quando a transição chegar.
@@ -987,6 +1014,7 @@ With the Partitioning, OLAP, Advanced Analytics and Real Application Testing opt
 ....
 
 
+[[cutover]]
 === Redução
 
 Quando estiver pronto para ser cortado para o novo ambiente, você deve executar uma sincronização final. Ao trabalhar com sistemas de arquivos regulares, é fácil garantir que o banco de dados migrado seja 100% sincronizado com o original, pois os logs de refazer originais são copiados e reproduzidos. Não há uma boa maneira de fazer isso com ASM. Apenas os logs de arquivo podem ser facilmente retratados. Para se certificar de que nenhum dado é perdido, o encerramento final do banco de dados original deve ser realizado com cuidado.
@@ -1118,6 +1146,7 @@ Table dropped.
 
 
 
+[[nondisruptive-redo-log-migration]]
 == REDO log migração sem interrupções
 
 Há momentos em que um banco de dados é organizado corretamente em geral, com exceção dos logs de refazer. Isso pode acontecer por muitos motivos, sendo que o mais comum está relacionado a instantâneos. Produtos como SnapManager para Oracle, SnapCenter e a estrutura de gerenciamento de storage NetApp Snap Creator permitem a recuperação quase instantânea de um banco de dados, mas somente se você reverter o estado dos volumes de arquivos de dados. Se os logs de refazer compartilham espaço com os arquivos de dados, a reversão não pode ser executada com segurança porque isso resultaria na destruição dos logs de refazer, provavelmente significando perda de dados. Portanto, os logs de refazer devem ser relocados.
@@ -1126,6 +1155,7 @@ Esse procedimento é simples e pode ser realizado sem interrupções.
 
 
 
+[[current-redo-log-configuration]]
 === Configuração atual do registo de reprocessamento
 
 . Identifique o número de grupos de registo de refazer e os respetivos números de grupo.
@@ -1156,6 +1186,7 @@ GROUP#||''||BYTES
 
 
 
+[[create-new-logs]]
 === Crie novos logs
 
 . Para cada log de refazer, crie um novo grupo com um tamanho e número correspondentes de membros.
@@ -1193,6 +1224,7 @@ GROUP#||''||MEMBER
 
 
 
+[[drop-old-logs]]
 === Soltar registos antigos
 
 . Solte os logs antigos (grupos 1, 2 e 3).

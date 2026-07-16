@@ -27,6 +27,7 @@ Consulte também a discussão sobre o alinhamento do bloco de compressão na lin
 
 
 
+[[misalignment-warnings]]
 == Avisos de desalinhamento
 
 O log de refazer/transações do banco de dados normalmente gera e/S desalinhadas que podem causar avisos enganosos sobre LUNs desalinhados no ONTAP.

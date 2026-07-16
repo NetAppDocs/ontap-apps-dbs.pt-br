@@ -10,6 +10,7 @@ Existem dois tipos de qualidade do serviço (QoS) no ONTAP: IOPS e largura de ba
 
 
 
+[[iops-qos]]
 == QoS de IOPS
 
 Um controle de QoS de IOPS é obviamente baseado no total de IOPS de um determinado recurso, mas há vários aspetos da QoS de IOPS que podem não ser intuitivos. Alguns clientes inicialmente ficaram intrigados com o aparente aumento da latência quando um limite de IOPS é atingido. O aumento da latência é o resultado natural da limitação do IOPS. Logicamente, ele funciona de forma semelhante a um sistema de token. Por exemplo, se um determinado volume contendo datafiles tiver um limite de 10K IOPS, cada I/o que chegar deve receber primeiro um token para continuar o processamento. Desde que não mais de 10K tokens tenham sido consumidos em um determinado segundo, nenhum atraso está presente. Se as operações de e/S precisarem esperar para receber o token, essa espera aparecerá como latência adicional. Quanto mais difícil uma carga de trabalho ultrapassar o limite de QoS, mais tempo cada IO deve esperar na fila para que sua vez seja processada, o que parece ao usuário como maior latência.
@@ -19,6 +20,7 @@ NOTE: Tenha cuidado ao aplicar controles de QoS a dados de log de transação/re
 
 
 
+[[bandwidth-qos]]
 == QoS de largura de banda
 
 Nem todos os tamanhos de e/S são iguais. Por exemplo, um banco de dados pode estar executando um grande número de leituras de blocos pequenos, o que resultaria no limite de IOPS ser atingido, mas os bancos de dados também podem estar executando uma operação de verificação de tabela completa que consistiria em um número muito pequeno de leituras de blocos grandes, consumindo uma quantidade muito grande de largura de banda, mas relativamente poucos IOPS.
@@ -29,6 +31,7 @@ Da mesma forma, um ambiente VMware pode gerar um número muito alto de IOPS alea
 
 
 
+[[minimumguaranteed-qos]]
 == QoS mínima/garantida
 
 Muitos clientes procuram uma solução que inclua QoS garantida, que é mais difícil de alcançar do que parece e é potencialmente um desperdício. Por exemplo, a colocação de bancos de dados 10 com uma garantia de 10K IOPS exige o dimensionamento de um sistema para um cenário em que todos os bancos de dados 10 estejam sendo executados simultaneamente a 10K IOPS, totalizando 100KK.
@@ -37,6 +40,7 @@ A melhor utilização para controles mínimos de QoS é proteger workloads crít
 
 
 
+[[adaptive-qos]]
 == QoS adaptável
 
 QoS adaptável refere-se ao recurso ONTAP em que o limite de QoS é baseado na capacidade do objeto de storage. Raramente é usado com bancos de dados porque geralmente não há nenhum link entre o tamanho de um banco de dados e seus requisitos de desempenho. Bancos de dados grandes podem ser quase inertes, enquanto bancos de dados menores podem ser os mais intensivos em IOPS.

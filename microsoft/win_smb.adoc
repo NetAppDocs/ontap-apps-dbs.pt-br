@@ -28,10 +28,12 @@ Quando um SVM é criado com o protocolo CIFS, um servidor CIFS é executado sobr
 
 
 
+[[provisioning-smb-shares-on-windows-server]]
 == Provisionamento de compartilhamentos SMB no Windows Server
 
 
 
+[[prerequisites]]
 === Pré-requisitos
 
 O uso do armazenamento NetApp em ambientes nas no Windows Server tem os seguintes requisitos:
@@ -45,6 +47,7 @@ O uso do armazenamento NetApp em ambientes nas no Windows Server tem os seguinte
 
 
 
+[[active-directory-domain-controller]]
 === Controlador de domínio do ative Directory
 
 Um controlador de armazenamento NetApp pode ser ligado e operar dentro de um ative Directory semelhante a um servidor Windows. Durante a criação do SVM, você pode configurar o DNS fornecendo os detalhes do nome de domínio e do servidor de nomes. O SVM tenta procurar um controlador de domínio do ative Directory consultando o DNS para um servidor LDAP (Protocolo de Acesso ao ative Directory/Lightweight Directory Access Protocol) de uma forma semelhante ao Windows Server.
@@ -57,6 +60,7 @@ cluster::> system services ntp server create -server $domainControllerIP
 ....
 
 
+[[deployment]]
 === Implantação
 
 . Crie um novo SVM com o protocolo nas CIFS ativado. É possível criar um novo SVM com qualquer um dos seguintes métodos:
@@ -82,6 +86,7 @@ cluster::> system services ntp server create -server $domainControllerIP
 
 
 
+[[host-integration]]
 === Integração de host
 
 O protocolo nas CIFS é nativamente integrado ao ONTAP. Portanto, o Windows Server não requer nenhum software cliente adicional para acessar dados no ONTAP. Um controlador de armazenamento NetApp aparece na rede como um servidor de arquivos nativo e suporta autenticação do Microsoft ative Directory.
@@ -103,6 +108,7 @@ Para detetar o compartilhamento CIFS criado anteriormente com o Windows Server, 
 
 
 
+[[best-practices]]
 === Práticas recomendadas
 
 * Para confirmar que não há tempo de inatividade quando um volume é movido de um nó para outro ou em caso de falha de nó, a NetApp recomenda que você ative a opção de disponibilidade contínua no compartilhamento de arquivos.
@@ -114,6 +120,7 @@ Para detetar o compartilhamento CIFS criado anteriormente com o Windows Server, 
 
 
 
+[[things-to-remember]]
 === Coisas para se lembrar
 
 * Quando você provisiona volumes para ambientes SMB, os volumes devem ser criados com o estilo de segurança NTFS.
@@ -128,6 +135,7 @@ Para detetar o compartilhamento CIFS criado anteriormente com o Windows Server, 
 
 
 
+[[provisioning-smb-shares-on-nano-server]]
 == Provisionamento de compartilhamentos SMB no Nano Server
 
 Nano servidor não requer software cliente adicional para acessar dados no compartilhamento CIFS em um controlador de armazenamento NetApp.

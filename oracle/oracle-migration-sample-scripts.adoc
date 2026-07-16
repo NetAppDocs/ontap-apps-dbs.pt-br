@@ -14,6 +14,7 @@ Os scripts apresentados são fornecidos como exemplos de como fazer scripts de v
 
 
 
+[[database-shutdown]]
 == Encerramento da base de dados
 
 O seguinte script Perl toma um único argumento do Oracle SID e desliga um banco de dados. Ele pode ser executado como o usuário Oracle ou como root.
@@ -57,6 +58,7 @@ exit 1;}
 ....
 
 
+[[database-startup]]
 == Inicialização do banco de dados
 
 O seguinte script Perl toma um único argumento do Oracle SID e desliga um banco de dados. Ele pode ser executado como o usuário Oracle ou como root.
@@ -100,6 +102,7 @@ exit 1;}
 ....
 
 
+[[convert-file-system-to-read-only]]
 == Converter sistema de arquivos para somente leitura
 
 O script a seguir toma um argumento file-system e tenta desmontá-lo e remontá-lo como somente leitura. Isso é útil durante os processos de migração nos quais um sistema de arquivos deve ser mantido disponível para replicar dados e, no entanto, deve ser protegido contra danos acidentais.
@@ -123,6 +126,7 @@ print @out;
 ....
 
 
+[[replace-file-system]]
 == Substitua o sistema de arquivos
 
 O exemplo de script a seguir é usado para substituir um sistema de arquivos por outro. Como edita o arquivo "/etc/fstab", ele deve ser executado como root. Ele aceita um único argumento delimitado por vírgulas dos sistemas de arquivos antigos e novos.
@@ -227,6 +231,7 @@ cluster01:/vol_newlogs /logs nfs rw,bg,vers=3,rsize=65536,wsize=65536 0 0
 
 
 
+[[automated-database-migration]]
 == Migração automatizada de banco de dados
 
 Este exemplo demonstra o uso de scripts de desligamento, inicialização e substituição do sistema de arquivos para automatizar totalmente uma migração.
@@ -280,6 +285,7 @@ print @out;
 ....
 
 
+[[display-file-locations]]
 == Apresentar localizações dos ficheiros
 
 Este script coleta uma série de parâmetros críticos do banco de dados e os imprime em um formato fácil de ler. Este script pode ser útil ao revisar layouts de dados. Além disso, o script pode ser modificado para outros usos.
@@ -354,6 +360,7 @@ print "\n";
 ....
 
 
+[[asm-migration-cleanup]]
 == Limpeza da migração do ASM
 
 ....
@@ -416,6 +423,7 @@ print "\n";
 ....
 
 
+[[asm-to-file-system-name-conversion]]
 == ASM para conversão de nome de sistema de arquivos
 
 ....
@@ -462,6 +470,7 @@ end;
 ....
 
 
+[[replay-logs-on-database]]
 == Repetir registos na base de dados
 
 Este script aceita um único argumento de um SID Oracle para um banco de dados que está no modo de montagem e tenta reproduzir todos os logs de arquivo disponíveis atualmente.
@@ -498,6 +507,7 @@ print @out;
 ....
 
 
+[[replay-logs-on-standby-database]]
 == Repetir registos na base de dados em espera
 
 Esse script é idêntico ao script anterior, exceto que ele é projetado para um banco de dados em espera.

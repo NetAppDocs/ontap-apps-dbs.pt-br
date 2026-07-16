@@ -21,6 +21,7 @@ image:epic-cg-layout.png["Layout de grupo de consistência épica"]
 
 
 
+[[consistency-group-snapshots]]
 == Instantâneos do grupo de consistência
 
 Um cronograma de instantâneos CG noturno deve ser definido em cada um dos CGS-filho associado aos volumes que fornecem armazenamento para o banco de dados de produção. Isso resultará em um novo conjunto de backups consistentes desses CGS todas as noites. Eles podem ser usados para clonar o banco de dados de produção para uso em ambientes que não sejam de produção, como desenvolvimento e teste. A NetApp desenvolveu fluxos de trabalho Ansible automatizados baseados em CG para a Epic a fim de automatizar o backup dos bancos de dados de produção, os ambientes de atualização e teste também.

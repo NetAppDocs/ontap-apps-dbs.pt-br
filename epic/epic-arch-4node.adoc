@@ -17,12 +17,14 @@ Ambientes de cópia completa de teste (como SUP, REL e PJX) são clonados da Epi
 
 
 
+[[four-node-architecture]]
 == Arquitetura de quatro nós
 
 image:epic-4node.png["Arquitetura épica de 4 nós"]
 
 
 
+[[four-node-workload-placement]]
 == Disposição do workload de quatro nós
 
 image:epic-4node-design.png["Disposição épica de 4 nós"]

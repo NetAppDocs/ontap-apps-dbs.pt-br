@@ -1,0 +1,94 @@
+---
+sidebar: sidebar 
+permalink: oracle/oracle-dp-automatic-recovery.html 
+keywords: oracle, data protection, crash-consistent 
+summary: Recuperação automática do Oracle sem modo de backup. 
+searchtitle: Recuperação automática do Oracle sem modo de backup. 
+---
+= Recuperação automática do Oracle sem modo de backup
+:allow-uri-read: 
+
+
+[role="lead"]
+O backup e a recuperação baseados em Snapshot tornaram-se ainda mais simples com o lançamento do Oracle 12c, pois não há necessidade de colocar um banco de dados em modo de hot backup. O resultado é a capacidade de agendar backups baseados em Snapshot diretamente em um sistema de storage.
+
+Embora o procedimento de recuperação de hot backup seja mais familiar aos DBAs, há muito tempo foi possível usar snapshots que não foram criados enquanto o banco de dados estava no modo hot backup. Etapas manuais extras foram necessárias com o Oracle 10gi e 11gi durante a recuperação para tornar o banco de dados consistente. Com o Oracle 12ci, `sqlplus` e `rman` conter a lógica extra para reproduzir logs de arquivo em backups de arquivos de dados que não estavam no modo de backup ativo.
+
+Como discutido anteriormente, a recuperação de um hot backup baseado em snapshot requer dois conjuntos de dados:
+
+* Um instantâneo dos arquivos de dados criados no modo de backup
+* Os logs de arquivo gerados enquanto os datafiles estavam no modo hot backup
+
+
+Durante a recuperação, o banco de dados lê metadados dos arquivos de dados para selecionar os logs de arquivo necessários para recuperação.
+
+A recuperação automática sem o modo de backup requer conjuntos de dados ligeiramente diferentes para alcançar os mesmos resultados:
+
+* Um Snapshot dos datafiles.
+* Um conjunto sincronizado de logs de arquivamento, arquivos de controle e redo logs. Os logs de arquivamento devem incluir todos os registros desde o momento em que o snapshot do arquivo de dados foi criado, portanto, tenha cuidado com a eliminação agressiva de logs.
+
+
+Durante a recuperação, o banco de dados lê metadados dos arquivos de dados para identificar os registros de log necessários e reproduz todas as transações registradas.
+
+
+
+= NOTA:
+
+Essa abordagem pode aproximar uma recuperação ponto no tempo, mas com granularidade limitada. Por exemplo, se você começar com datafiles em modo de backup, poderá avançar o banco de dados para qualquer transação arbitrária.
+
+Se você usar a abordagem de recuperação automática, sem usar o modo de backup, deverá recuperar o banco de dados até o ponto do snapshot do log. Em circunstâncias normais, o RPO ainda seria zero porque os logs de arquivamento, os redo logs e os controlfiles originais ainda estariam disponíveis no sistema de arquivos ativo. Se uma recuperação precisasse ser realizada inteiramente a partir de snapshots devido à perda de todos os dados nos sistemas de arquivos ativos, o RPO seria de uma hora.
+
+[]
+====
+== Layout de dados O layout mais simples consiste em isolar os arquivos de dados em volumes dedicados, LUNs ou namespaces NVMe. Os recursos de storage devem estar livres de qualquer outro tipo de arquivo. Isso garante que os arquivos de dados possam ser restaurados rapidamente por meio de uma operação SnapRestore sem destruir um importante redo log, arquivo de controle ou log de arquivamento.
+
+A SAN possui requisitos semelhantes para isolamento de arquivos de dados em recursos dedicados. Com um sistema operacional como Microsoft Windows usando armazenamento AFF, um único volume pode conter múltiplos LUNs de arquivos de dados, cada um com um sistema de arquivos NTFS. Em outros sistemas operacionais, geralmente existe um gerenciador de volumes lógico. Por exemplo, com Oracle ASM, a opção mais simples seria confinar os LUNs de um grupo de discos ASM a um único volume que possa ser copiado e restaurado como uma unidade. Se volumes adicionais forem necessários por motivos de desempenho ou gerenciamento de capacidade, a criação de um grupo de discos adicional no novo volume resulta em um gerenciamento mais simples.
+
+ASA não possui abstração em nível de volume. Em vez disso, utiliza grupos de consistência. Em muitos casos, um único LUN ou namespace NVMe pode atender aos requisitos de gerenciamento e desempenho de um banco de dados. Se forem necessários vários LUNs ou namespaces, recursos adicionais podem ser adicionados e agrupados como um grupo de consistência que se torna o contêiner de arquivos de dados.
+
+Se essas diretrizes forem seguidas, os snapshots podem ser agendados diretamente no sistema de storage.
+
+*Atenção:* Verifique se o ASM `spfile` e `passwd` os arquivos não estão no grupo de discos que hospeda os arquivos de dados. Isso interfere na capacidade de restaurar seletivamente datafiles e apenas datafiles.
+
+== Procedimento de recuperação local—NFS O procedimento básico é o seguinte:
+
+. Encerre o banco de dados.
+. Recupere os volumes de arquivos de dados, LUNs ou namespaces para o Snapshot imediatamente anterior ao ponto de restauração desejado.
+. Executar `alter database automatic;`
+
+
+Este procedimento pressupõe que os registos de arquivo desejados ainda estão presentes no sistema de ficheiros ativo. Se não estiverem, os registos de arquivo têm de ser restaurados ou `rman` `sqlplus` podem ser direcionados para os dados no `.snapshot` diretório.
+
+Além disso, para bancos de dados menores, os arquivos de dados podem ser recuperados por um usuário final diretamente `.snapshot` do diretório sem a ajuda de ferramentas de automação ou um administrador de armazenamento para executar um comando SnapRestore.
+
+== Procedimento de recuperação local—SAN O procedimento básico é o seguinte:
+
+. Encerre o banco de dados.
+. Quiesce o(s) grupo(s) de discos que hospedam os arquivos de dados. O procedimento varia consoante o gestor de volume lógico escolhido. Com ASM, o processo requer a desmontagem do grupo de discos. Com o Linux, os sistemas de arquivos devem ser desmontados e os volumes lógicos e grupos de volumes são desativados. O objetivo é parar todas as atualizações no grupo de volume alvo a serem restauradas.
+. Restaure os grupos de discos de arquivo de dados para o instantâneo imediatamente antes do ponto de restauração desejado.
+. Reative os grupos de discos recentemente restaurados.
+. Executar `alter database automatic;`
+
+
+Este procedimento pressupõe que os logs de arquivamento desejados ainda estejam presentes no sistema de arquivos ativo. Caso contrário, os logs de arquivamento devem ser restaurados colocando os LUNs de log de arquivamento offline e executando uma restauração. Este também é um exemplo em que separar os logs de arquivamento em volumes, LUNs ou namespaces dedicados é útil. Se os logs de arquivamento compartilharem um grupo de volume com os redo logs, os redo logs devem ser copiados para outro local antes da restauração do conjunto completo de LUNs para evitar a perda das transações finais registradas.
+
+== Exemplo de recuperação completa Suponha que os arquivos de dados foram corrompidos ou destruídos e que seja necessária uma recuperação completa. O procedimento para isso é o seguinte:
+
+....
+[oracle@host1 ~]$ sqlplus / as sysdba
+Connected to an idle instance.
+SQL> startup mount;
+ORACLE instance started.
+Total System Global Area 1610612736 bytes
+Fixed Size                  2924928 bytes
+Variable Size            1040191104 bytes
+Database Buffers          553648128 bytes
+Redo Buffers               13848576 bytes
+Database mounted.
+SQL> recover automatic;
+Media recovery complete.
+SQL> alter database open;
+Database altered.
+SQL>
+....
+====

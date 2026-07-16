@@ -14,6 +14,7 @@ O ONTAP usa internamente um tamanho de bloco variável, o que significa que os b
 
 
 
+[[datafile-block-sizes]]
 == Tamanhos de blocos de arquivos de dados
 
 Alguns sistemas operacionais oferecem uma escolha de tamanhos de bloco de sistema de arquivos. Para sistemas de arquivos que suportam datafiles Oracle, o tamanho do bloco deve ser 8KB quando a compactação é usada. Quando a compressão não é necessária, um tamanho de bloco de 8KB ou 4KB pode ser usado.
@@ -24,6 +25,7 @@ Os sistemas de arquivos que suportam os logs de refazer devem usar um tamanho de
 
 
 
+[[redo-block-sizes]]
 == Refazer tamanhos de bloco
 
 Com taxas de recozimento muito altas, é possível que 4KB tamanhos de bloco tenham um melhor desempenho, pois altas taxas de recozimento permitem que a e/S seja executada em operações cada vez menores e mais eficientes. Se as taxas de refazer forem maiores que 50Mbps, considere testar um tamanho de bloco 4KB.

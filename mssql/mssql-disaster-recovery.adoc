@@ -20,12 +20,14 @@ O recurso de replicação de grupo de disponibilidade contínua do SQL Server po
 
 
 
+[[snapmirror]]
 == SnapMirror
 
 A tecnologia SnapMirror oferece uma solução empresarial rápida e flexível para replicação de dados em LANs e WANs. A tecnologia SnapMirror transfere apenas blocos de dados alterados para o destino após a criação do espelhamento inicial, reduzindo significativamente os requisitos de largura de banda da rede. Ele pode ser configurado em modo síncrono ou assíncrono.
 
 
 
+[[netapp-metrocluster-and-snapmirror-active-sync]]
 == Sincronização ativa do NetApp MetroCluster e do SnapMirror
 
 Para muitos clientes, a recuperação de desastres requer mais do que apenas a posse de uma cópia remota de dados. Para isso, ela exige a capacidade de usar esses dados rapidamente. A NetApp oferece duas tecnologias que atendem a essa necessidade: MetroCluster e SnapMirror ative Sync
@@ -36,6 +38,7 @@ A sincronização ativa do SnapMirror é baseada no SnapMirror síncrono. Com o 
 
 
 
+[[sm-as-and-mcc-comparison]]
 == Comparação de SM-as e MCC
 
 O SM-as e o MetroCluster são semelhantes na funcionalidade geral, mas há diferenças importantes na maneira como a replicação RPO-0 foi implementada e como ela é gerenciada. O SnapMirror assíncrono e síncrono também pode ser usado como parte de um plano de recuperação de desastres, mas não foram desenvolvidos como tecnologias de repliação de HA.

@@ -27,6 +27,7 @@ Este documento se concentra nos recursos das versões recentes do ONTAP 9 quando
 
 
 
+[[why-use-ontap-with-vlsr-or-srm]]
 == Por que usar o ONTAP com VLSR ou SRM?
 
 As plataformas de gerenciamento de dados da NetApp com tecnologia ONTAP são algumas das soluções de armazenamento mais amplamente adotadas para VLSR.  Os motivos são muitos: uma plataforma de gerenciamento de dados segura, de alto desempenho e com protocolo unificado (NAS e SAN juntos) que fornece eficiência de armazenamento que define o setor, multilocação, controles de qualidade de serviço, proteção de dados com instantâneos com eficiência de espaço e replicação com SnapMirror.  Tudo isso aproveitando a integração nativa de multi-nuvem híbrida para a proteção de cargas de trabalho do VMware e uma infinidade de ferramentas de automação e orquestração ao seu alcance.
@@ -37,6 +38,7 @@ Não importa se você usa armazenamentos de dados tradicionais NFS, iSCSI ou Fib
 
 
 
+[[how-vlsr-leverages-ontap-9]]
 == Como o VLSR utiliza o ONTAP 9
 
 O VLSR aproveita as tecnologias avançadas de gerenciamento de dados dos sistemas ONTAP integrando-se às ferramentas do ONTAP para VMware vSphere, um dispositivo virtual que inclui três componentes principais:
@@ -59,6 +61,7 @@ NOTE: Embora os sistemas ONTAP permitam emparelhar SVMs no mesmo cluster para re
 
 
 
+[[vlsr-with-ontap-and-other-use-cases-hybrid-cloud-and-migration]]
 == VLSR com ONTAP e outros casos de uso: Nuvem híbrida e migração
 
 A integração da sua implantação de VLSR com os recursos avançados de gerenciamento de dados do ONTAP permite escala e desempenho significativamente melhores quando comparado com opções de armazenamento local. Mas mais do que isso, ele traz a flexibilidade da nuvem híbrida. A nuvem híbrida permite que você economize dinheiro ao hierarquizar blocos de dados não utilizados do seu array de alto desempenho para o seu hiperescalador preferido usando o FabricPool, que pode ser um armazenamento S3 local, como o NetApp StorageGRID. Você também pode usar o SnapMirror para sistemas baseados em borda com ONTAP Select definido por software ou DR baseado em nuvem usando https://www.equinix.com/partners/netapp["Armazenamento NetApp no ​​Equinix Metal"^], ou outros serviços ONTAP hospedados.

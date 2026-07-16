@@ -30,6 +30,7 @@ Não é necessário esperar que o processo de migração seja concluído. Assim 
 
 
 
+[[shut-down-database]]
 == Encerre a base de dados
 
 O primeiro passo para silenciar o ambiente neste exemplo é desligar o banco de dados.
@@ -53,6 +54,7 @@ SQL>
 ....
 
 
+[[shut-down-grid-services]]
 == Encerre os serviços da grade
 
 Um dos sistemas de arquivos baseados em SAN que está sendo migrado também inclui os serviços Oracle ASM. A supressão dos LUNs subjacentes requer a desmontagem dos sistemas de arquivos, o que, por sua vez, significa parar todos os processos com arquivos abertos neste sistema de arquivos.
@@ -76,6 +78,7 @@ CRS-4133: Oracle High Availability Services has been stopped.
 ....
 
 
+[[dismount-file-systems]]
 == Desmontar sistemas de arquivos
 
 Se todos os processos forem desligados, a operação umount será bem-sucedida. Se a permissão for negada, deve haver um processo com um bloqueio no sistema de arquivos. O `fuser` comando pode ajudar a identificar esses processos.
@@ -86,6 +89,7 @@ Se todos os processos forem desligados, a operação umount será bem-sucedida. 
 ....
 
 
+[[deactivate-volume-groups]]
 == Desativar grupos de volume
 
 Depois de todos os sistemas de arquivos em um determinado grupo de volume serem desmontados, o grupo de volume pode ser desativado.
@@ -97,12 +101,14 @@ Depois de todos os sistemas de arquivos em um determinado grupo de volume serem 
 ....
 
 
+[[fc-network-changes]]
 == Alterações na rede FC
 
 As zonas FC agora podem ser atualizadas para remover todo o acesso do host ao array externo e estabelecer acesso ao ONTAP.
 
 
 
+[[start-import-process]]
 == Inicie o processo de importação
 
 Para iniciar os processos de importação de LUN, execute o `lun import start` comando.
@@ -117,6 +123,7 @@ Cluster01::lun import*>
 ....
 
 
+[[monitor-import-progress]]
 == Monitorar o progresso da importação
 
 A operação de importação pode ser monitorada com o `lun import show` comando. Como mostrado abaixo, a importação de todos os LUNs 20 está em andamento, o que significa que os dados agora estão acessíveis por meio do ONTAP, mesmo que a operação de cópia de dados ainda progrida.
@@ -153,6 +160,7 @@ Se precisar de uma migração online, continue a redescobrir os LUNs na sua nova
 
 
 
+[[scan-for-scsi-device-changes]]
 == Verifique se há alterações no dispositivo SCSI
 
 Na maioria dos casos, a opção mais simples para redescobrir novos LUNs é reiniciar o host. Isso remove automaticamente dispositivos obsoletos antigos, descobre corretamente todos os novos LUNs e cria dispositivos associados, como dispositivos multipathing. O exemplo aqui mostra um processo totalmente online para fins de demonstração.
@@ -203,6 +211,7 @@ OLD: Host: scsi9 Channel: 00 Id: 01 Lun: 19
 ....
 
 
+[[check-for-multipath-devices]]
 == Verifique se existem dispositivos multipath
 
 O processo de descoberta LUN também aciona a recriação de dispositivos multipath, mas o driver de multipathing Linux é conhecido por ter problemas ocasionais. A saída de `multipath - ll` deve ser verificada para verificar se a saída parece como esperado. Por exemplo, a saída abaixo mostra os dispositivos multipath associados a uma `NETAPP` cadeia de carateres de fornecedor. Cada dispositivo tem quatro caminhos, com dois em uma prioridade de 50 e dois em uma prioridade de 10. Embora a saída exata possa variar com diferentes versões do Linux, essa saída parece como esperado.
@@ -248,6 +257,7 @@ size=10G features='4 queue_if_no_path pg_init_retries 50 retain_attached_hw_hand
 ....
 
 
+[[reactivate-lvm-volume-group]]
 == Reative o grupo de volumes LVM
 
 Se os LUNs LVM tiverem sido detetados corretamente, o `vgchange --activate y` comando deverá ser bem-sucedido. Este é um bom exemplo do valor de um gerenciador de volume lógico. Uma alteração na WWN de um LUN ou mesmo de um número de série não é importante porque os metadados do grupo de volume são gravados no próprio LUN.
@@ -262,6 +272,7 @@ O sistema operacional digitalizou os LUNs e descobriu uma pequena quantidade de 
 ....
 
 
+[[remount-file-systems]]
 == Remontagem dos sistemas de arquivos
 
 Depois que o grupo de volume é reativado, os sistemas de arquivos podem ser montados com todos os dados originais intactos. Como discutido anteriormente, os sistemas de arquivos estão totalmente operacionais, mesmo que a replicação de dados ainda esteja ativa no grupo de volta.
@@ -286,6 +297,7 @@ tmpfs                             13179736         0  13179736   0% /run/user/0
 ....
 
 
+[[rescan-for-asm-devices]]
 == Redigitalização para dispositivos ASM
 
 Os dispositivos ASMlib devem ter sido redescobertos quando os dispositivos SCSI foram reconfigurados. A redescoberta pode ser verificada on-line reiniciando o ASMlib e, em seguida, digitalizando os discos.
@@ -322,6 +334,7 @@ Instantiating disk "ASM9"
 ....
 
 
+[[restart-grid-services]]
 == Reinicie os serviços de grade
 
 Agora que os dispositivos LVM e ASM estão online e disponíveis, os serviços de grade podem ser reiniciados.
@@ -332,6 +345,7 @@ Agora que os dispositivos LVM e ASM estão online e disponíveis, os serviços d
 ....
 
 
+[[restart-database]]
 == Reinicie a base de dados
 
 Depois que os serviços de grade tiverem sido reiniciados, o banco de dados pode ser criado. Pode ser necessário esperar alguns minutos para que os serviços ASM fiquem totalmente disponíveis antes de tentar iniciar o banco de dados.

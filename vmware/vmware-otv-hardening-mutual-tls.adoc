@@ -18,6 +18,7 @@ As versões 9,7 e posteriores do ONTAP suportam comunicação TLS mútua. A part
 
 
 
+[[ontap]]
 == ONTAP
 
 Para todos os sistemas de armazenamento adicionados anteriormente: Durante uma atualização, todos os sistemas de armazenamento de dados adicionados serão auto-confiáveis e os mecanismos de autenticação baseados em certificado serão configurados.
@@ -28,6 +29,7 @@ image:vmware-otv-hardening-mutual-tls-image2.png["image2mm, largura 468mm, altur
 
 
 
+[[cluster-add]]
 === *Cluster Add*
 
 Durante o fluxo de trabalho de adição de cluster, se o cluster que está sendo adicionado suportar MTLS, o MTLS será configurado por padrão. O usuário não precisa fazer nenhuma configuração para isso. A captura de tela abaixo mostra a tela apresentada ao usuário durante a adição do cluster.
@@ -42,6 +44,7 @@ image:vmware-otv-hardening-mutual-tls-image6.png["Adicionar sistema de armazenam
 
 
 
+[[cluster-edit]]
 === Cluster Edit (Editar cluster)
 
 Durante a operação de edição de cluster, existem dois cenários:

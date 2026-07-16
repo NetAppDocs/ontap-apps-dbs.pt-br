@@ -18,12 +18,14 @@ O link:oracle-dr-smas-mediator.html["ONTAP Mediador"] atende a esse requisito na
 
 
 
+[[oracle-tiebreakers]]
 == Tiebreakers Oracle
 
 O melhor método para gerenciar os riscos do Oracle RAC dividido é usar um número ímpar de nós RAC, de preferência pelo uso de um desempate de site 3rd. Se um site 3rd não estiver disponível, a instância tiebreaker pode ser colocada em um local dos dois sites, designando-o efetivamente um local sobrevivente preferido.
 
 
 
+[[oracle-and-csscritical]]
 == Oracle e CSS_critical
 
 Com um número par de nós, o comportamento padrão do Oracle RAC é que um dos nós no cluster será considerado mais importante do que os outros nós. O local com esse nó de maior prioridade sobreviverá ao isolamento do local, enquanto os nós do outro local serão despejados. A priorização é baseada em vários fatores, mas você também pode controlar esse comportamento usando a `css_critical` configuração.

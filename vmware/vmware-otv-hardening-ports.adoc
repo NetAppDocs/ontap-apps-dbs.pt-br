@@ -18,6 +18,7 @@ Aqui estão listadas as portas e protocolos necessários que permitem a comunica
 
 
 
+[[inbound-and-outbound-ports-required-for-otv]]
 == Portas de entrada e saída necessárias para o OTV
 
 Observe a tabela abaixo, que lista as portas de entrada e saída necessárias para o funcionamento adequado das ferramentas do ONTAP. É importante garantir que apenas as portas mencionadas na tabela estejam abertas para conexões de máquinas remotas, enquanto todas as outras portas devem ser bloqueadas para conexões de máquinas remotas. Isso ajudará a garantir a segurança e a segurança do seu sistema.
@@ -63,6 +64,7 @@ A tabela a seguir descreve os detalhes da porta aberta.
 |===
 
 
+[[controlling-remote-access-to-the-derby-database]]
 == Controlar o acesso remoto ao banco de dados Derby
 
 Os administradores podem acessar o banco de dados derby com os seguintes comandos. Ele pode ser acessado através da VM local das ferramentas do ONTAP, bem como de um servidor remoto com as seguintes etapas:

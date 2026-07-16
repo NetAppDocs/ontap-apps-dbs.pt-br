@@ -6,6 +6,7 @@ A versão inicial do FabricPool visou o caso de uso de backup. O único tipo de 
 
 
 
+[[policies-local-snapshots]]
 == Políticas - instantâneos locais
 
 Existem duas opções para a disposição em camadas de blocos snapshot inativos na camada de capacidade. Primeiro, a `snapshot-only` política segmenta apenas os blocos de snapshot. Embora `auto` a política inclua os `snapshot-only` blocos, ela também dispõe blocos do sistema de arquivos ativo. Isso pode não ser desejável.
@@ -14,6 +15,7 @@ O `tiering-minimum-cooling-days` valor deve ser definido para um período de tem
 
 
 
+[[policies-replicated-snapshots]]
 == Políticas - instantâneos replicados
 
 Um snapshot replicado com o SnapMirror ou o SnapVault que é usado somente para recuperação geralmente deve usar a política FabricPool `all`. Com essa política, os metadados são replicados, mas todos os blocos de dados são imediatamente enviados para a categoria de capacidade, o que proporciona o máximo de performance. A maioria dos processos de recuperação envolve e/S sequenciais, que é inerentemente eficiente. O tempo de recuperação do destino do armazenamento de objetos deve ser avaliado, mas, em uma arquitetura bem projetada, esse processo de recuperação não precisa ser significativamente mais lento do que a recuperação de dados locais.

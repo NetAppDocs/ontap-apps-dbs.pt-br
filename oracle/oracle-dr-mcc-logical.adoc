@@ -19,6 +19,7 @@ Entender como os bancos de dados Oracle operam em um ambiente MetroCluster o als
 
 
 
+[[site-failure-protection-nvram-and-metrocluster]]
 == Proteção contra falha do local: NVRAM e MetroCluster
 
 A MetroCluster estende a proteção de dados da NVRAM das seguintes maneiras:
@@ -30,6 +31,7 @@ A MetroCluster estende a proteção de dados da NVRAM das seguintes maneiras:
 
 
 
+[[site-and-shelf-failure-protection-syncmirror-and-plexes]]
 == Proteção contra falhas no local e no compartimento: SyncMirror e plexos
 
 O SyncMirror é uma tecnologia de espelhamento que aprimora, mas não substitui, o RAID DP ou o RAID-teC. Ele espelha o conteúdo de dois grupos RAID independentes. A configuração lógica é a seguinte:
@@ -47,6 +49,7 @@ O SyncMirror normalmente é usado para fornecer espelhamento remoto com sistemas
 
 
 
+[[redundancy-failure-nvfail]]
 == Falha de redundância: NVFAIL
 
 Como discutido anteriormente, uma gravação não é reconhecida até que ela tenha sido registrada no NVRAM local e no NVRAM em pelo menos um outro controlador. Essa abordagem garante que uma falha de hardware ou falha de energia não resulte na perda de e/S em trânsito Se o NVRAM local falhar ou a conectividade com outros nós falhar, os dados não serão mais espelhados.
@@ -65,6 +68,7 @@ Para evitar essa situação, o ONTAP permite que os volumes sejam configurados p
 
 
 
+[[ha-pairs-and-metrocluster]]
 === Pares DE HA e MetroCluster
 
 O MetroCluster está disponível em duas configurações: Dois nós e par de HA. A configuração de dois nós se comporta da mesma forma que um par de HA em relação ao NVRAM. Em caso de falha repentina, o nó do parceiro pode repetir dados do NVRAM para tornar as unidades consistentes e garantir que nenhuma gravação reconhecida tenha sido perdida.
@@ -75,12 +79,14 @@ Um aspeto importante do MetroCluster é que os nós remotos não têm acesso aos
 
 
 
+[[switchover-and-switchback]]
 == Comutação e comutação
 
 Os termos switchover e switchback referem-se ao processo de transição de volumes entre controladores remotos em uma configuração do MetroCluster. Este processo aplica-se apenas aos nós remotos. Quando o MetroCluster é usado em uma configuração de quatro volumes, o failover de nó local é o mesmo processo de aquisição e giveback descrito anteriormente.
 
 
 
+[[planned-switchover-and-switchback]]
 === Comutação planejada e switchback
 
 Um switchover planejado ou switchback é semelhante a um takeover ou giveback entre nós. O processo tem várias etapas e pode parecer exigir vários minutos, mas o que está realmente acontecendo é uma transição graciosa multifásica de recursos de armazenamento e rede. O momento em que as transferências de controle ocorrem muito mais rapidamente do que o tempo necessário para que o comando completo seja executado.
@@ -89,6 +95,7 @@ A principal diferença entre o takeover/giveback e o switchover/switchback está
 
 
 
+[[syncmirror-timeouts]]
 === Tempos limite do SyncMirror
 
 O SyncMirror é uma tecnologia de espelhamento ONTAP que fornece proteção contra falhas nas shelves. Quando as gavetas são separadas à distância, o resultado é a proteção de dados remota.
@@ -103,6 +110,7 @@ Notavelmente, em muitos casos, esse tipo de replicação universal do modo domin
 
 
 
+[[automatic-unattended-switchover-with-fabric-attached-metrocluster]]
 === Switchover automático sem supervisão com MetroCluster conectado à malha
 
 O switchover automático sem supervisão (AUSO) é um recurso de MetroCluster anexado a malha que fornece uma forma de HA entre os locais. Como discutido anteriormente, o MetroCluster está disponível em dois tipos: Um único controlador em cada local ou um par de HA em cada local. A principal vantagem da opção HA é que o desligamento planejado ou não planejado do controlador ainda permite que todas as I/o sejam locais. A vantagem da opção de nó único é reduzir os custos, a complexidade e a infraestrutura.
@@ -119,6 +127,7 @@ Um sistema MetroCluster só pode efetuar uma mudança automática em segurança 
 
 
 
+[[metrocluster-tiebreaker-with-fabric-attached-metrocluster]]
 === Desempate MetroCluster com MetroCluster conectado à malha
 
 link:https://docs.netapp.com/us-en/ontap-metrocluster/install-ip/task_sw_config_configure_mediator.html["Desempate de NetApp MetroCluster"^]O software pode ser executado em um terceiro local para monitorar a integridade do ambiente MetroCluster, enviar notificações e, opcionalmente, forçar um switchover em uma situação de desastre. Uma descrição completa do desempate pode ser encontrada no link:http://mysupport.netapp.com["Site de suporte da NetApp"^], mas o principal objetivo do desempate do MetroCluster é detetar a perda do local. Ele também deve discriminar entre a perda do local e a perda de conetividade. Por exemplo, o switchover não deve ocorrer porque o tiebreaker não conseguiu chegar ao local principal, e é por isso que o tiebreaker também monitora a capacidade do local remoto de entrar em Contato com o local principal.
@@ -145,6 +154,7 @@ Além disso, o MCTB pode não resolver um desastre contínuo que leva à seguint
 
 
 
+[[ontap-mediator-with-metrocluster-ip]]
 === Mediador ONTAP com MetroCluster IP
 
 O Mediador ONTAP é usado com MetroCluster IP e outras soluções ONTAP. Ele funciona como um serviço de desempate tradicional, assim como o software de desempate do MetroCluster discutido acima, mas também inclui um recurso crítico: Executar o switchover automatizado sem supervisão.
@@ -155,6 +165,7 @@ Em contraste, a arquitetura IP do MetroCluster roteia todas as I/o exclusivament
 
 
 
+[[virtual-third-site-with-clusterlion]]
 === Terceiro site virtual com ClusterLion
 
 O ClusterLion é um dispositivo avançado de monitoramento MetroCluster que funciona como um terceiro site virtual. Essa abordagem permite que o MetroCluster seja implantado com segurança em uma configuração de dois locais com recurso de switchover totalmente automatizado. Além disso, o ClusterLion pode executar um monitor de nível de rede adicional e executar operações pós-switchover. A documentação completa está disponível no ProLion.

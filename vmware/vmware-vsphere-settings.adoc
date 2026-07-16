@@ -140,6 +140,7 @@ As ferramentas do ONTAP também especificam certas configurações padrão ao cr
 |===
 
 
+[[multipath-settings-for-performance]]
 == Configurações de multipath para desempenho
 
 Embora não esteja configurado atualmente pelas ferramentas ONTAP disponíveis, o NetApp sugere estas opções de configuração:
@@ -150,6 +151,7 @@ Embora não esteja configurado atualmente pelas ferramentas ONTAP disponíveis, 
 
 
 
+[[additional-documentation]]
 == Documentação adicional
 
 Para FCP e iSCSI com vSphere, mais detalhes podem ser encontrados em para FCP e iSCSI com vSphere 8, mais detalhes podem ser encontrados em link:https://docs.netapp.com/us-en/ontap-sanhost/hu_vsphere_8.html["Use o VMware vSphere 8.x com o ONTAP"^]para NVMe-of com vSphere 7. Para NVMe-of com vSphere 8, mais detalhes podem ser encontrados em link:https://docs.netapp.com/us-en/ontap-sanhost/nvme_esxi_7.html["Para NVMe-of, mais detalhes podem ser encontrados em Configuração de host NVMe-of para ESXi 7.x com ONTAP"^] para NVMe-of com vSphere 7link:https://docs.netapp.com/us-en/ontap-sanhost/hu_vsphere_7.html["Use o VMware vSphere 7.x com o ONTAP"^]. Mais detalhes podem ser encontrados em link:https://docs.netapp.com/us-en/ontap-sanhost/nvme_esxi_8.html["Para NVMe-of, mais detalhes podem ser encontrados em Configuração de host NVMe-of para ESXi 8.x com ONTAP"^]

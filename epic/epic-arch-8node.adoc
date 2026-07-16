@@ -15,12 +15,14 @@ Os ambientes de teste são clonados do Report em vez da produção nesse projeto
 
 
 
+[[eight-node-architecture]]
 == Arquitetura de oito nós
 
 image:epic-8node.png["Arquitetura épica de 4 nós"]
 
 
 
+[[eight-node-workload-placement]]
 == Posicionamento do workload de oito nós
 
 image:epic-8node-design.png["Disposição épica de 8 nós"]

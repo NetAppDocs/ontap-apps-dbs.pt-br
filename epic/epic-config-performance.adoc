@@ -13,6 +13,7 @@ A maioria dos all-flash arrays garante a performance necessária para os workloa
 
 
 
+[[quality-of-service-qos]]
 == Qualidade do serviço (QoS)
 
 A NetApp recomenda o uso de QoS. O benefício da QoS é a capacidade de consolidar todos os workloads da Epic. Todos os protocolos e pools de storage podem residir em menos hardware. Não é necessário separar pools de storage.

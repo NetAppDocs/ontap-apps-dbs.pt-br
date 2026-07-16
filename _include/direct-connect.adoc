@@ -4,20 +4,21 @@
 
 
 
+[[fiber-channel]]
 === Fibre Channel
 
-A partir do ONTAP 9.19.1, a conexão direta FC é suportada tanto com FC-SAN (SCSI) tradicional quanto com NVMe/FC, com adaptadores FC de sistema de storage selecionados. Os HBAs estabelecerão uma conexão FC ponto a ponto padrão.
-
-Antes do ONTAP 9.19.1, os sistemas de storage ONTAP exigem NPIV, o que significa que o sistema de storage deve estar conectado a um switch FC que também suporte NPIV.
+A partir do ONTAP 9.19.1, a conexão direta FC é suportada tanto com FC-SAN (SCSI) tradicional quanto com NVMe/FC, com adaptadores FC de sistema de storage selecionados. Os HBAs estabelecerão uma conexão FC ponto a ponto padrão. Antes do ONTAP 9.19.1, os sistemas de storage ONTAP exigem NPIV, o que significa que o sistema de storage deve estar conectado a um switch FC que também suporte NPIV.
 
 
 
+[[iscsi-and-nvmetcp]]
 === ISCSI e NVMe/TCP
 
 Um host usando iSCSI ou NVMe/TCP pode ser conetado diretamente a um sistema de storage e operar normalmente. A razão é pathing. Conexões diretas a dois controladores de storage diferentes resultam em dois caminhos independentes para o fluxo de dados. A perda de caminho, porta ou controlador não impede que o outro caminho seja usado.
 
 
 
+[[nfs]]
 === NFS
 
 O armazenamento NFS com conexão direta pode ser usado, mas com uma limitação significativa - o failover não funcionará sem um esforço significativo de script, o que seria da responsabilidade do cliente.

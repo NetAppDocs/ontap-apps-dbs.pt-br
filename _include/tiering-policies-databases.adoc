@@ -4,6 +4,7 @@
 
 
 
+[[snapshot-only]]
 == Apenas Snapshot
 
 O `snapshot-only` `tiering-policy` aplica-se apenas a blocos que não são partilhados com o sistema de ficheiros ativo. Essencialmente, isso resulta em camadas de backups de bancos de dados. Os blocos se tornam candidatos à disposição em camadas depois que um snapshot é criado e o bloco é substituído, resultando em um bloco que existe apenas no snapshot. O atraso antes de um `snapshot-only` bloco ser considerado frio é controlado pela `tiering-minimum-cooling-days` definição do volume. A gama a partir de ONTAP 9.8 é de 2 a 183 dias.
@@ -12,6 +13,7 @@ Muitos conjuntos de dados têm taxas de alteração baixas, o que resulta em eco
 
 
 
+[[auto]]
 == Auto
 
 A `auto` política de disposição em camadas estende a disposição em camadas para blocos específicos de snapshot e blocos no sistema de arquivos ativo. O atraso antes de um bloco ser considerado frio é controlado pela `tiering-minimum-cooling-days` definição do volume. A gama a partir de ONTAP 9.8 é de 2 a 183 dias.
@@ -20,6 +22,7 @@ Essa abordagem permite opções de disposição em categorias que não estão di
 
 
 
+[[none]]
 == Nenhum
 
 A `none` política de disposição em categorias impede que blocos adicionais sejam dispostos em camadas na camada de storage, mas todos os dados ainda na camada de capacidade permanecem na camada de capacidade até que sejam lidos. Se o bloco for então lido, ele será puxado para trás e colocado no nível de desempenho.
@@ -28,6 +31,7 @@ O principal motivo para usar a `none` política de disposição em camadas é im
 
 
 
+[[all]]
 == Tudo
 
 A `all` política de disposição em categorias substitui a `backup` política a partir do ONTAP 9.6.  `backup`A política aplicada somente a volumes de proteção de dados, o que significa um destino do SnapMirror ou do NetApp SnapVault. A `all` política funciona da mesma forma, mas não se restringe a volumes de proteção de dados.

@@ -22,6 +22,7 @@ Use o FlexGroup volumes com vSphere se você precisar de um único armazenamento
 
 
 
+[[copy-offload]]
 == Descarga de cópia
 
 Além de testes extensivos do sistema com cargas de trabalho do vSphere, o ONTAP 9.8 adicionou um novo mecanismo de descarga de cópia para datastores FlexGroup. Este novo sistema usa um mecanismo de cópia melhorado para replicar arquivos entre constituintes em segundo plano, permitindo o acesso à origem e ao destino. Esse cache constituinte-local é então usado para instanciar rapidamente clones da VM sob demanda.
@@ -46,6 +47,7 @@ Em ambientes onde você não consegue aproveitar ao máximo o cache FlexGroup, m
 
 
 
+[[qos-settings]]
 == Definições de QoS
 
 A configuração do QoS no nível FlexGroup usando o Gerenciador de sistema do ONTAP ou o shell do cluster é suportada, no entanto, não fornece reconhecimento de VM ou integração do vCenter.
@@ -56,12 +58,14 @@ Observe que o VMware vSphere trata todas as IO para um datastore NFS como uma ú
 
 
 
+[[metrics]]
 == Métricas
 
 O ONTAP 9.8 também adicionou novas métricas de performance baseadas em arquivos (IOPS, taxa de transferência e latência) para o FlexGroup Files, e essas métricas podem ser visualizadas nas ferramentas do ONTAP para os relatórios de VM e painel do VMware vSphere. O plug-in das ferramentas do ONTAP para VMware vSphere também permite que você defina regras de qualidade do serviço (QoS) usando uma combinação de IOPS máximo e/ou mínimo. Eles podem ser configurados em todas as VMs em um datastore ou individualmente para VMs específicas.
 
 
 
+[[best-practices]]
 == Práticas recomendadas
 
 * Use as ferramentas do ONTAP para criar datastores do FlexGroup para garantir que o FlexGroup seja criado de forma otimizada e que as políticas de exportação sejam configuradas para corresponder ao seu ambiente vSphere. No entanto, depois de criar o volume FlexGroup com as ferramentas do ONTAP, você descobrirá que todos os nós do cluster do vSphere estão usando um único endereço IP para montar o datastore. Isso pode resultar em um gargalo na porta de rede. Para evitar esse problema, desmonte o datastore e remonte-o usando o assistente padrão do vSphere datastore usando um nome DNS de round-robin que carrega o balanceamento entre LIFs no SVM. Depois de remontar, as ferramentas do ONTAP poderão gerenciar o datastore novamente. Se as ferramentas do ONTAP não estiverem disponíveis, use os padrões do FlexGroup e crie sua política de exportação seguindo as diretrizes do link:vmware-vsphere-datastores-nfs.html["Datastores e protocolos - NFS"].

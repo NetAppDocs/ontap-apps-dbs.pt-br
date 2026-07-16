@@ -10,6 +10,7 @@ A clonagem também é um exemplo de thin Provisioning. Um grande cliente da NetA
 
 
 
+[[space-management]]
 == Gerenciamento de espaço
 
 Alguns cuidados devem ser tomados com o thin Provisioning de um ambiente de aplicativo porque as taxas de alteração de dados podem aumentar inesperadamente. Por exemplo, o consumo de espaço devido a snapshots pode crescer rapidamente se as tabelas do banco de dados forem reindexadas ou se aplicar patches em larga escala aos convidados VMware. Um backup perdido pode gravar uma grande quantidade de dados em um tempo muito curto. Finalmente, pode ser difícil recuperar alguns aplicativos se um sistema de arquivos ficar sem espaço livre inesperadamente.
@@ -20,6 +21,7 @@ Consulte o link:https://docs.netapp.com/us-en/ontap/volumes/index.html["document
 
 
 
+[[fractional-reservations]]
 == Reservas fracionárias
 
 A reserva fracionária refere-se ao comportamento de um LUN em um volume com relação à eficiência do espaço. Quando a opção `fractional-reserve` é definida para 100%, todos os dados no volume podem experimentar 100% de rotatividade com qualquer padrão de dados sem esgotar espaço no volume.
@@ -31,6 +33,7 @@ TIP: A abstração de volume não está presente no ASA, e, portanto, essa plata
 
 
 
+[[compression-and-deduplication]]
 == Compactação e deduplicação
 
 Compactação e deduplicação são ambas formas de thin Provisioning. Por exemplo, um espaço físico de dados de 50TB GB pode ser compactado para 30TB GB, resultando em uma economia de 20TB GB. Para que a compactação possa gerar quaisquer benefícios, alguns desses 20TB precisam ser usados para outros dados, ou o sistema de storage precisa ser adquirido com menos de 50TB TB. O resultado é o armazenamento de mais dados do que o tecnicamente disponível no sistema de armazenamento. Do ponto de vista dos dados, há 50TB TB de dados, embora ocupe apenas 30TB TB nas unidades.
@@ -41,6 +44,7 @@ A compactação e a deduplicação são discutidas em mais detalhes na seção l
 
 
 
+[[compression-and-fractional-reservations]]
 === Compressão e reservas fracionárias
 
 A compactação é uma forma de thin Provisioning. Reservas fracionárias afetam o uso da compressão, com uma nota importante; o espaço é reservado antes da criação do snapshot. Normalmente, a reserva fracionária só é importante se existir um instantâneo. Se não houver instantâneo, a reserva fracionária não é importante. Este não é o caso da compressão. Se um LUN for criado em um volume com compactação, o ONTAP preservará espaço para acomodar um snapshot. Esse comportamento pode ser confuso durante a configuração, mas é esperado.

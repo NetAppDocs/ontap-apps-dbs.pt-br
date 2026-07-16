@@ -20,6 +20,7 @@ A otimização de uma solução SQL Server no ONTAP requer a compreensão do pad
 
 
 
+[[data-storage-design]]
 == Design de storage de dados
 
 Para bancos de dados do SQL Server que não usam o SnapCenter para executar backups, a Microsoft recomenda colocar os dados e arquivos de log em unidades separadas. Para aplicativos que simultaneamente atualizam e solicitam dados, o arquivo de log é intenso de gravação e o arquivo de dados (dependendo do aplicativo) é intenso de leitura/gravação. Para a recuperação de dados, o ficheiro de registo não é necessário. Portanto, as solicitações de dados podem ser satisfeitas a partir do arquivo de dados colocado em sua própria unidade.
@@ -28,6 +29,7 @@ Ao criar um novo banco de dados, a Microsoft recomenda especificar unidades sepa
 
 
 
+[[aff-aggregates]]
 == Agregados AFF
 
 Os agregados são os contêineres de armazenamento de nível mais baixo para configurações de armazenamento AFF. Existe alguma documentação antiga na internet que recomenda separar a E/S em diferentes conjuntos de unidades subjacentes. Isso não é recomendado com ONTAP. NetApp realizou diversos testes de caracterização de carga de trabalho de E/S usando agregados compartilhados e dedicados, com arquivos de dados e arquivos de log de transações separados. Os testes mostram que um agregado grande com mais grupos RAID e unidades otimiza e melhora o desempenho do armazenamento e é mais fácil para os administradores gerenciarem por dois motivos:
@@ -40,12 +42,14 @@ Para alta disponibilidade (HA), coloque a réplica síncrona secundária do SQL 
 
 
 
+[[volumes]]
 == Volumes
 
 os volumes são criados e residem dentro de agregados. Este termo às vezes causa confusão porque um volume ONTAP não é um LUN. Um volume de ONTAP é um contêiner de gerenciamento para os dados. Um volume pode conter arquivos, LUNs ou até mesmo objetos S3D. Um volume não ocupa espaço, é usado apenas para o gerenciamento dos dados contidos.
 
 
 
+[[volume-design-considerations]]
 === Considerações sobre design de volume
 
 Antes de criar um design de volume de banco de dados, é importante entender como o padrão e as caraterísticas de e/S do SQL Server variam dependendo da carga de trabalho e dos requisitos de backup e recuperação. Consulte as seguintes recomendações da NetApp para volumes flexíveis:
@@ -63,6 +67,7 @@ Antes de criar um design de volume de banco de dados, é importante entender com
 
 
 
+[[luns]]
 == LUNs
 
 * Certifique-se de que os arquivos do banco de dados do usuário e o diretório de log para armazenar o backup de log estejam em volumes separados para impedir que a política de retenção substitua os snapshots quando eles forem usados com a tecnologia SnapVault.

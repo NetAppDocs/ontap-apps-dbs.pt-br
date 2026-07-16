@@ -19,6 +19,7 @@ O SnapCenter descobre que todos os bancos de dados, instâncias e grupos de disp
 
 
 
+[[protecting-databases-in-always-on-availability-group]]
 == Proteção de bancos de dados no grupo disponibilidade sempre ativa
 
 Bancos de dados no grupo disponibilidade podem ser protegidos de várias maneiras.
@@ -35,6 +36,7 @@ TIP: *A NetApp recomenda* para usar o backup em nível de disponibilidade para f
 
 
 
+[[configuring-log-backup-in-snapcenter]]
 == Configurando o backup de log no SnapCenter
 
 Se o grupo de disponibilidade estiver configurado na configuração autônoma do SQL Server, um disco dedicado deverá ser montado em cada nó de um cluster de failover de servidor Windows. O disco dedicado deve ser usado para configurar o diretório de log para salvar backups de log de transações.
@@ -43,6 +45,7 @@ Se o grupo de disponibilidade estiver configurado no cluster de failover do SQL 
 
 
 
+[[restoring-database-in-availability-group-setup-with-snapcenter]]
 == Restaurar banco de dados na configuração do grupo de disponibilidade com o SnapCenter
 
 * O SnapCenter fornece a opção Reseed para recuperar automaticamente o banco de dados do snapshot mais recente disponível na réplica secundária. A operação Reseed restaurará e juntará automaticamente o backup do banco de dados ao grupo de disponibilidade.

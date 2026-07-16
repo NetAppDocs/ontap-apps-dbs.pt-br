@@ -21,6 +21,7 @@ Isso inclui medidas de Planejamento típicas, como garantir a existência de lar
 
 
 
+[[zoning]]
 == Zoneamento
 
 Uma zona FC nunca deve conter mais de um iniciador. Tal arranjo pode parecer funcionar inicialmente, mas a conversa cruzada entre iniciadores eventualmente interfere com o desempenho e a estabilidade.

@@ -6,12 +6,14 @@ O SnapMirror active Sync (anteriormente conhecido como SnapMirror Business Conti
 
 
 
+[[replication]]
 == Replicação
 
 A sincronização ativa do SnapMirror (SM-as) é baseada no SnapMirror síncrono. Ambos podem fornecer replicação síncrona RPO igual a 0, mas o SM-as leva a solução ainda mais ao fornecer disponibilidade quase zero de rto para dados SAN. Isso é feito por meio de automação que gerencia caminhos SAN para manter seus dados disponíveis. Falhas no local, no controlador e na comunicação são tratadas automaticamente pela ONTAP.
 
 
 
+[[architecture]]
 == Arquitetura
 
 A sincronização ativa do SnapMirror fornece LUNs que existem em dois locais diferentes. Em funcionamento normal, não existe "origem" ou "destino". A direção é bidirecional. Todas as IO de leitura direcionadas para um determinado caminho de LUN serão atendidas pelo controlador local usando sua cópia local dos dados. Todas as gravações serão replicadas para o parceiro remoto, bem como gravadas localmente antes de serem reconhecidas.
@@ -24,18 +26,21 @@ image:../media/smas-logical.png["Design lógico de sincronização ativa do Snap
 
 
 
+[[path-management]]
 == Gerenciamento de caminho
 
 Há duas abordagens para a topologia de rede síncrona SnapMirror, uniforme e não uniforme. A principal consideração ao escolher entre acesso uniforme e não uniforme é se você pode ou deve estender a SAN entre locais. A sincronização ativa do SnapMirror pode ser usada em ambas as situações.
 
 
 
+[[storage-hardware]]
 == Hardware de storage
 
 Ao contrário de outras soluções de recuperação de desastres de storage, o SnapMirror active Sync oferece flexibilidade assimétrica de plataforma. O hardware em cada local não precisa ser idêntico. Esse recurso permite dimensionar corretamente o hardware usado para suportar a sincronização ativa do SnapMirror. O sistema de storage remoto pode ser idêntico ao local principal se precisar dar suporte a uma carga de trabalho de produção completa, mas se um desastre resultar em e/S reduzida, do que um sistema menor no local remoto pode ser mais econômico.
 
 
 
+[[ontap-mediator]]
 == Mediador do ONTAP
 
 O Mediador ONTAP é um aplicativo de software que é baixado do site de suporte da NetApp e normalmente é implantado em uma máquina virtual.

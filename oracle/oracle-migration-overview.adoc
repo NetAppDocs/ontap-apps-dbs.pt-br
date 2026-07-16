@@ -19,6 +19,7 @@ No caso de um novo projeto de banco de dados, isso não é uma preocupação por
 
 
 
+[[scripts]]
 == Scripts
 
 Exemplos de scripts são fornecidos nesta documentação. Esses scripts fornecem métodos de exemplo para automatizar vários aspetos da migração para reduzir a chance de erros do usuário. Os scripts podem reduzir as demandas gerais da equipe DE TI responsável por uma migração e acelerar o processo geral. Todos esses scripts são extraídos de projetos de migração reais executados pelos Serviços profissionais da NetApp e parceiros da NetApp. Exemplos de seu uso são mostrados ao longo desta documentação.

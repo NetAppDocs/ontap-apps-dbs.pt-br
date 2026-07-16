@@ -18,6 +18,7 @@ Saiba como configurar a migração ao vivo de armazenamento Hyper-V
 
 
 
+[[prerequisites]]
 == Pré-requisitos
 
 * Você deve ter um servidor Hyper-V autônomo com armazenamento independente (DAS ou LUN) ou armazenamento SMB (local ou compartilhado entre outros servidores Hyper-V).
@@ -26,6 +27,7 @@ Saiba como configurar a migração ao vivo de armazenamento Hyper-V
 
 
 
+[[deployment]]
 == Implantação
 
 . Abra o Gerenciador do Hyper-V.

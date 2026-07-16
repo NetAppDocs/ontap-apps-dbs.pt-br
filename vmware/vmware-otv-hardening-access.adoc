@@ -23,6 +23,7 @@ A instalação das Ferramentas do ONTAP para VMware vSphere cria e usa três tip
 
 
 
+[[1-system-user]]
 == 1. Utilizador do sistema
 
 O usuário System(root) é criado pela instalação de ferramentas ONTAP no sistema operacional subjacente (Debian).
@@ -32,6 +33,7 @@ O usuário System(root) é criado pela instalação de ferramentas ONTAP no sist
 
 
 
+[[2-application-user]]
 == 2. Utilizador da aplicação
 
 O usuário do aplicativo é nomeado como um usuário local nas ferramentas do ONTAP. Estes são usuários criados no aplicativo de ferramentas do ONTAP. A tabela abaixo lista os tipos de usuários de aplicativos:
@@ -51,6 +53,7 @@ O usuário do aplicativo é nomeado como um usuário local nas ferramentas do ON
 |===
 
 
+[[3-support-userdiag-user]]
 == 3. Usuário do suporte (usuário diag)
 
 Durante a instalação das ferramentas do ONTAP, um usuário de suporte é criado. Esse usuário pode ser usado para acessar as ferramentas do ONTAP em caso de qualquer problema ou falha no servidor e para coletar logs. Por padrão, esse usuário está desativado, mas pode ser habilitado em uma base adhoc através do console 'mint'. É importante notar que este utilizador será automaticamente desativado após um determinado período de tempo.

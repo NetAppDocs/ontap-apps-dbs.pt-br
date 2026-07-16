@@ -21,6 +21,7 @@ O protocolo NFS inclui várias versões com requisitos variados. Para obter uma 
 
 
 
+[[nfs-versions]]
 == Versões de NFS
 
 O cliente do sistema operacional NFS deve ter suporte do NetApp.
@@ -37,6 +38,7 @@ NOTE: link:https://imt.netapp.com/matrix/#search["Matriz de suporte NetApp"]O pa
 
 
 
+[[linux-nfsv3-tcp-slot-tables]]
 == Tabelas de slots TCP do Linux NFSv3
 
 As tabelas de slot TCP são equivalentes a NFSv3 mm de profundidade de fila do adaptador de barramento do host (HBA). Essas tabelas controlam o número de operações NFS que podem ficar pendentes de uma só vez. O valor padrão é geralmente 16, o que é muito baixo para um desempenho ideal. O problema oposto ocorre em kernels Linux mais recentes, que podem aumentar automaticamente o limite da tabela de slots TCP para um nível que satura o servidor NFS com solicitações.
@@ -57,6 +59,7 @@ CAUTION: A falha em definir esses parâmetros pode ter efeitos significativos no
 
 
 
+[[adr-and-nfs]]
 == ADR e NFS
 
 Alguns clientes relataram problemas de desempenho resultantes de uma quantidade excessiva de e/S nos dados `ADR` no local. O problema geralmente não ocorre até que muitos dados de desempenho tenham sido acumulados. A razão para a e/S excessiva é desconhecida, mas este problema parece ser um resultado de processos Oracle repetidamente verificando o diretório de destino para mudanças.
@@ -68,6 +71,7 @@ TIP: *A NetApp recomenda* não colocar `ADR` dados em um sistema de arquivos com
 
 
 
+[[nfs-rootonly-and-mount-rootonly]]
 == nfs-rootonly e mount-rootonly
 
 O ONTAP inclui uma opção NFS chamada `nfs-rootonly` que controla se o servidor aceita conexões de tráfego NFS de portas altas. Como medida de segurança, apenas o usuário raiz tem permissão para abrir conexões TCP/IP usando uma porta de origem abaixo de 1024, porque essas portas são normalmente reservadas para uso do sistema operacional, não para processos de usuário. Essa restrição ajuda a garantir que o tráfego NFS seja de um cliente NFS do sistema operacional real e não de um processo mal-intencionado emulando um cliente NFS. O cliente Oracle DNFS é um driver de espaço de usuário, mas o processo é executado como root, portanto geralmente não é necessário alterar o valor de `nfs-rootonly`. As conexões são feitas a partir de portas baixas.
@@ -97,6 +101,7 @@ NOTE: Em situações raras, você pode precisar alterar tanto nfs-rootonly quant
 
 
 
+[[nfs-export-polices-superuser-and-setuid]]
 == Políticas de exportação de NFS: Superusuário e setuid
 
 Se os binários Oracle estiverem localizados em um compartilhamento NFS, a política de exportação deverá incluir permissões de superusuário e setuid.
@@ -113,6 +118,7 @@ vserver1  orabin     1         sys       true
 ....
 
 
+[[nfsv44-1-configuration]]
 == Configuração NFSv4/4,1
 
 Para a maioria das aplicações, há muito pouca diferença entre NFSv3 e NFSv4. A e/S da aplicação geralmente é muito simples e/S e não se beneficia significativamente de alguns dos recursos avançados disponíveis no NFSv4. Versões mais altas do NFS não devem ser vistas como uma "atualização" da perspectiva do storage de banco de dados, mas sim como versões do NFS que incluem recursos adicionais. Por exemplo, se a segurança de ponta a ponta do modo de privacidade Kerberos (krb5p) for necessária, então NFSv4 será necessário.
@@ -124,6 +130,7 @@ Mudar para NFSv4 é mais complicado do que simplesmente mudar as opções de mon
 
 
 
+[[nfsv4-domain]]
 === Domínio NFSv4
 
 Uma explicação completa da configuração NFSv4/4,1 está além do escopo deste documento, mas um problema comumente encontrado é uma incompatibilidade no mapeamento de domínio. De um ponto de vista sysadmin, os sistemas de arquivos NFS parecem se comportar normalmente, mas os aplicativos relatam erros sobre permissões e/ou setuid em determinados arquivos. Em alguns casos, os administradores concluíram incorretamente que as permissões dos binários do aplicativo foram danificadas e executaram comandos chown ou chmod quando o problema real era o nome do domínio.

@@ -14,6 +14,7 @@ Tópicos de configuração específicos para o sistema operacional Linux usando 
 
 
 
+[[asmlib-block-sizes]]
 == Tamanhos de blocos ASMlib
 
 ASMlib é uma biblioteca de gerenciamento ASM opcional e utilitários associados. Seu valor principal é a capacidade de carimbar um LUN ou um arquivo baseado em NFS como um recurso ASM com uma etiqueta legível por humanos.
@@ -33,12 +34,14 @@ Se o ASMlib não puder ser corrigido, o ASMlib pode ser removido da configuraç�
 
 
 
+[[asm-filter-drive-afd-block-sizes]]
 == Tamanhos de bloco do Acionamento do filtro ASM (AFD)
 
 O AFD é uma biblioteca de gerenciamento ASM opcional que está se tornando a substituição do ASMlib. Do ponto de vista do armazenamento, ele é muito semelhante ao ASMlib, mas inclui recursos adicionais, como a capacidade de bloquear e/S não-Oracle para reduzir as chances de erros de usuário ou aplicativo que poderiam corromper dados.
 
 
 
+[[device-block-sizes]]
 === Tamanhos de bloco de dispositivos
 
 Como o ASMlib, o AFD também lê o parâmetro LUN blocos lógicos por expoente de bloco físico (LBPPBE) e, por padrão, usa o tamanho do bloco físico, não o tamanho do bloco lógico.
@@ -49,6 +52,7 @@ A solução é simples - AFD inclui um parâmetro para controlar se usa os taman
 
 
 
+[[multipath-transfer-sizes]]
 === Tamanhos de transferência multipath
 
 As recentes alterações do kernel do linux impõem restrições de tamanho de e/S enviadas para dispositivos multipath, e o AFD não honra essas restrições. Os I/os são então rejeitados, o que faz com que o caminho LUN fique offline. O resultado é uma incapacidade de instalar o Oracle Grid, configurar ASM ou criar um banco de dados.

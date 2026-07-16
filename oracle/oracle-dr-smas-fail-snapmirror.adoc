@@ -15,12 +15,14 @@ Se o link de replicação de sincronização ativa do SnapMirror, a e/S de grava
 
 
 
+[[site-a]]
 == Local A
 
 O resultado de uma falha no link de replicação no local A será uma pausa de aproximadamente 15 segundos no processamento de e/S de gravação, já que o ONTAP tenta replicar gravações antes de determinar que o link de replicação está genuinamente inoperável. Após os 15 segundos decorridos, o cluster do ONTAP no local A retoma o processamento de e/S de leitura e gravação. Os caminhos de SAN não serão alterados e os LUNs permanecerão online.
 
 
 
+[[site-b]]
 == Local B
 
 Como o local B não é o site preferido de sincronização ativa do SnapMirror, seus caminhos de LUN ficarão indisponíveis após cerca de 15 segundos.

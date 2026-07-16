@@ -17,6 +17,7 @@ Está além do escopo deste documento cobrir a ampla gama de funções suportada
 
 
 
+[[intersystems-iris]]
 == Intersistemas Iris
 
 InterSystems Iris é o banco de dados usado pelo aplicativo Epic. Neste banco de dados, o servidor de dados é o ponto de acesso para dados armazenados persistentemente. O servidor de aplicativos gerencia consultas de banco de dados e faz solicitações de dados para o servidor de dados. Para a maioria dos ambientes de software da Epic, o uso da arquitetura de multiprocessadores simétricos (SMP) em um único servidor de banco de dados é suficiente para atender às solicitações de banco de dados dos aplicativos da Epic. Em grandes implantações, um modelo distribuído pode ser suportado usando o Enterprise Caché Protocol (ECP) da InterSystems.
@@ -33,6 +34,7 @@ O banco de dados atualizado do Iris tem muitas vantagens:
 
 
 
+[[cach-database-servers-and-storage-usage]]
 == Servidores de banco de dados Caché e uso de armazenamento
 
 * *Produção* em ambientes de software da Epic, um único banco de dados centrado no paciente é implantado. Nos requisitos de hardware da Epic, o servidor físico que hospeda o servidor de dados Iris primário de leitura/gravação é chamado de servidor de banco de dados de produção. Este servidor requer armazenamento all-flash de alto desempenho para arquivos pertencentes à instância de banco de dados principal. Para alta disponibilidade, a Epic oferece suporte ao uso de um servidor de banco de dados de failover que tenha acesso aos mesmos arquivos. O Iris usa o Epic Mirror para replicação para relatórios somente leitura, recuperação de desastres e suporte a cópias somente leitura. Cada tipo de servidor de banco de dados pode ser comutado para o modo de leitura/gravação por motivos de continuidade de negócios.
@@ -66,6 +68,7 @@ Os requisitos de storage de todos esses vários workloads, pools, protocolos nas
 
 
 
+[[operational-database-workloads]]
 == Workloads de banco de dados operacional
 
 Cada servidor de banco de dados Epic executa e/S nos seguintes tipos de arquivos:

@@ -36,6 +36,7 @@ A maioria dos clientes de bancos de dados agora seleciona all-flash arrays, o qu
 
 
 
+[[oracle-automatic-workload-repository-and-benchmarking]]
 == Oracle Automatic Workload Repository e benchmarking
 
 O padrão-ouro para comparações de desempenho Oracle é um relatório do Oracle Automatic Workload Repository (AWR).
@@ -51,6 +52,7 @@ NOTE: Onde os relatórios AWR não estão disponíveis, os relatórios do Oracle
 
 
 
+[[oracle-awr-and-troubleshooting]]
 == Oracle AWR e solução de problemas
 
 Um relatório AWR também é a ferramenta mais importante para analisar um problema de desempenho.
@@ -69,6 +71,7 @@ Ao fornecer dados AWR, considere os seguintes requisitos:
 
 
 
+[[calibrateio]]
 == calibrar_io
 
 O `calibrate_io` comando nunca deve ser usado para testar, comparar ou comparar sistemas de storage. Conforme indicado na documentação da Oracle, este procedimento calibra os recursos de e/S do armazenamento.
@@ -77,24 +80,28 @@ A calibração não é a mesma que o benchmarking. O objetivo deste comando é e
 
 
 
+[[slob2]]
 == SLOB2
 
 SLOB2, o silly Little Oracle Benchmark, tornou-se a ferramenta preferida para avaliar o desempenho do banco de dados. Foi desenvolvido por Kevin Closson e está disponível em link:https://kevinclosson.net/slob/["https://kevinclosson.net/slob/"^]. Leva minutos para instalar e configurar, e ele usa um banco de dados Oracle real para gerar padrões de e/S em um espaço de tabela definido pelo usuário. É uma das poucas opções de teste disponíveis que pode saturar um array all-flash com e/S. Também é útil para gerar níveis muito mais baixos de e/S para simular workloads de storage com IOPS baixo, mas sensíveis à latência.
 
 
 
+[[swingbench]]
 == Banco oscilante
 
 O Swingbench pode ser útil para testar o desempenho do banco de dados, mas é extremamente difícil usar o Swingbench de uma forma que estressa o armazenamento. NetApp não viu nenhum teste do Swingbench que rendeu e/S suficiente para ser uma carga significativa em qualquer array AFF. Em casos limitados, o teste de entrada de pedidos (OET) pode ser usado para avaliar o armazenamento de um ponto de vista de latência. Isso pode ser útil em situações em que um banco de dados tem uma dependência de latência conhecida para consultas específicas. É preciso ter cuidado para garantir que o host e a rede estejam configurados adequadamente para realizar os potenciais de latência de um array all-flash.
 
 
 
+[[hammerdb]]
 == HammerDB
 
 HammerDB é uma ferramenta de teste de banco de dados que simula benchmarks TPC-C e TPC-H, entre outros. Pode levar muito tempo para construir um conjunto de dados suficientemente grande para executar corretamente um teste, mas pode ser uma ferramenta eficaz para avaliar o desempenho para aplicativos OLTP e data warehouse.
 
 
 
+[[orion]]
 == Orion
 
 A ferramenta Oracle Orion foi comumente usada com o Oracle 9, mas não foi mantida para garantir a compatibilidade com alterações em vários sistemas operacionais de host. Raramente é usado com Oracle 10i ou Oracle 11i devido a incompatibilidades com o SO e configuração de armazenamento.

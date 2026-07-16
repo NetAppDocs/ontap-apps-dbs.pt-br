@@ -16,6 +16,7 @@ NOTE: A partir do ONTAP 9.7, a criptografia de volume e agregado é habilitada p
 
 
 
+[[autodelete-snapshots]]
 == Instantâneos a bordo
 
 Para instantâneos de funcionamento em rede: https://docs.netapp.com/us-en/ontap-cli-9141//volume-snapshot-autodelete-modify.html[]

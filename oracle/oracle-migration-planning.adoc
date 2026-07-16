@@ -22,6 +22,7 @@ Uma migração no nível do banco de dados geralmente se refere ao uso do Oracle
 
 
 
+[[planning-considerations]]
 == Considerações de Planejamento
 
 A melhor opção para migração depende de uma combinação de fatores, incluindo a escala do ambiente a ser migrado, a necessidade de evitar tempo de inatividade e o esforço geral necessário para realizar a migração. Bancos de dados grandes obviamente exigem mais tempo e esforço para a migração, mas a complexidade dessa migração é mínima. Pequenos bancos de dados podem ser migrados rapidamente, mas, se houver milhares para serem migrados, a escala do esforço pode criar complicações. Finalmente, quanto maior o banco de dados, maior a probabilidade de ser crítico para os negócios, o que dá origem a uma necessidade de minimizar o tempo de inatividade, preservando um caminho de back-out.
@@ -30,6 +31,7 @@ Algumas das considerações para o Planejamento de uma estratégia de migração
 
 
 
+[[data-size]]
 == Tamanho dos dados
 
 Os tamanhos dos bancos de dados a serem migrados obviamente afetam o Planejamento da migração, embora o tamanho não afete necessariamente o tempo de transição. Quando uma grande quantidade de dados precisa ser migrada, a principal consideração é a largura de banda. As operações de cópia são geralmente realizadas com e/S sequenciais eficientes Como uma estimativa conservadora, suponha 50% de utilização da largura de banda de rede disponível para operações de cópia. Por exemplo, uma porta FC de 8GB GB pode transferir cerca de 800MBps GB teoricamente. Assumindo 50% de utilização, um banco de dados pode ser copiado a uma taxa de cerca de 400Mbps. Portanto, um banco de dados 10TB pode ser copiado em cerca de sete horas a essa taxa.
@@ -38,6 +40,7 @@ A migração em distâncias maiores geralmente requer uma abordagem mais criativ
 
 
 
+[[database-count]]
 == Contagem da base de dados
 
 Em muitos casos, o problema de mover uma grande quantidade de dados não é o tamanho dos dados, mas sim a complexidade da configuração que suporta o banco de dados. Simplesmente saber que 50TB de bancos de dados devem ser migrados não é informação suficiente. Pode ser um único banco de dados de missão crítica 50TB, uma coleção de 4, 000 bancos de dados legados ou uma combinação de dados de produção e não produção. Em alguns casos, grande parte dos dados consiste em clones de um banco de dados de origem. Esses clones não precisam ser migrados porque podem ser facilmente recriados, especialmente quando a nova arquitetura foi projetada para utilizar volumes NetApp FlexClone.
@@ -50,6 +53,7 @@ Por fim, se for necessário migrar bancos de dados 500 em servidores 200, opçõ
 
 
 
+[[rearchitecture-requirements]]
 == Requisitos de rearquitetura
 
 Normalmente, um layout de arquivo de banco de dados deve ser alterado para aproveitar os recursos do novo storage array; no entanto, isso nem sempre é o caso. Por exemplo, os recursos dos all-flash arrays EF-Series são direcionados principalmente à performance de SAN e à confiabilidade de SAN. Na maioria dos casos, os bancos de dados podem ser migrados para um array da EF-Series sem considerações especiais para o layout de dados. Os únicos requisitos são alto IOPS, baixa latência e confiabilidade robusta. Embora existam práticas recomendadas relacionadas a fatores como configuração RAID ou Dynamic Disk Pools, os projetos EF-Series raramente exigem alterações significativas na arquitetura de storage geral para utilizar esses recursos.
@@ -62,6 +66,7 @@ Tecnologias como controles de QoS, realocação de dados, snapshots e clonagem f
 
 
 
+[[cutover-time]]
 == Tempo de redução
 
 A interrupção máxima permitida de serviço durante a transição deve ser determinada. É um erro comum supor que todo o processo de migração causa interrupções. Muitas tarefas podem ser concluídas antes do início de qualquer interrupção de serviço e muitas opções permitem a conclusão da migração sem interrupção ou interrupção. Mesmo quando a interrupção é inevitável, você ainda deve definir a interrupção máxima de serviço permitida, pois a duração do tempo de transição varia de procedimento para procedimento.
@@ -70,12 +75,14 @@ Por exemplo, copiar um banco de dados de 10 TB normalmente requer aproximadament
 
 
 
+[[back-out-path]]
 == Caminho de back-out
 
 Nenhuma migração é completamente livre de riscos. Mesmo que a tecnologia funcione perfeitamente, há sempre a possibilidade de erro do usuário. O risco associado a um caminho de migração escolhido deve ser considerado juntamente com as consequências de uma migração falhada. Por exemplo, o recurso transparente de migração de armazenamento on-line do Oracle ASM é um de seus principais recursos, e esse método é um dos mais confiáveis conhecidos. No entanto, os dados estão sendo copiados irreversivelmente com este método. No caso altamente improvável de que um problema ocorra com ASM, não há um caminho de back-out fácil. A única opção é restaurar o ambiente original ou usar o ASM para reverter a migração de volta para os LUNs originais. O risco pode ser minimizado, mas não eliminado, executando um backup do tipo snapshot no sistema de storage original, supondo que o sistema seja capaz de executar tal operação.
 
 
 
+[[rehearsal]]
 == Ensaio
 
 Alguns procedimentos de migração devem ser totalmente verificados antes da execução. A necessidade de migração e ensaio do processo de transição é uma solicitação comum com bancos de dados de missão crítica para os quais a migração deve ser bem-sucedida e o tempo de inatividade deve ser minimizado. Além disso, os testes de aceitação do usuário são frequentemente incluídos como parte do trabalho de pós-migração, e o sistema geral pode ser devolvido à produção somente após a conclusão desses testes.

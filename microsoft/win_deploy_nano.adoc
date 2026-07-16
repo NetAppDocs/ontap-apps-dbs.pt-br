@@ -18,6 +18,7 @@ Saiba mais sobre como implantar o Microsoft Windows Nano Server.
 
 
 
+[[deployment]]
 == Implantação
 
 Para implantar um Nano Server como um host Hyper-V, execute as seguintes etapas:
@@ -91,6 +92,7 @@ Invoke-Command -VMName $nanoserver -Credential $nanosecurecred -ArgumentList @($
 
 
 
+[[connect-to-nano-server]]
 == Conete-se ao Nano Server
 
 Para se conetar ao Nano Server remotamente usando o PowerShell, execute as seguintes etapas:

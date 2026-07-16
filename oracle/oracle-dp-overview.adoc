@@ -21,6 +21,7 @@ NOTE: Esta documentação substitui o relatório técnico publicado anteriorment
 
 
 
+[[planning]]
 == Planejamento
 
 A arquitetura de proteção de dados empresariais certa depende dos requisitos de negócios relacionados à retenção de dados, capacidade de recuperação e tolerância de interrupções durante vários eventos.

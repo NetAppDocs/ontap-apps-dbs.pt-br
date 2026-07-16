@@ -20,6 +20,7 @@ Em teoria, o SQL Server (64 bits) suporta 32.767 bancos de dados por instância 
 
 
 
+[[database-files-filegroup]]
 == Ficheiros da base de dados e grupo de ficheiros
 
 Cada banco de dados consiste em um ou mais arquivos de dados e um ou mais arquivos de log de transações. O log de transações armazena as informações sobre transações de banco de dados e todas as modificações de dados feitas por cada sessão. Sempre que os dados são modificados, o SQL Server armazena informações suficientes no log de transações para desfazer (reverter) ou refazer (reproduzir) a ação. Um log de transações do SQL Server é parte integrante da reputação do SQL Server em relação à integridade e robustez dos dados. O log de transações é vital para os recursos de atomicidade, consistência, isolamento e durabilidade (ACID) do SQL Server. O SQL Server grava no log de transações assim que qualquer alteração na página de dados ocorrer. Cada declaração DML (Data Manipulation Language) (por exemplo, selecionar, inserir, atualizar ou excluir) é uma transação completa, e o log de transações garante que toda a operação baseada em conjunto ocorra, certificando-se da atomicidade da transação.
@@ -39,6 +40,7 @@ TIP: *NetApp recomenda* evitar o uso do grupo de arquivos primário para qualque
 
 
 
+[[database-instance-file-initialization]]
 == Inicialização do arquivo de instância do banco de dados
 
 Você pode especificar o tamanho inicial do arquivo e os parâmetros de crescimento automático no momento em que você cria o banco de dados ou adiciona novos arquivos a um banco de dados existente. O SQL Server usa um algoritmo de preenchimento proporcional ao escolher em qual arquivo de dados ele deve gravar dados. Ele grava uma quantidade de dados proporcionalmente ao espaço livre disponível nos arquivos. Quanto mais espaço livre no arquivo, mais escreve ele lida.
@@ -82,6 +84,7 @@ Outra opção importante de banco de dados que controla os tamanhos de arquivo d
 
 
 
+[[log-directory]]
 == Diretório de log
 
 O diretório de log é especificado no SQL Server para armazenar dados de backup de log de transação no nível do host. Se você estiver usando o SnapCenter para fazer backup de arquivos de log, cada host do SQL Server usado pelo SnapCenter deve ter um diretório de log do host configurado para executar backups de log. O SnapCenter tem um repositório de banco de dados, portanto, os metadados relacionados a operações de backup, restauração ou clonagem são armazenados em um repositório de banco de dados central.

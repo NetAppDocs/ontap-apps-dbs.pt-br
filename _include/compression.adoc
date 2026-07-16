@@ -4,6 +4,7 @@
 
 
 
+[[compression]]
 == Compactação
 
 Antes da disponibilidade de sistemas de storage all-flash, a compactação baseada em array era de valor limitado porque a maioria dos workloads com uso intenso de e/S exigia um número muito grande de fusos para fornecer desempenho aceitável. Os sistemas de armazenamento invariavelmente continham muito mais capacidade do que o necessário como um efeito colateral do grande número de unidades. A situação mudou com o aumento do armazenamento de estado sólido. Não há mais a necessidade de superprovisionamento vastamente de unidades puramente para obter um bom desempenho. O espaço da unidade em um sistema de armazenamento pode ser correspondente às necessidades reais de capacidade.
@@ -14,6 +15,7 @@ Existem várias maneiras de compactar dados. Muitos bancos de dados incluem suas
 
 
 
+[[adaptive-compression]]
 === Compressão adaptável
 
 A compactação adaptável foi totalmente testada com workloads empresariais sem efeito observado no desempenho, mesmo em um ambiente all-flash em que a latência é medida em microssegundos. Alguns clientes até relataram um aumento de desempenho com o uso de compactação porque os dados permanecem compatados no cache, aumentando efetivamente a quantidade de cache disponível em um controlador.
@@ -28,6 +30,7 @@ CAUTION: Tamanhos de blocos de compactação maiores que 8KBMB não devem ser us
 
 
 
+[[compression-alignment]]
 === Alinhamento da compressão
 
 A compactação adaptável em um ambiente de banco de dados requer alguma consideração do alinhamento do bloco de compressão. Fazer isso é apenas uma preocupação para os dados que estão sujeitos a substituições aleatórias de blocos muito específicos. Essa abordagem é semelhante em conceito ao alinhamento geral do sistema de arquivos, onde o início de um sistema de arquivos deve ser alinhado a um limite de dispositivo 4K e o tamanho de bloco de um sistema de arquivos deve ser um múltiplo de 4K.

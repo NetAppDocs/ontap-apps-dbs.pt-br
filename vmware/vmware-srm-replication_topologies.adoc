@@ -32,6 +32,7 @@ Uma única VM não pode possuir dados – Virtual Machine Disk (VMDK) ou RDM –
 |===
 
 
+[[supported-snapmirror-layouts]]
 == Layouts SnapMirror suportados
 
 As figuras a seguir mostram os cenários de layout de relacionamento do SnapMirror que o VLSR e o SRA suportam. Cada VM nos volumes replicados possui dados em apenas um array VLSR (SVM) em cada local.
@@ -46,6 +47,7 @@ image:vsrm-ontap9_image10.png["Layout da relação do SnapMirror"]
 
 
 
+[[vmfs-support-with-snapmirror-active-sync]]
 == Suporte VMFS com sincronização ativa SnapMirror
 
 As ferramentas ONTAP 10.3 e posteriores também oferecem suporte à proteção de seus armazenamentos de dados VMFS com sincronização ativa do SnapMirror (SMas). Isso permite failover transparente para continuidade de negócios entre dois datacenters (chamados de domínios de falha) que estão relativamente próximos. A recuperação de desastres de longa distância pode então ser orquestrada usando o SnapMirror de forma assíncrona por meio das ferramentas ONTAP SRA com VLSR.
@@ -60,6 +62,7 @@ image:https://docs.netapp.com/us-en/ontap-tools-vmware-vsphere-104/media/fan-out
 
 
 
+[[supported-array-manager-layouts]]
 == Layouts do Array Manager compatíveis
 
 Quando você usa a replicação baseada em array (ABR) no VLSR, os grupos de proteção são isolados a um único par de array, como mostrado na captura de tela a seguir. Neste cenário, `SVM1` e `SVM2` são percorridos com `SVM3` e `SVM4` no local de recuperação. No entanto, você pode selecionar apenas um dos dois pares de matrizes ao criar um grupo de proteção.
@@ -68,6 +71,7 @@ image:vsrm-ontap9_image11.png["pares de array"]
 
 
 
+[[unsupported-layouts]]
 == Esquemas não suportados
 
 Configurações não suportadas têm dados (VMDK ou RDM) em vários SVMs que são de propriedade de uma VM individual. Nos exemplos mostrados nas figuras a seguir, `VM1` não pode ser configurado para proteção com VLSR `VM1` porque tem dados em dois SVMs.
@@ -82,6 +86,7 @@ image:vsrm-ontap9_image14.png["Configurações não suportadas"]
 
 
 
+[[snapmirror-cascade]]
 == Cascata de SnapMirror
 
 O VLSR não oferece suporte a cascata de relacionamentos SnapMirror, nas quais um volume de origem é replicado para um volume de destino e esse volume de destino também é replicado com o SnapMirror para outro volume de destino. No cenário mostrado na figura a seguir, o VLSR não pode ser usado para failover entre sites.
@@ -90,6 +95,7 @@ image:vsrm-ontap9_image15.png["Cascata de relacionamentos SnapMirror"]
 
 
 
+[[snapmirror-and-snapvault]]
 == SnapMirror e SnapVault
 
 O software NetApp SnapVault permite o backup baseado em disco de dados empresariais entre sistemas de storage NetApp. O SnapVault e o SnapMirror podem coexistir no mesmo ambiente; no entanto, o VLSR suporta o failover apenas das relações SnapMirror.
@@ -127,12 +133,14 @@ Depois que o vsrm executa o failback e uma segunda reversão das relações do S
 
 
 
+[[use-of-qtrees-in-site-recovery-manager-environments]]
 == Uso de Qtrees em ambientes do Site Recovery Manager
 
 Qtrees são diretórios especiais que permitem a aplicação de cotas de sistema de arquivos para nas. O ONTAP 9 permite a criação de qtrees, e qtrees podem existir em volumes replicados com o SnapMirror. No entanto, o SnapMirror não permite replicação de qtrees individuais ou replicação em nível de qtree. Toda a replicação do SnapMirror está apenas no nível do volume. Por esta razão, o NetApp não recomenda o uso de qtrees com VLSR.
 
 
 
+[[mixed-fc-and-iscsi-environments]]
 == Ambientes FC e iSCSI mistos
 
 Com os protocolos SAN compatíveis (FC, FCoE e iSCSI), o ONTAP 9 fornece serviços LUN, ou seja, a capacidade de criar e mapear LUNs para hosts conectados. Como o cluster consiste em vários controladores, há vários caminhos lógicos gerenciados pela e/S multipath em qualquer LUN individual. O acesso de unidade lógica assimétrica (ALUA) é usado nos hosts para que o caminho otimizado para um LUN seja selecionado e seja ativado para transferência de dados. Se o caminho otimizado para qualquer LUN mudar (por exemplo, porque o volume que contém é movido), o ONTAP 9 reconhece e ajusta-se automaticamente para essa alteração sem interrupções. Se o caminho otimizado ficar indisponível, o ONTAP poderá alternar para qualquer outro caminho disponível sem interrupções.

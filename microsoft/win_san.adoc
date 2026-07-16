@@ -18,10 +18,12 @@ As SVMs ONTAP são compatíveis com os protocolos de bloco iSCSI e FC. Quando um
 
 
 
+[[provisioning-netapp-lun-on-windows-server]]
 == Provisionamento de LUN NetApp no Windows Server
 
 
 
+[[prerequisites]]
 === Pré-requisitos
 
 O uso do armazenamento NetApp em ambientes SAN no Windows Server tem os seguintes requisitos:
@@ -36,6 +38,7 @@ O uso do armazenamento NetApp em ambientes SAN no Windows Server tem os seguinte
 
 
 
+[[deployment]]
 === Implantação
 
 . Criar um novo SVM com protocolo de bloco iSCSI e/ou FC habilitado. É possível criar um novo SVM com qualquer um dos seguintes métodos:
@@ -77,6 +80,7 @@ O IQN para iSCSI no Windows Server também pode ser verificado na configuração
 
 
 
+[[host-integration]]
 === Integração de host
 
 O Windows Server usa a extensão MPIO (ALUA) de acesso lógico assimétrico para determinar caminhos diretos e indiretos para LUNs. Mesmo que cada LIF de uma SVM aceite solicitações de leitura/gravação de LUNs, apenas um dos nós do cluster realmente é proprietário dos discos que suportam esse LUN em um dado momento. Isso divide os caminhos disponíveis para um LUN em dois tipos, diretos ou indiretos, como mostrado na figura a seguir.
@@ -89,12 +93,14 @@ image:win_image3.png["Vários caminhos no ambiente SAN, largura de 624 m, altura
 
 
 
+[[mpio]]
 === MPIO
 
 O ONTAP fornece armazenamento altamente disponível no qual podem existir vários caminhos do controlador de armazenamento para o servidor Windows. Multipathing é a capacidade de ter vários caminhos de dados de um servidor para um storage array. O multipathing protege contra falhas de hardware (cortes de cabos, falha do adaptador de barramento de host e switch [HBA], etc.), e pode fornecer limites de desempenho mais altos usando o desempenho agregado de várias conexões. Quando um caminho ou conexão se torna indisponível, o software multipathing muda automaticamente a carga para um dos outros caminhos disponíveis. O recurso MPIO combina os vários caminhos físicos para o storage como um único caminho lógico usado para acesso aos dados para fornecer resiliência de storage e balanceamento de carga. Para usar esse recurso, o recurso MPIO deve estar habilitado no Windows Server.
 
 
 
+[[enable-mpio]]
 === Ativar MPIO
 
 Para ativar o MPIO no Windows Server, execute as seguintes etapas:
@@ -109,6 +115,7 @@ Para ativar o MPIO no Windows Server, execute as seguintes etapas:
 
 
 
+[[configure-mpio]]
 === Configure o MPIO
 
 Ao usar o protocolo iSCSI, você deve informar ao Windows Server para aplicar suporte de multipath a dispositivos iSCSI nas propriedades MPIO.
@@ -126,6 +133,7 @@ Para configurar o MPIO no Windows Server, execute as seguintes etapas:
 
 
 
+[[configure-iscsi]]
 === Configurar iSCSI
 
 Para detetar armazenamento de bloco iSCSI no Windows Server, execute as seguintes etapas:
@@ -151,6 +159,7 @@ Para detetar armazenamento de bloco iSCSI no Windows Server, execute as seguinte
 
 
 
+[[detect-block-storage]]
 === Detectar storage de bloco
 
 Para detetar armazenamento de blocos iSCSI ou FC no Windows Server, execute as seguintes etapas:
@@ -162,6 +171,7 @@ Para detetar armazenamento de blocos iSCSI ou FC no Windows Server, execute as s
 
 
 
+[[best-practices]]
 === Práticas recomendadas
 
 * A NetApp recomenda a ativação do thin Provisioning nos volumes que hospedam os LUNs.
@@ -172,16 +182,19 @@ Para detetar armazenamento de blocos iSCSI ou FC no Windows Server, execute as s
 
 
 
+[[provisioning-netapp-luns-on-nano-server]]
 == Provisionamento de LUNs NetApp em Nano Server
 
 
 
+[[prerequisites]]
 === Pré-requisitos
 
 Além dos pré-requisitos mencionados na seção anterior, a função de armazenamento deve ser ativada a partir do lado do Nano Server. Por exemplo, o Nano Server deve ser implantado usando a opção -Storage. Para implantar o Nano Server, consulte a seçãolink:win_deploy_nano.html["Implante o Nano Server."] " "
 
 
 
+[[deployment]]
 === Implantação
 
 Para provisionar LUNs NetApp em um servidor Nano, execute as seguintes etapas:
@@ -298,12 +311,14 @@ Format-Volume -DriveLetter <DriveLetter> -FileSystem <FAT32 or NTFS or REFS>
 
 
 
+[[boot-from-san]]
 == Arranque a partir de SAN
 
 Um host físico (servidor) ou uma VM Hyper-V podem inicializar o sistema operacional do Windows diretamente de um LUN NetApp em vez de seu disco rígido interno. Na abordagem boot-from-SAN, a imagem do sistema operacional a ser inicializada reside em um LUN NetApp que é anexado a um host físico ou VM. Para um host físico, o HBA do host físico é configurado para usar o LUN NetApp para inicialização. Para uma VM, o LUN NetApp é conetado como um disco de passagem para inicialização.
 
 
 
+[[netapp-flexclone-approach]]
 === Abordagem da NetApp FlexClone
 
 Usando a tecnologia NetApp FlexClone, os LUNs de inicialização com uma imagem do sistema operacional podem ser clonados instantaneamente e conetados aos servidores e VMs para fornecer rapidamente imagens limpas do sistema operacional, como mostra a figura a seguir.
@@ -312,6 +327,7 @@ image:win_image4.png["Boot LUNs usando NetApp FlexClone, largura de 561 mm, altu
 
 
 
+[[boot-from-san-for-physical-host]]
 === Arranque a partir de SAN para anfitrião físico
 
 
@@ -345,6 +361,7 @@ Para configurar a inicialização a partir de SAN para um host físico, execute 
 
 
 
+[[boot-from-san-for-virtual-machine]]
 === Arranque a partir de SAN para máquina virtual
 
 Para configurar a inicialização a partir de SAN para uma VM, execute as seguintes etapas:
@@ -370,6 +387,7 @@ Para configurar a inicialização a partir de SAN para uma VM, execute as seguin
 
 
 
+[[best-practices]]
 === Práticas recomendadas
 
 * Certifique-se de que os LUNs estão offline. Caso contrário, o disco não pode ser adicionado como um disco de passagem a uma VM.

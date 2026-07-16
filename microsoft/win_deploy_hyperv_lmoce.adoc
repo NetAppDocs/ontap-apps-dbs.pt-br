@@ -18,6 +18,7 @@ Esta seção descreve a implantação da migração em tempo real do Hyper-V for
 
 
 
+[[prerequisites]]
 == Pré-requisitos
 
 * Servidores Hyper-V autônomos com storage independente ou armazenamento SMB compartilhado.
@@ -27,6 +28,7 @@ Esta seção descreve a implantação da migração em tempo real do Hyper-V for
 
 
 
+[[deployment]]
 == Implantação
 
 Para executar a migração em tempo real em um ambiente não agrupado, configure os servidores Hyper-V de origem e destino para que eles possam enviar e receber operações de migração em tempo real. Em ambos os servidores Hyper-V, execute as seguintes etapas:

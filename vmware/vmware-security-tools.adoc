@@ -25,6 +25,7 @@ A engenharia de software com as ferramentas ONTAP para VMware vSphere emprega as
 
 
 
+[[product-security-features]]
 == Recursos de segurança do produto
 
 As ferramentas do ONTAP para VMware vSphere incluem os seguintes recursos de segurança em cada versão.

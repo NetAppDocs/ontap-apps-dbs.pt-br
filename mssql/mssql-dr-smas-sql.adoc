@@ -18,6 +18,7 @@ O SQL Server pode ser configurado para trabalhar com a sincronização ativa do 
 
 
 
+[[standalone-instance-of-sql-server]]
 == Instância autônoma do SQL Server
 
 As práticas recomendadas para layout de arquivo e configuração de servidor são as mesmas recomendadas link:mssql-storage-considerations.html["SQL Server no ONTAP"]na documentação.
@@ -36,6 +37,7 @@ Um processo de failover simples e automatizado pode ser mais facilmente configur
 
 
 
+[[sql-server-failover-cluster-instance]]
 == Instância de cluster de failover do SQL Server
 
 As instâncias de failover do SQL Server também podem ser hospedadas em um cluster de failover do Windows executado em um servidor físico ou servidor virtual como sistema operacional convidado. Essa arquitetura de vários hosts oferece resiliência de armazenamento e instância do SQL Server. Essa implantação é útil em ambientes de alta demanda que buscam processos de failover robustos, mantendo o desempenho aprimorado. Em uma configuração de cluster de failover, quando um host ou storage primário é afetado, o SQL Services será failover para o host secundário e, ao mesmo tempo, o storage secundário estará disponível para servir e/S. Nenhum script de automação ou intervenção do administrador é necessário.

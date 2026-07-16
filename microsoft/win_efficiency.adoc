@@ -18,18 +18,21 @@ O ONTAP fornece eficiência de storage líder do setor para ambientes virtualiza
 
 
 
+[[netapp-deduplication]]
 == Deduplicação da NetApp
 
 A deduplicação do NetApp funciona removendo blocos duplicados no nível do volume de storage, armazenando apenas uma cópia física, independentemente de quantas cópias lógicas estejam presentes. Portanto, a deduplicação cria a ilusão de que existem inúmeras cópias desse bloco. A deduplicação remove automaticamente blocos de dados duplicados em um nível de bloco de 4KB U em todo o volume. Esse processo recupera o storage para obter economia de espaço e potencial de desempenho, reduzindo o número de gravações físicas no disco. A deduplicação pode proporcionar mais de 70% de economia de espaço em ambientes Hyper-V.
 
 
 
+[[thin-provisioning]]
 == Thin Provisioning
 
 O thin Provisioning é uma maneira eficiente de provisionar storage porque o storage não é pré-alocado de antemão. Em outras palavras, quando um volume ou LUN é criado usando thin Provisioning, o espaço no sistema de storage não é usado. O espaço permanece não utilizado até que os dados sejam gravados no LUN ou volume e apenas o espaço necessário para armazenar os dados é usado. A NetApp recomenda ativar o provisionamento de thin Provisioning no volume e desativar a reserva de LUN.
 
 
 
+[[quality-of-service]]
 == Qualidade do serviço
 
 A QoS de storage no NetApp ONTAP permite agrupar objetos de storage e definir limites de taxa de transferência no grupo. A QoS de storage pode ser usada para limitar a taxa de transferência a workloads e monitorar a performance de workload. Com isso, um administrador de storage pode separar workloads por organização, aplicação, unidade de negócios ou ambientes de produção ou desenvolvimento.

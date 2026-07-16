@@ -25,6 +25,7 @@ Assim como em outros aspectos da arquitetura de storage, as melhores opções pa
 
 
 
+[[svms]]
 == SVMs
 
 Não há prática recomendada oficial para provisionar SVMs para ONTAP. A abordagem certa depende dos requisitos de gerenciamento e segurança.

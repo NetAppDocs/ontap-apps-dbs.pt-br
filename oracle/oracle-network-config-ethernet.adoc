@@ -19,12 +19,14 @@ Muitos clientes do Oracle no ONTAP usam ethernet, o protocolo de rede de NFS, iS
 
 
 
+[[host-os-settings]]
 == Configurações do sistema operacional do host
 
 A maioria da documentação do fornecedor de aplicativos inclui configurações específicas de TCP e ethernet destinadas a garantir que o aplicativo esteja funcionando de forma ideal. Essas mesmas configurações geralmente são suficientes para oferecer também um desempenho ideal de storage baseado em IP.
 
 
 
+[[ethernet-flow-control]]
 == Controle de fluxo Ethernet
 
 Esta tecnologia permite que um cliente solicite que um remetente pare temporariamente a transmissão de dados. Isso geralmente é feito porque o recetor não consegue processar os dados de entrada com rapidez suficiente. Ao mesmo tempo, solicitar que um remetente cessasse a transmissão era menos disruptivo do que ter um recetor descartar pacotes porque os buffers estavam cheios. Este não é mais o caso com as pilhas TCP usadas nos sistemas operacionais atuais. Na verdade, o controle de fluxo causa mais problemas do que resolve.
@@ -38,6 +40,7 @@ TIP: *A NetApp recomenda* certificando-se de que os controladores de armazenamen
 
 
 
+[[mtu-sizes]]
 == Tamanhos de MTU
 
 O uso de quadros jumbo tem sido mostrado para oferecer alguma melhoria de desempenho em redes 1GBG, reduzindo a sobrecarga de CPU e rede, mas o benefício geralmente não é significativo.
@@ -62,6 +65,7 @@ Problemas com este arranjo são raros em um ambiente completamente comutado. No 
 ====
 
 
+[[tcp-parameters]]
 == Parâmetros TCP
 
 Três configurações geralmente são mal configuradas: Carimbos de data/hora TCP, reconhecimento seletivo (SACK) e escala de janela TCP. Muitos documentos desatualizados na Internet recomendam desativar um ou mais desses parâmetros para melhorar o desempenho. Havia algum mérito a esta recomendação há muitos anos, quando os recursos da CPU eram muito menores e havia um benefício para reduzir a sobrecarga no processamento TCP sempre que possível.

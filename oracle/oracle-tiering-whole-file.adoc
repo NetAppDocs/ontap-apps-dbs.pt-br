@@ -16,6 +16,7 @@ Muitos conjuntos de dados de aplicações são organizados por data, e esses dad
 
 
 
+[[policies]]
 == Políticas
 
 Para implementar uma abordagem de disposição em camadas baseada em arquivos, você precisa ter arquivos gravados e não modificados posteriormente. A `tiering-minimum-cooling-days` política deve ser definida suficientemente alta para que os arquivos que você possa precisar permaneçam no nível de desempenho. Por exemplo, um conjunto de dados para o qual os 60 dias de dados mais recentes são necessários com garantias de desempenho ideais, definindo `tiering-minimum-cooling-days` o período como 60. Resultados semelhantes também podem ser alcançados com base nos padrões de acesso ao arquivo. Por exemplo, se os 90 dias mais recentes de dados forem necessários e o aplicativo estiver acessando esse período de 90 dias de dados, os dados permanecerão na categoria de performance. Ao definir `tiering-minimum-cooling-days` o período como 2, você obtém a disposição imediata de categorias após os dados ficarem menos ativos.

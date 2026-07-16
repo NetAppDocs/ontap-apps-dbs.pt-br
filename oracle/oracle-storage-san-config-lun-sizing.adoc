@@ -30,6 +30,7 @@ A prática de estabelecer um tamanho de LUN padrão universal é desencorajada p
 
 
 
+[[lun-count]]
 == Contagem de LUN
 
 Ao contrário do tamanho do LUN, a contagem de LUN afeta o desempenho. O desempenho da aplicação geralmente depende da capacidade de executar e/S paralela pela camada SCSI. Como resultado, dois LUNs oferecem melhor performance do que um único LUN. Usar um LVM como Veritas VxVM, Linux LVM2 ou Oracle ASM é o método mais simples para aumentar o paralelismo.

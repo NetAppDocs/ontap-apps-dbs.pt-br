@@ -21,12 +21,14 @@ NOTE: Se os LUNs de inicialização, incluindo discos de inicialização virtual
 
 
 
+[[two-site-configuration]]
 == Configuração de dois locais
 
 Uma configuração RAC estendida de dois locais pode fornecer serviços de banco de dados ativo-ativo que podem sobreviver a muitos, mas não todos, cenários de desastre sem interrupções.
 
 
 
+[[rac-voting-files]]
 === Ficheiros de votação RAC
 
 A primeira consideração ao implantar o RAC estendido no MetroCluster deve ser o gerenciamento de quórum. O Oracle RAC tem dois mecanismos para gerenciar quórum: O batimento cardíaco do disco e o batimento cardíaco da rede. O heartbeat do disco monitora o acesso ao armazenamento usando os arquivos de votação. Com uma configuração RAC de local único, um único recurso de votação é suficiente, desde que o sistema de armazenamento subjacente ofereça recursos de HA.
@@ -47,6 +49,7 @@ Os grupos de discos ASM têm três opções para redundância `external`, `norma
 
 
 
+[[rac-network-heartbeat]]
 === Batimento cardíaco da rede RAC
 
 O batimento cardíaco da rede do Oracle RAC monitora a acessibilidade dos nós na interconexão de cluster. Para permanecer no cluster, um nó deve ser capaz de entrar em Contato com mais da metade dos outros nós. Em uma arquitetura de dois locais, esse requisito cria as seguintes opções para a contagem de nós RAC:
@@ -120,6 +123,7 @@ Como existem apenas dois locais, não é possível usar qualquer tipo de softwar
 
 
 
+[[three-site-configurations]]
 == Configurações de três locais
 
 Um cluster RAC estendido é muito mais fácil de arquitetar com três locais. Os dois sites que hospedam cada metade do sistema MetroCluster também dão suporte aos workloads de banco de dados, enquanto o terceiro local serve como desempate para o banco de dados e para o sistema MetroCluster. A configuração do Oracle tiebreaker pode ser tão simples quanto colocar um membro do grupo de discos ASM usado para votar em um site 3rd e também pode incluir uma instância operacional no site 3rd para garantir que haja um número ímpar de nós no cluster RAC.

@@ -18,6 +18,7 @@ Este apêndice descreve a implantação da réplica do Hyper-V fora de um ambien
 
 
 
+[[prerequisites]]
 == Pré-requisitos
 
 * Você precisa de servidores Hyper-V autônomos localizados nas mesmas localizações geográficas ou separadas, servindo como servidores primários e de réplica.
@@ -27,6 +28,7 @@ Este apêndice descreve a implantação da réplica do Hyper-V fora de um ambien
 
 
 
+[[deployment]]
 == Implantação
 
 . Configure o servidor de réplica.
@@ -58,6 +60,7 @@ Este apêndice descreve a implantação da réplica do Hyper-V fora de um ambien
 
 
 
+[[replication]]
 == Replicação
 
 . Execute um failover de teste para garantir que a réplica VM funcione corretamente no servidor de réplica. O teste cria uma VM temporária no servidor de réplica.

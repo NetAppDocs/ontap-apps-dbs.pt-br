@@ -18,12 +18,14 @@ Este apêndice descreve a implantação da migração ao vivo em um ambiente em 
 
 
 
+[[prerequisites]]
 == Pré-requisitos
 
 Para implantar a migração em tempo real, você precisa ter servidores Hyper-V configurados em um cluster de failover com armazenamento compartilhado. Reveja link:win_deploy_hyperv.html["Implantar o Hyper-V Cluster"] para obter mais detalhes.
 
 
 
+[[deployment]]
 == Implantação
 
 Para usar a migração em tempo real em um ambiente em cluster, execute as seguintes etapas:

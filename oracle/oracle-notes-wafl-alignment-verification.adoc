@@ -29,6 +29,7 @@ Os exemplos a seguir são específicos do Linux, mas o procedimento pode ser ada
 
 
 
+[[aligned]]
 == Alinhado
 
 O exemplo a seguir mostra uma verificação de alinhamento em um único LUN com uma única partição.
@@ -135,6 +136,7 @@ lun:ed95d953-1560-4f74-9006-85b352f58fcd:read_align_histo.7:0%
 
 
 
+[[misaligned]]
 == Desalinhado
 
 O exemplo a seguir mostra e/S desalinhadas:
@@ -183,6 +185,7 @@ Além disso, a `read_partial_blocks` estatística é diferente de zero, o que si
 
 
 
+[[redo-logging]]
 == Refazer o registo
 
 Os procedimentos aqui explicados são aplicáveis aos datafiles. Os logs do Oracle refazer e os logs de arquivamento têm padrões de e/S diferentes. Por exemplo, refazer o Registro é uma substituição circular de um único arquivo. Se o tamanho padrão de bloco de 512 bytes for usado, as estatísticas de gravação são semelhantes a isso:

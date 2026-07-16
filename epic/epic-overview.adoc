@@ -24,6 +24,7 @@ Use este documento como um guia para construir e implementar com sucesso EPIC EH
 
 
 
+[[purpose]]
 == Finalidade
 
 Este documento descreve as práticas recomendadas para a integração do storage do NetApp em um ambiente de software da Epic. Ele contém as seguintes seções:
@@ -35,6 +36,7 @@ Este documento descreve as práticas recomendadas para a integração do storage
 
 
 
+[[scope]]
 == Âmbito de aplicação
 
 Este documento não abrange os seguintes assuntos:
@@ -44,6 +46,7 @@ Este documento não abrange os seguintes assuntos:
 
 
 
+[[audience]]
 == Público-alvo
 
 O NetApp assume que o leitor tem os seguintes conhecimentos:

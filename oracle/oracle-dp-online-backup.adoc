@@ -27,6 +27,7 @@ Alguns clientes de grande escala adotaram uma abordagem mais simples, configuran
 
 
 
+[[data-layout]]
 == Layout de dados
 
 A configuração mais simples consiste em isolar os arquivos de dados em um ou mais volumes dedicados, LUNs ou namespaces NVMe. Os recursos de storage devem estar livres de qualquer outro tipo de arquivo. Isso garante que os arquivos de dados possam ser restaurados rapidamente durante uma operação SnapRestore sem comprometer um importante redo log, arquivo de controle ou log de arquivamento.
@@ -41,6 +42,7 @@ Se essas diretrizes forem seguidas, os snapshots podem ser agendados diretamente
 
 
 
+[[local-recovery-procedurenfs]]
 == Procedimento de recuperação local – NFS
 
 Este procedimento pode ser conduzido manualmente ou através de uma aplicação como o SnapCenter. O procedimento básico é o seguinte:
@@ -57,6 +59,7 @@ Além disso, para bancos de dados menores, os arquivos de dados podem ser recupe
 
 
 
+[[local-recovery-proceduresan]]
 == Procedimento de recuperação local – SAN
 
 Este procedimento pode ser conduzido manualmente ou através de uma aplicação como o SnapCenter. O procedimento básico é o seguinte:

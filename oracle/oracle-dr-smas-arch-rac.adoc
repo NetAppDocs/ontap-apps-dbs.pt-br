@@ -16,6 +16,7 @@ O RAC estendido tradicional em cluster contou com o espelhamento ASM para fornec
 
 
 
+[[replication]]
 == Replicação
 
 A chave para entender a funcionalidade RAC no SnapMirror ative Sync é visualizar o armazenamento como um único conjunto de LUNs hospedados no armazenamento espelhado. Por exemplo:
@@ -26,12 +27,14 @@ Não há cópia primária ou cópia espelhada. Logicamente, há apenas uma únic
 
 
 
+[[storage-configuration]]
 == Configuração de armazenamento
 
 Neste exemplo de configuração, os discos ASM são configurados da mesma forma que seriam em qualquer configuração RAC de local único no storage empresarial. Como o sistema de armazenamento fornece proteção de dados, a redundância externa ASM seria usada.
 
 
 
+[[uniform-vs-nonuninform-access]]
 == Uniforme vs acesso não ininformado
 
 A consideração mais importante com o Oracle RAC na sincronização ativa do SnapMirror é usar acesso uniforme ou não uniforme.
@@ -42,6 +45,7 @@ Nenhuma das opções é especificamente recomendada ou desencorajada. Alguns cli
 
 
 
+[[nonuniform-access]]
 == Acesso não uniforme
 
 O acesso não uniforme é mais simples de configurar do ponto de vista da SAN.
@@ -52,6 +56,7 @@ A principal desvantagem link:oracle-dr-smas-nonuniform.html["acesso não uniform
 
 
 
+[[uniform-access]]
 == Acesso uniforme
 
 O acesso uniforme requer a extensão da SAN entre os locais. O principal benefício é que a perda de um sistema de storage não resultará na perda de uma instância de banco de dados. Em vez disso, isso resultaria em uma mudança multipathing em que os caminhos estão atualmente em uso.
@@ -63,6 +68,7 @@ NOTE: Nos diagramas abaixo, há também caminhos ativos, mas não otimizados, qu
 
 
 
+[[aff-with-proximity-settings]]
 === AFF com definições de proximidade
 
 Se houver latência significativa entre sites, os sistemas AFF podem ser configurados com configurações de proximidade do host. Isso permite que cada sistema de armazenamento esteja ciente de quais hosts são locais e quais são remotos e atribua prioridades de caminho adequadamente.
@@ -73,6 +79,7 @@ Na operação normal, cada instância do Oracle usaria preferencialmente os cami
 
 
 
+[[asa-aff-without-proximity-settings]]
 === ASA / AFF sem definições de proximidade
 
 Se não houver latência significativa entre sites, os sistemas AFF podem ser configurados sem configurações de proximidade do host ou ASA podem ser usados.

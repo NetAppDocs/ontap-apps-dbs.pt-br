@@ -42,6 +42,7 @@ Juntos, o Windows Server e o ONTAP podem operar em ambientes grandes e agregar i
 
 
 
+[[intended-audience]]
 == Público-alvo
 
 Este documento destina-se a arquitetos de sistemas e armazenamento que projetam soluções de armazenamento NetApp para o Windows Server.

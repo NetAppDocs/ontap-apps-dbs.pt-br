@@ -18,6 +18,7 @@ O parâmetro innodb_flush_method especifica como o InnoDB abre e limpa os arquiv
 
 
 
+[[optimizations]]
 == Otimizações
 
 Na otimização InnoDB, a configuração desse parâmetro ajusta o desempenho do banco de dados quando aplicável.
@@ -32,6 +33,7 @@ As seguintes opções são para limpar os arquivos através do InnoDB:
 
 
 
+[[observation]]
 == Observação
 
 Nos testes de laboratório do NetApp, a `fsync` opção padrão foi usada em NFS e SAN, e foi um ótimo improvisador de desempenho em comparação com `O_DIRECT`. Ao usar o método flush como `O_DIRECT` no ONTAP, observamos que o cliente escreve muitas gravações de byte único na borda do bloco 4096 em modo serial. Essas gravações aumentam a latência na rede e degradam o desempenho.
