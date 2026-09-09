@@ -36,7 +36,7 @@ O log executa uma gravação sequencial do arquivo de log com gravações de tam
 
 Verifique o alinhamento usando utilitários como  `sio` ou  `dd` que podem gerar E/S em um tamanho de bloco definido. As estatísticas de alinhamento de E/S no sistema de storage podem ser visualizadas com o comando  `stats`. Consulte link:../oracle/oracle-notes-wafl-alignment-verification.html["Verificação do alinhamento do WAFL"] para mais informações.
 
-O alinhamento em ambientes Solaris é mais complicado.  http://support.netapp.com/documentation/productlibrary/index.html?productID=61343["Configuração do host SAN ONTAP"^]Consulte para obter mais informações.
+O alinhamento em ambientes Solaris é mais complexo. Consulte  https://kb.netapp.com/on-prem/ontap/da/SAN/SAN-KBs/How_to_identify_unaligned_IO_on_LUNs["Como identificar E/S desalinhadas em LUNs"] para obter mais informações.
 
 |===
 | Cuidado 
