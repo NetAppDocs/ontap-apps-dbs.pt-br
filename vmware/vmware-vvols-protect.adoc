@@ -69,7 +69,9 @@ https://www.netapp.com/media/13481-tr4689.pdf["_Arquitetura e design da soluçã
 
 https://www.netapp.com/pdf.html?item=/media/13480-tr4705.pdf["_TR-4705 arquitetura e design da solução NetApp MetroCluster_"]
 
-https://kb.vmware.com/s/article/2031038["_VMware KB 2031038 suporte ao VMware vSphere com NetApp MetroCluster_"]
+https://docs.netapp.com/us-en/netapp-solutions-virtualization/vmware/vmw-vcf-vmsc-mgmt-mcc.html["Configurar um cluster estendido para um domínio de gerenciamento VCF usando o MetroCluster"]
+
+https://docs.netapp.com/us-en/netapp-solutions-virtualization/vmware/vmw-vcf-vmsc-viwld-mcc.html["Configure um cluster stretch para um domínio de workload VCF usando o MetroCluster"]
 
 
 

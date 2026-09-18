@@ -46,7 +46,7 @@ As práticas recomendadas a seguir são recomendadas ao usar o ONTAP NFS com vSp
 ** Consulte as notas da tabela de interoperabilidade NFS v4,1 no link:https://mysupport.netapp.com/matrix/["Ferramenta de Matriz de interoperabilidade do NetApp"^] para obter os níveis de patch ESXi específicos necessários para suporte.
 
 
-* Conforme mencionado em link:vmware-vsphere-settings.html["definições"], se você não estiver usando o vSphere CSI para Kubernetes, deverá definir o newSyncInterval por https://knowledge.broadcom.com/external/article/386364/reducing-excessive-vsan-cnssync-warnings.html["VMware KB 386364"^]
+* Conforme mencionado em link:vmware-vsphere-settings.html["definições"], se você não estiver usando o vSphere CSI para Kubernetes, deverá definir o newSyncInterval por https://knowledge.broadcom.com/external/article/415074/reducing-or-disabling-excessive-vsan-cns.html["VMware KB 415074"^]
 * As regras de política de exportação de NFS são usadas para controlar o acesso pelos hosts vSphere. Você pode usar uma diretiva com vários volumes (datastores). Com o NFS, o ESXi usa o estilo de segurança sys (UNIX) e requer a opção de montagem raiz para executar VMs. No ONTAP, essa opção é chamada de superusuário e, quando a opção superusuário é usada, não é necessário especificar o ID de usuário anônimo. Observe que regras de política de exportação com valores diferentes `-anon` e `-allow-suid` podem causar problemas de descoberta de SVM com ferramentas do ONTAP. Os endereços IP devem ser uma lista separada por vírgulas sem espaços dos endereços de porta vmkernel que montam os datastores. Aqui está uma regra de política de exemplo:
 +
 ** Protocolo de acesso: nfs (que inclui nfs3 e nfs4)
