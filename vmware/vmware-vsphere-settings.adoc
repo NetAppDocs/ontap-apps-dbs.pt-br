@@ -101,7 +101,7 @@ Aqui estão as configurações de host recomendadas para todas as versões atual
 
 NOTE: A opção de configuração avançada NFS MaxQueueDepth pode não funcionar como esperado ao usar o VMware vSphere ESXi 7.0.1 e o VMware vSphere ESXi 7,0.2. Referência link:https://kb.vmware.com/s/article/86331?lang=en_US["VMware KB 86331"] para obter mais informações.
 
-As ferramentas do ONTAP também especificam certas configurações padrão ao criar volumes e LUNs do ONTAP FlexVol:
+As ferramentas do ONTAP também especificam determinadas configurações padrão ao criar volumes ONTAP FlexVol e LUNs:
 
 |===
 
@@ -136,8 +136,10 @@ As ferramentas do ONTAP também especificam certas configurações padrão ao cr
 | Reserva de espaço LUN | Desativado 
 
 
-| Alocação de espaço LUN | Ativado 
+| Alocação de espaço LUN | Habilitado* 
 |===
+*Observe que, devido ao defeito COTV-9223, as versões 10.0-10.6P1 do ONTAP tools não conseguem definir corretamente a alocação de espaço da LUN. Você pode ler mais em link:https://kb.netapp.com/data-mgmt/OTV/VSC_Kbs/OTV_10.x_creates_iSCSI_LUNs_with_space-allocation_disabled["As ONTAP tools criam LUNs com alocação de espaço desativada"] Será necessário habilitar a alocação de espaço usando o System Manager, a CLI ou a plataforma de automação da sua preferência com as APIs REST do ONTAP. Você também pode optar por usar o NetApp ONTAP MCP Server com a plataforma de IA da sua preferência. link:https://community.netapp.com/community/discussion/465968/new-ontap-mcp-ai-that-modernizes-your-storage-operations["Novo ONTAP MCP: IA que moderniza suas operações de armazenamento"]
+
 
 
 [[multipath-settings-for-performance]]
