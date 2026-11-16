@@ -6,7 +6,12 @@ summary: Recuperação automática do Oracle sem modo de backup.
 searchtitle: Recuperação automática do Oracle sem modo de backup. 
 ---
 = Recuperação automática do Oracle sem modo de backup
+:hardbreaks:
 :allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
 
 
 [role="lead"]
@@ -36,7 +41,7 @@ Durante a recuperação, o banco de dados lê metadados dos arquivos de dados pa
 
 Essa abordagem pode aproximar uma recuperação ponto no tempo, mas com granularidade limitada. Por exemplo, se você começar com datafiles em modo de backup, poderá avançar o banco de dados para qualquer transação arbitrária.
 
-Se você usar a abordagem de recuperação automática, sem usar o modo de backup, deverá recuperar o banco de dados até o ponto do snapshot do log. Em circunstâncias normais, o RPO ainda seria zero porque os logs de arquivamento, os redo logs e os controlfiles originais ainda estariam disponíveis no sistema de arquivos ativo. Se uma recuperação precisasse ser realizada inteiramente a partir de snapshots devido à perda de todos os dados nos sistemas de arquivos ativos, o RPO seria de uma hora.
++ Se você usar a abordagem de recuperação automática, sem usar o modo de backup, deverá recuperar o banco de dados até o ponto do snapshot de log. Em circunstâncias normais, o RPO ainda seria zero, pois os logs de arquivamento originais, os logs de redo e os arquivos de controle ainda estariam disponíveis no sistema de arquivos ativo. Se fosse necessário realizar uma recuperação inteiramente a partir de snapshots devido à perda de todos os dados nos sistemas de arquivos ativos, o RPO seria de uma hora.
 
 []
 ====

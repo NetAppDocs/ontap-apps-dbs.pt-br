@@ -240,10 +240,7 @@ Para configurar um cluster de datastore para cada site, execute as seguintes eta
 ====
 *Ao usar o armazenamento ONTAP, é recomendável desativar o DRS de armazenamento.
 
-* O DRS de armazenamento geralmente não é necessário ou recomendado para uso com sistemas de armazenamento ONTAP.
-* O ONTAP oferece seus próprios recursos de eficiência de storage, como deduplicação, compressão e compactação, que podem ser afetados pelo Storage DRS.
-* Se você estiver usando snapshots do ONTAP, o storage vMotion deixaria para trás a cópia da VM no snapshot, aumentando potencialmente a utilização do storage e pode afetar aplicativos de backup, como o NetApp SnapCenter, que rastreiam VMs e seus snapshots do ONTAP.
-
++ * Em geral, o Storage DRS não é necessário nem recomendado para uso com sistemas de storage ONTAP. * O ONTAP fornece seus próprios recursos de eficiência de storage, como deduplicação, compressão e compactação, que podem ser afetados pelo Storage DRS. * Se você estiver usando snapshots do ONTAP, o storage vMotion deixará para trás a cópia da VM no snapshot, o que pode aumentar a utilização do storage e pode afetar aplicativos de backup como o NetApp SnapCenter, que rastreiam VMs e seus snapshots do ONTAP.
 
 ====
 image::../media/vmsc_3_9.png[Armazenamento DRS,528,94]
